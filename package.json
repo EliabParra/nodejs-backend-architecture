@@ -1,0 +1,16 @@
+{
+  "name": "nodejs-exercise-03",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js"
+  },
+  "type": "module",
+  "dependencies": {
+    "express": "^5.2.1",
+    "express-session": "^1.18.2",
+    "nodemon": "^3.1.11",
+    "pg": "^8.16.3"
+  }
+}

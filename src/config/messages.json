@@ -1,0 +1,86 @@
+{
+    "es": {
+        "logs": {
+            "error": "ERROR",
+            "info": "INFO",
+            "debug": "DEBUG",
+            "warn": "WARNING"
+        },
+        "errors": {
+            "server": {
+                "notFound": { "msg": "Recurso no encontrado", "code": 404 },
+                "badRequest": { "msg": "Solicitud incorrecta", "code": 400 },
+                "unauthorized": { "msg": "No autorizado", "code": 401 },
+                "forbidden": { "msg": "Prohibido", "code": 403 },
+                "serverError": { "msg": "Error del servidor", "code": 500 }
+            },
+            "client": {
+                "login": { "msg": "Debe iniciar sesión", "code": 401 },
+                "register": { "msg": "Debe registrarse", "code": 401 },
+                "dontMatch": { "msg": "Las contraseñas no coinciden", "code": 401 },
+                "invalidEmail": { "msg": "Email inválido", "code": 401 },
+                "invalidPassword": { "msg": "Contraseña inválida", "code": 401 },
+                "invalidUsername": { "msg": "Nombre de usuario inválido", "code": 401 },
+                "alreadyRegistered": { "msg": "Ya está registrado", "code": 401 }
+            }
+        },
+        "alerts": {
+            "int": "\"{value}\" debe ser un número entero positivo",
+            "real": "\"{value}\" debe ser un número real",
+            "string": "\"{value}\" debe ser una cadena",
+            "lengthRange": "\"{value}\" debe tener entre {min} y {max} caracteres",
+            "lengthMin": "\"{value}\" debe tener mínimo {min} caracteres",
+            "lengthMax": "\"{value}\" debe tener máximo {max} caracteres",
+            "email": "\"{value}\" debe ser un correo electrónico válido",
+            "notEmpty": "\"{value}\" no puede estar vacío",
+            "date": "\"{value}\" debe ser una fecha válida",
+            "boolean": "\"{value}\" debe ser un booleano",
+            "array": "\"{value}\" debe ser un array",
+            "arrayNotEmpty": "\"{value}\" debe ser un array no vacío",
+            "object": "\"{value}\" debe ser un objeto",
+            "objectNotEmpty": "\"{value}\" debe ser un objeto no vacío"
+        }
+    },
+    "en": {
+        "logs": {
+            "error": "ERROR",
+            "info": "INFO",
+            "debug": "DEBUG",
+            "warn": "WARNING"
+        },
+        "errors": {
+            "server": {
+                "notFound": { "msg": "Resource not found", "code": 404 },
+                "badRequest": { "msg": "Bad request", "code": 400 },
+                "unauthorized": { "msg": "Unauthorized", "code": 401 },
+                "forbidden": { "msg": "Forbidden", "code": 403 },
+                "serverError": { "msg": "Server error", "code": 500 }
+            },
+            "client": {
+                "login": { "msg": "You must login", "code": 401 },
+                "register": { "msg": "You must register", "code": 401 },
+                "dontMatch": { "msg": "Passwords don't match", "code": 401 },
+                "invalidEmail": { "msg": "Invalid email", "code": 401 },
+                "invalidPassword": { "msg": "Invalid password", "code": 401 },
+                "invalidUsername": { "msg": "Invalid username", "code": 401 },
+                "alreadyRegistered": { "msg": "Already registered", "code": 401 }
+            }
+        },
+        "alerts": {
+            "int": "\"{value}\" must be a positive integer",
+            "real": "\"{value}\" must be a real number",
+            "string": "\"{value}\" must be a string",
+            "lengthRange": "\"{value}\" must be between {min} and {max} characters",
+            "lengthMin": "\"{value}\" must be at least {min} characters",
+            "lengthMax": "\"{value}\" must be at most {max} characters",
+            "email": "\"{value}\" must be a valid email address",
+            "notEmpty": "\"{value}\" cannot be empty",
+            "date": "\"{value}\" must be a valid date",
+            "boolean": "\"{value}\" must be a boolean",
+            "array": "\"{value}\" must be an array",
+            "arrayNotEmpty": "\"{value}\" must be an array not empty",
+            "object": "\"{value}\" must be an object",
+            "objectNotEmpty": "\"{value}\" must be an object not empty"
+        }
+    }
+}

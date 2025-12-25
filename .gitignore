@@ -1,0 +1,4 @@
+node_modules/
+.vscode/
+postgres.session.sql
+config.json

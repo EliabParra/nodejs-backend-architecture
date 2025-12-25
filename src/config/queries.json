@@ -1,0 +1,15 @@
+{
+    "security": {
+        "getUser": "select u.user_id, u.user_na, up.profile_id from security.user u inner join security.user_profile up on up.user_id = u.user_id where u.user_na = $1 and u.user_pw = $2",
+        "loadPermissions": "select o.object_na, m.method_na, p.profile_id from security.permission_method pm inner join security.profile p on pm.profile_id = p.profile_id inner join security.user_profile up on p.profile_id = up.profile_id inner join security.method m on m.method_id = pm.method_id inner join security.object o on o.object_id = m.object_id",
+        "loadDataTx": "select m.tx_nu, o.object_na, m.method_na from security.method m inner join security.object o on m.object_id = o.object_id"
+    },
+    "enterprise": {
+        "getPerson": "select p.person_na, p.person_ln from enterprise.person p where p.person_id = $1",
+        "getPersonByName": "select p.person_na, p.person_ln from enterprise.person p where p.person_na = $1",
+        "createPerson": "insert into enterprise.person (person_na, person_ln) values ($1, $2)",
+        "updatePerson": "update enterprise.person set person_na = $1, person_ln = $2 where person_id = $3",
+        "deletePerson": "delete from enterprise.person where person_id = $1",
+        "deletePersonByName": "delete from enterprise.person where person_na = $1"
+    }
+}
