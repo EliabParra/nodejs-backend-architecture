@@ -36,6 +36,9 @@
 
 1. **Verificar sesión**
    - `Session.sessionExists(req)` en [src/BSS/Session.js](../../src/BSS/Session.js)
+2. **Esperar inicialización de seguridad (race-free)**
+   - `Security` precarga `txMap` y permisos desde DB.
+   - `/toProccess` espera `security.ready` antes de usar `txMap` para evitar que llegue un request mientras el cache aún está vacío.
 2. **Resolver tx → (object_na, method_na)**
    - `security.getDataTx(body.tx)` usando `txMap` precargado en [src/BSS/Security.js](../../src/BSS/Security.js)
 3. **Validar permisos**

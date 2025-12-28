@@ -88,6 +88,7 @@ Archivo: [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.js)
 ### Response
 
 - Si falla sesión: `401` con `msgs[lang].errors.client.login`
+- Si seguridad (tx/permisos) no está lista: `503 serviceUnavailable`
 - Si falla permiso: `401` con `permissionDenied`
 - Si falla tx: se loguea y responde `unknown` (en el código actual, el detalle queda en log)
 - Si el BO retorna `{ code, ... }`, el dispatcher usa ese `code` como status.

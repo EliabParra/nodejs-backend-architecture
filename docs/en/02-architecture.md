@@ -35,6 +35,9 @@
 ### Sequence (high level)
 
 1. **Session check**: `Session.sessionExists(req)` ([src/BSS/Session.js](../../src/BSS/Session.js))
+2. **Wait for security initialization (race-free)**
+  - `Security` preloads `txMap` and permissions from the DB.
+  - `/toProccess` awaits `security.ready` before using `txMap`, avoiding requests hitting an empty cache during startup.
 2. **Resolve tx → (object_na, method_na)**: `security.getDataTx(body.tx)` ([src/BSS/Security.js](../../src/BSS/Security.js))
 3. **Permissions**: `security.getPermissions({ profile_id, method_na, object_na })`
 4. **Execute BO**: `security.executeMethod({ object_na, method_na, params })`

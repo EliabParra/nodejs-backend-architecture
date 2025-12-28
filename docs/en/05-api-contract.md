@@ -88,6 +88,7 @@ Implementation: [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.js)
 ### Response
 
 - Session missing: `401` with `msgs[lang].errors.client.login`
+- If security (tx/permissions cache) is not ready: `503 serviceUnavailable`
 - Permission denied: `401` with `permissionDenied`
 - Unexpected errors: server logs the details and responds with `unknown`
 - If the BO returns `{ code, ... }`, the dispatcher uses that `code` as HTTP status.

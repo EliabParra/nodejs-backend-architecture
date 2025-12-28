@@ -51,6 +51,15 @@ export default class Dispatcher {
     async toProccess(req, res) {
         try {
             if (!this.session.sessionExists(req)) return res.status(this.clientErrors.login.code).send(this.clientErrors.login)
+
+            if (!security.isReady) {
+                try {
+                    await security.ready
+                } catch {
+                    return res.status(this.clientErrors.serviceUnavailable.code).send(this.clientErrors.serviceUnavailable)
+                }
+            }
+
             const txData = security.getDataTx(req.body.tx)
 
             if (!txData) throw new Error(this.serverErrors.txNotFound.msg.replace('{tx}', req.body.tx))

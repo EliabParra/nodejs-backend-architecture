@@ -4,19 +4,40 @@ export default class Security {
         this.txMap = new Map()
         this.instances = new Map()
         this.serverErrors = msgs[config.app.lang].errors.server
-        this.loadPermissions()
-        this.loadDataTx()
+
+        this.isReady = false
+        this.initError = null
+        this.ready = this.init()
     }
 
-    loadPermissions() {
+    async init() {
         try {
-            db.exe("security", "loadPermissions", null).then(r => {
-                r.rows.forEach(el => {
-                    const key = `${el.profile_id}_${el.method_na}_${el.object_na}`
-                    this.permission.set(key, true)
-                })
+            await Promise.all([
+                this.loadPermissions(),
+                this.loadDataTx()
+            ])
+            this.isReady = true
+            return true
+        } catch (err) {
+            this.initError = err
+            log.show({ type: log.TYPE_ERROR, msg: `${this.serverErrors.serverError.msg}, Security.init: ${err?.message || err}` })
+            throw err
+        }
+    }
+
+    async loadPermissions() {
+        try {
+            const r = await db.exe("security", "loadPermissions", null)
+            if (!r || !r.rows) throw new Error('loadPermissions returned null')
+            r.rows.forEach(el => {
+                const key = `${el.profile_id}_${el.method_na}_${el.object_na}`
+                this.permission.set(key, true)
             })
-        } catch (err) { log.show({ type: log.TYPE_ERROR, msg: `${this.serverErrors.serverError.msg}, Security.loadPermissions: ${err.message}` }) }
+            return true
+        } catch (err) {
+            log.show({ type: log.TYPE_ERROR, msg: `${this.serverErrors.serverError.msg}, Security.loadPermissions: ${err?.message || err}` })
+            throw err
+        }
     }
 
     getPermissions(jsonData) {
@@ -25,16 +46,20 @@ export default class Security {
         else return false
     }
 
-    loadDataTx() {
+    async loadDataTx() {
         try {
-            db.exe("security", "loadDataTx", null).then(r => {
-                r.rows.forEach(el => {
-                    const key = el.tx_nu
-                    const value = { object_na: el.object_na, method_na: el.method_na }
-                    this.txMap.set(key, value)
-                })
+            const r = await db.exe("security", "loadDataTx", null)
+            if (!r || !r.rows) throw new Error('loadDataTx returned null')
+            r.rows.forEach(el => {
+                const key = el.tx_nu
+                const value = { object_na: el.object_na, method_na: el.method_na }
+                this.txMap.set(key, value)
             })
-        } catch (err) { log.show({ type: log.TYPE_ERROR, msg: `${this.serverErrors.serverError.msg}, Security.loadDataTx: ${err.message}` }) }
+            return true
+        } catch (err) {
+            log.show({ type: log.TYPE_ERROR, msg: `${this.serverErrors.serverError.msg}, Security.loadDataTx: ${err?.message || err}` })
+            throw err
+        }
     }
 
     getDataTx(tx) {
