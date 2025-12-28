@@ -24,12 +24,26 @@ export default class Dispatcher {
                 .send(this.clientErrors.tooManyRequests)
         })
 
+        this.toProccessRateLimiter = rateLimit({
+            windowMs: 60 * 1000,
+            limit: 120,
+            standardHeaders: true,
+            legacyHeaders: false,
+            keyGenerator: (req) => {
+                const userId = req?.session?.user_id
+                return userId ? `user:${userId}` : `ip:${req.ip}`
+            },
+            handler: (req, res) => res
+                .status(this.clientErrors.tooManyRequests.code)
+                .send(this.clientErrors.tooManyRequests)
+        })
+
         this.init()
     }
 
     init() {
         this.app.use(buildPagesRouter({ session: this.session }))
-        this.app.post("/toProccess", this.toProccess.bind(this))
+        this.app.post("/toProccess", this.toProccessRateLimiter, this.toProccess.bind(this))
         this.app.post("/login", this.loginRateLimiter, this.login.bind(this))
         this.app.post("/logout", this.logout.bind(this))        
     }

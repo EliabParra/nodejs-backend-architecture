@@ -92,6 +92,16 @@ Archivo: [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.js)
 - Si falla tx: se loguea y responde `unknown` (en el código actual, el detalle queda en log)
 - Si el BO retorna `{ code, ... }`, el dispatcher usa ese `code` como status.
 
+### Rate limiting (protección de carga)
+
+`/toProccess` tiene rate limiting en [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.js).
+
+- Límite: 120 requests por minuto.
+- Key:
+  - si existe sesión: por `user_id`
+  - si no existe sesión: por IP
+- Cuando se excede: HTTP `429` con `msgs[lang].errors.client.tooManyRequests`.
+
 ## Ejemplo (frontend)
 
 El frontend usa estos tx (ver [public/js/scripts.js](../../public/js/scripts.js)):

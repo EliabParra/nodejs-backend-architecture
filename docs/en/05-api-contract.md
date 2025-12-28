@@ -92,6 +92,16 @@ Implementation: [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.js)
 - Unexpected errors: server logs the details and responds with `unknown`
 - If the BO returns `{ code, ... }`, the dispatcher uses that `code` as HTTP status.
 
+### Rate limiting (load protection)
+
+`/toProccess` is rate limited in [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.js).
+
+- Limit: 120 requests per minute.
+- Key:
+  - if a session exists: per `user_id`
+  - otherwise: per IP
+- When exceeded: HTTP `429` with `msgs[lang].errors.client.tooManyRequests`.
+
 ## Demo tx values (frontend)
 
 The demo UI uses these tx numbers (see [public/js/scripts.js](../../public/js/scripts.js)):
