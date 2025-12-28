@@ -1,0 +1,96 @@
+# 05 — API contract (client-server)
+
+API endpoints are defined in [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.js).
+
+## Response convention
+
+Most responses follow this shape (not all fields are always present):
+
+```json
+{
+  "code": 200,
+  "msg": "...",
+  "data": {},
+  "alerts": []
+}
+```
+
+- `code`: also used as the HTTP status.
+- `msg`: UI-friendly message.
+- `data`: optional payload (BO-dependent).
+- `alerts`: optional validation messages (when `Validator` fails).
+
+The example client shows `alerts` if present; otherwise it shows `msg` (see [public/js/Sender.js](../../public/js/Sender.js)).
+
+## POST /login
+
+Implementation: [src/BSS/Session.js](../../src/BSS/Session.js)
+
+### Request
+
+```json
+{ "username": "...", "password": "..." }
+```
+
+Validation:
+
+- `username`: `string`
+- `password`: min length 8
+
+### Response
+
+- Success: `200` with `msgs[lang].success.login`
+- Common errors:
+  - `400 invalidParameters` + `alerts`
+  - `401 sessionExists`
+  - `401 usernameOrPasswordIncorrect`
+
+## POST /logout
+
+Implementation: [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.js)
+
+### Request
+
+No specific body required (the demo frontend sends `{ msg: "logout" }`).
+
+### Response
+
+- If session exists: `200` with `msgs[lang].success.logout`
+- If no session: `401` with `msgs[lang].errors.client.login`
+
+## POST /toProccess
+
+Implementation: [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.js)
+
+### Request
+
+```json
+{ "tx": 53, "params": {} }
+```
+
+- `tx`: transaction number resolved to `(object_na, method_na)` from `security.method` (see [docs/en/04-database-security-model.md](04-database-security-model.md)).
+- `params`: passed directly to the BO method.
+
+### Rules
+
+1. A session must exist (`req.session.user_id`).
+2. The `tx` must exist.
+3. The current `profile_id` must have permission.
+
+### Response
+
+- Session missing: `401` with `msgs[lang].errors.client.login`
+- Permission denied: `401` with `permissionDenied`
+- Unexpected errors: server logs the details and responds with `unknown`
+- If the BO returns `{ code, ... }`, the dispatcher uses that `code` as HTTP status.
+
+## Demo tx values (frontend)
+
+The demo UI uses these tx numbers (see [public/js/scripts.js](../../public/js/scripts.js)):
+
+- `53`: get (params = id or name)
+- `63`: create (params = `{ person_na, person_ln }`)
+- `73`: update (params = `{ person_id, person_na, person_ln }`)
+- `83`: delete (params = id or name)
+
+> These numbers work only if they exist in `security.method.tx_nu`.

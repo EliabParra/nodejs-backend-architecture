@@ -1,0 +1,68 @@
+# 06 — Dynamic dispatch and how to create a BO
+
+This architecture runs business logic without REST routes per resource: it executes BO methods through a **transaction dispatcher**.
+
+## How a BO is resolved and executed
+
+Implementation: [src/BSS/Security.js](../../src/BSS/Security.js)
+
+- The server receives `{ tx, params }`.
+- `tx` is translated to `{ object_na, method_na }` using `Security.txMap`.
+- `Security.executeMethod()` builds the module path and loads the BO dynamically:
+
+```js
+const modulePath = `${config.bo.path}${object_na}/${object_na}BO.js`
+const c = await import(modulePath)
+const instance = new c[`${object_na}BO`]()
+return await instance[method_na](params)
+```
+
+It also caches instances by `"object_na_method_na"` in `Security.instances`.
+
+## Mandatory naming rules
+
+For dynamic import to work:
+
+1. Folder must exist: `BO/<object_na>/`
+2. File must exist: `BO/<object_na>/<object_na>BO.js`
+3. The file must export: `export class <object_na>BO { ... }`
+4. The class must implement: `<method_na>(params)`
+5. In DB, `security.object.object_na` and `security.method.method_na` must match those strings.
+
+## Recommended BO structure
+
+Real example: `BO/Person/`
+
+- BO (orchestration + messages): [BO/Person/PersonBO.js](../../BO/Person/PersonBO.js)
+- Domain model/entity (DB + validation): [BO/Person/Person.js](../../BO/Person/Person.js)
+- Validation rules: [BO/Person/PersonValidate.js](../../BO/Person/PersonValidate.js)
+- Domain errors:
+  - Handler: [BO/Person/errors/PersonErrorHandler.js](../../BO/Person/errors/PersonErrorHandler.js)
+  - Messages: [BO/Person/errors/personErrorMsgs.json](../../BO/Person/errors/personErrorMsgs.json)
+  - Labels for alerts: [BO/Person/errors/personAlerts.json](../../BO/Person/errors/personAlerts.json)
+
+## BO method contract
+
+A BO method receives `params` (whatever is sent in the request) and returns an object with at least:
+
+- `code` (number)
+- `msg` (string)
+- optionally `data` and/or `alerts`
+
+Example:
+
+- `PersonBO.getPerson(value)` calls `Person.get(value)` and on success returns `{ data: result, msg: ..., code: 200 }`.
+
+## Checklist to add a new feature
+
+1. Create `BO/<object_na>/` and `BO/<object_na>/<object_na>BO.js`.
+2. Implement `export class <object_na>BO` with methods `method_na`.
+3. (Optional but recommended) create `BO/<object_na>/<object_na>.js` and `<object_na>Validate.js`.
+4. Add SQL queries under the target schema in [src/config/queries.json](../../src/config/queries.json).
+5. Register `object_na` and `method_na` + `tx_nu` in the `security` schema (see [docs/en/04-database-security-model.md](04-database-security-model.md)).
+6. Grant permissions to profiles.
+7. Call it from the client by sending `{ tx, params }`.
+
+## Note about `config.bo.path`
+
+`config.bo.path` (in [src/config/config.json](../../src/config/config.json)) is a relative path used by `import()` from [src/BSS/Security.js](../../src/BSS/Security.js). If you move folders, keep this value consistent.

@@ -1,0 +1,35 @@
+# Documentación (ES)
+
+Esta documentación describe la arquitectura actual del repo y las reglas para programar nuevas funcionalidades siguiendo el mismo patrón.
+
+## Mapa rápido
+
+- **Entrada del servidor**: [src/index.js](../../src/index.js)
+- **Globals (service locator)**: [src/globals.js](../../src/globals.js)
+- **Dispatcher (Express + endpoints)**: [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.js)
+- **Seguridad (tx + permisos + BO dinámico)**: [src/BSS/Security.js](../../src/BSS/Security.js)
+- **Sesión (express-session)**: [src/BSS/Session.js](../../src/BSS/Session.js)
+- **DB**: [src/BSS/DBComponent.js](../../src/BSS/DBComponent.js)
+- **Validación (alerts)**: [src/BSS/Validator.js](../../src/BSS/Validator.js)
+- **Router de páginas**: [src/router/pages.js](../../src/router/pages.js)
+- **Cliente ejemplo**: [public/js/Sender.js](../../public/js/Sender.js)
+
+## Índice
+
+1. [Cómo correr el proyecto](01-getting-started.md)
+2. [Arquitectura y flujo de ejecución](02-architecture.md)
+3. [Configuración, mensajes y queries](03-configuration.md)
+4. [Modelo de seguridad (schema `security`)](04-database-security-model.md)
+5. [Contrato API (cliente-servidor)](05-api-contract.md)
+6. [Cómo crear un BO (dispatch dinámico)](06-dynamic-dispatch-and-bo.md)
+7. [Validación y manejo de errores](07-validation-and-errors.md)
+8. [Páginas y sesión](08-pages-and-session.md)
+
+## Glosario
+
+- **BSS** (*Basic Subsystem*): servicios transversales en `src/BSS/` (DB, seguridad, sesión, logging, validación, dispatcher).
+- **BO** (*Business Object*): módulos de negocio en `BO/` (por entidad/feature). Se cargan dinámicamente desde `Security`.
+- **tx**: número de transacción enviado por el cliente (`body.tx`) para resolver qué método ejecutar.
+- **object_na**: nombre lógico del objeto BO (p.ej. `Person`). Se usa para ubicar archivos y para permisos.
+- **method_na**: nombre del método a invocar (p.ej. `getPerson`, `createPerson`).
+- **alerts**: lista de mensajes de validación generados por `Validator` (vía `v.getAlerts()`).
