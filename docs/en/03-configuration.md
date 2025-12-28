@@ -33,6 +33,7 @@ File: [src/config/config.json](../../src/config/config.json)
 
 - `app.port`, `app.host`: Express bind address
 - `app.lang`: active language (`"es"` or `"en"`)
+- `app.bodyLimit` (optional): request size limit for JSON/urlencoded bodies (e.g. `"100kb"`, `"1mb"`).
 - `db`: `pg.Pool` settings (used by [src/BSS/DBComponent.js](../../src/BSS/DBComponent.js))
 - `session`: `express-session` settings (used by [src/BSS/Session.js](../../src/BSS/Session.js))
 - `bo.path`: relative path used by `Security` to dynamically import BO modules (see [src/BSS/Security.js](../../src/BSS/Security.js))
@@ -45,6 +46,12 @@ Config: [src/config/config.json](../../src/config/config.json) → `cors`
 - `cors.enabled`: enables the CORS middleware.
 - `cors.credentials`: allows cookies/session cross-origin (needed if the frontend runs on a different origin).
 - `cors.origins`: allowlist of dev origins (e.g. Vite `http://localhost:5173`, Angular `http://localhost:4200`).
+
+Implementation: [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.js)
+
+### Security headers (helmet)
+
+The server applies standard security headers via `helmet` and disables `X-Powered-By`.
 
 Implementation: [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.js)
 

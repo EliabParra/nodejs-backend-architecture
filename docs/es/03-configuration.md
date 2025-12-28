@@ -33,6 +33,7 @@ Archivo: [src/config/config.json](../../src/config/config.json)
 
 - `app.port`, `app.host`: dónde levanta Express
 - `app.lang`: idioma activo (`"es"` o `"en"`). Afecta `msgs[...]` y alerts.
+- `app.bodyLimit` (opcional): límite de tamaño para requests JSON/urlencoded (ej. `"100kb"`, `"1mb"`).
 - `db`: parámetros para `pg.Pool` (ver [src/BSS/DBComponent.js](../../src/BSS/DBComponent.js))
 - `session`: configuración de `express-session` (ver [src/BSS/Session.js](../../src/BSS/Session.js))
 - `bo.path`: ruta relativa usada por `Security` para importar BO dinámicamente (ver [src/BSS/Security.js](../../src/BSS/Security.js))
@@ -45,6 +46,12 @@ Config: [src/config/config.json](../../src/config/config.json) → `cors`
 - `cors.enabled`: activa el middleware CORS en el servidor.
 - `cors.credentials`: permite cookies/sesión cross-origin (necesario si el frontend corre en otro origen).
 - `cors.origins`: allowlist de orígenes permitidos en dev (ej. Vite `http://localhost:5173`, Angular `http://localhost:4200`).
+
+Implementación: [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.js)
+
+### Headers de seguridad (helmet)
+
+El servidor aplica headers de seguridad estándar via `helmet` y deshabilita `X-Powered-By`.
 
 Implementación: [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.js)
 

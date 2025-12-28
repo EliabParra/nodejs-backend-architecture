@@ -4,10 +4,18 @@ import { buildPagesRouter, pagesPath } from "../router/pages.js"
 import rateLimit from "express-rate-limit"
 import { randomUUID } from "node:crypto"
 import cors from "cors"
+import helmet from "helmet"
 
 export default class Dispatcher {
     constructor() {
         this.app = express()
+
+        this.app.disable('x-powered-by')
+
+        // Security headers (kept conservative; CSP disabled to avoid breaking inline scripts in public/pages)
+        this.app.use(helmet({
+            contentSecurityPolicy: false
+        }))
 
         this.app.use((req, res, next) => {
             const requestId = randomUUID()
@@ -33,8 +41,9 @@ export default class Dispatcher {
             }))
         }
 
-        this.app.use(express.json())
-        this.app.use(express.urlencoded({ extended: false }))
+        const bodyLimit = config?.app?.bodyLimit ?? '100kb'
+        this.app.use(express.json({ limit: bodyLimit }))
+        this.app.use(express.urlencoded({ extended: false, limit: bodyLimit }))
         this.app.use(express.static(pagesPath))
         this.session = new Session(this.app)
         this.serverErrors = msgs[config.app.lang].errors.server
