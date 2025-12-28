@@ -1,0 +1,14 @@
+{
+    "es": {
+        "personNotFound": { "msg": "Persona no encontrada", "code": 404 },
+        "personInvalidParameters": { "msg": "Parámetros inválidos", "code": 400 },
+        "personUnauthorized": { "msg": "No autorizado", "code": 401 },
+        "unknownError": { "msg": "Error desconocido", "code": 500 }
+    },
+    "en": {
+        "personNotFound": { "msg": "Person not found", "code": 404 },
+        "personInvalidParameters": { "msg": "Invalid parameters", "code": 400 },
+        "personUnauthorized": { "msg": "Unauthorized", "code": 401 },
+        "unknownError": { "msg": "Unknown error", "code": 500 }
+    }
+}

@@ -8,23 +8,26 @@ export default class Validator {
     getStatus() { return this.status }
     getAlerts() { return this.alerts }
 
-    validateInt(value) {
-        if (!isNaN(value) && parseInt(value) === value && value > 0) return true
-        this.alerts = [this.getMessage('int', value)]
+    validateInt(param) {
+        const value = this.extractValue(param)
+        if (!isNaN(value) && parseInt(value) === value && value > 0) return true;
+        this.alerts = [this.getMessage('int', param)]
         return false
     }
-    validateReal(value) {
+    validateReal(param) {
+        const value = this.extractValue(param)
         if (!isNaN(value) && parseFloat(value) === value) return true
-        this.alerts = [this.getMessage('real', value)]
+        this.alerts = [this.getMessage('real', param)]
         return false
     }
-    validateString(value) {
+    validateString(param) {
+        const value = this.extractValue(param)
         if (typeof value === 'string') return true
-        this.alerts = [this.getMessage('string', value)]
+        this.alerts = [this.getMessage('string', param)]
         return false
     }
-    validateLength(value, min, max) {
-        if (!this.validateString(value)) return false
+    validateLength(param, min, max) {
+        if (!this.validateString(param)) return false
 
         if (min == null) min = 0
         else if (!this.validateInt(min)) return false
@@ -32,48 +35,57 @@ export default class Validator {
         if (max == null) max = Number.MAX_SAFE_INTEGER
         else if (!this.validateInt(max)) return false
 
+        const value = this.extractValue(param)
         if (value.length >= min && value.length <= max) return true
-        this.alerts = [this.getMessage('lengthRange', value).replace('{min}', min).replace('{max}', max)]
+        this.alerts = [this.getMessage('lengthRange', param).replace('{min}', min).replace('{max}', max)]
         return false
     }
-    validateEmail(value) {
+    validateEmail(param) {
+        const value = this.extractValue(param)
         if (/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/.test(value)) return true
-        this.alerts = [this.getMessage('email', value)]
+        this.alerts = [this.getMessage('email', param)]
         return false
     }
-    validateNotEmpty(value) {
+    validateNotEmpty(param) {
+        const value = this.extractValue(param)
         if (value !== '') return true
-        this.alerts = [this.getMessage('notEmpty', value)]
+        this.alerts = [this.getMessage('notEmpty', param)]
         return false
     }
-    validateBoolean(value) {
+    validateBoolean(param) {
+        const value = this.extractValue(param)
         if (typeof value === 'boolean') return true
-        this.alerts = [this.getMessage('boolean', value)]
+        this.alerts = [this.getMessage('boolean', param)]
         return false
     }
-    validateDate(value) {
+    validateDate(param) {
+        const value = this.extractValue(param)
         if (!isNaN(new Date(value).getTime())) return true
-        this.alerts = [this.getMessage('date', value)]
+        this.alerts = [this.getMessage('date', param)]
         return false
     }
-    validateArray(value) {
+    validateArray(param) {
+        const value = this.extractValue(param)
         if (Array.isArray(value)) return true
-        this.alerts = [this.getMessage('array', value)]
+        this.alerts = [this.getMessage('array', param)]
         return false
     }
-    validateArrayNotEmpty(value) {
+    validateArrayNotEmpty(param) {
+        const value = this.extractValue(param)
         if (Array.isArray(value) && value.length > 0) return true
-        this.alerts = [this.getMessage('arrayNotEmpty', value)]
+        this.alerts = [this.getMessage('arrayNotEmpty', param)]
         return false
     }
-    validateObject(value) {
+    validateObject(param) {
+        const value = this.extractValue(param)
         if (typeof value === 'object') return true
-        this.alerts = [this.getMessage('object', value)]
+        this.alerts = [this.getMessage('object', param)]
         return false
     }
-    validateObjectNotEmpty(value) {
+    validateObjectNotEmpty(param) {
+        const value = this.extractValue(param)
         if (typeof value === 'object' && Object.keys(value).length > 0) return true
-        this.alerts = [this.getMessage('objectNotEmpty', value)]
+        this.alerts = [this.getMessage('objectNotEmpty', param)]
         return false
     }
 
@@ -82,7 +94,7 @@ export default class Validator {
             case 'int': return this.validateInt(value)
             case 'real': return this.validateReal(value)
             case 'string': return this.validateString(value)
-            case 'length': return this.validateLength(value.value, value.min, value.max)
+            case 'length': return this.validateLength(value, value.min, value.max)
             case 'email': return this.validateEmail(value)
             case 'notEmpty': return this.validateNotEmpty(value)
             case 'boolean': return this.validateBoolean(value)
@@ -152,17 +164,27 @@ export default class Validator {
                     .replace('{max}', Number.MAX_SAFE_INTEGER)
             }
             default:
-                return this.msgs[type]
-                    .replace('{value}', value)
-                    .replace('{min}', param?.min)
-                    .replace('{max}', param?.max)
+                {
+                    let msg = this.msgs[type].replace('{value}', value)
+                    if (param?.min != null) msg = msg.replace('{min}', param.min)
+                    if (param?.max != null) msg = msg.replace('{max}', param.max)
+                    return msg
+                }
         }
     }
 
     formatValue(type, param) {
-        if (type === 'length') return typeof param === 'object' && param !== null ? param.value : param
+        if (typeof param === 'object' && param !== null) {
+            if (param.label != null) return param.label
+            if (type === 'length') return param.value
+            try { return JSON.stringify(param) } catch { return String(param) }
+        }
         if (Array.isArray(param)) try { return JSON.stringify(param) } catch { return String(param) }
-        if (typeof param === 'object' && param !== null) try { return JSON.stringify(param) } catch { return String(param) }
+        return param
+    }
+
+    extractValue(param) {
+        if (typeof param === 'object' && param !== null && 'value' in param) return param.value
         return param
     }
 }

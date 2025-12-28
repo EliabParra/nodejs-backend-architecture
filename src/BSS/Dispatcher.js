@@ -9,6 +9,9 @@ export default class Dispatcher {
         this.app.use(express.urlencoded({ extended: false }))
         this.app.use(express.static(pagesPath))
         this.session = new Session(this.app)
+        this.serverErrors = msgs[config.app.lang].errors.server
+        this.clientErrors = msgs[config.app.lang].errors.client
+        this.successMsgs = msgs[config.app.lang].success
         this.init()
     }
 
@@ -21,22 +24,23 @@ export default class Dispatcher {
 
     async toProccess(req, res) {
         try {
-            if (!this.session.sessionExists(req)) return res.status(401).send({ msg: "debes iniciar sesion" })
+            if (!this.session.sessionExists(req)) return res.status(this.clientErrors.login.code).send(this.clientErrors.login)
             const txData = security.getDataTx(req.body.tx)
 
-            if (!txData) return res.status(401).send({ msg: "no existe la transacción"})
-            const jsonData = {
+            if (!txData) throw new Error(this.serverErrors.txNotFound.msg.replace('{tx}', req.body.tx))
+            const data = {
                 profile_id: req.session.profile_id,
                 method_na: txData.method_na,
                 object_na: txData.object_na,
                 params: req.body.params
             }
 
-            if (!security.getPermissions(jsonData)) return res.status(401).send({ msg: "no tiene permisos"})
-            res.send(await security.executeMethod(jsonData))
+            if (!security.getPermissions(data)) return res.status(this.clientErrors.permissionDenied.code).send(this.clientErrors.permissionDenied)
+            const response = await security.executeMethod(data)
+            res.status(response.code).send(response)
         } catch (err) {
-            log.show({ type: log.TYPE_ERROR, msg: `Exception in /toProccess: ${err.message}` })
-            res.status(500).send({ msg: 'error de servidor' })
+            log.show({ type: log.TYPE_ERROR, msg: `${this.serverErrors.serverError.msg}, /toProccess: ${err.message}` })
+            res.status(this.clientErrors.unknown.code).send(this.clientErrors.unknown)
         }
     }
 
@@ -44,24 +48,24 @@ export default class Dispatcher {
         try {
             this.session.createSession(req, res)
         } catch (err) {
-            log.show({ type: log.TYPE_ERROR, msg: `Exception in /login: ${err.message}` })
-            res.status(500).send({ msg: 'error de servidor' })
+            log.show({ type: log.TYPE_ERROR, msg: `${this.serverErrors.serverError.msg}, /login: ${err.message}` })
+            res.status(this.clientErrors.unknown.code).send(this.clientErrors.unknown)
         }
     }
 
     logout(req, res) {
         try {
             if (this.session.sessionExists(req)) {
-                this.session.destroySession(req) 
-                return res.status(200).send({ msg: "sesion destruida" })
-            } else return res.status(401).send({ msg: "sesion no existe" })
+                this.session.destroySession(req)
+                return res.status(this.successMsgs.logout.code).send(this.successMsgs.logout)
+            } else return res.status(this.clientErrors.login.code).send(this.clientErrors.login)
         } catch (err) {
-            log.show({ type: log.TYPE_ERROR, msg: `Exception in /logout: ${err.message}` })
-            res.status(500).send({ msg: 'error de servidor' })
+            log.show({ type: log.TYPE_ERROR, msg: `${this.serverErrors.serverError.msg}, /logout: ${err.message}` })
+            res.status(this.clientErrors.unknown.code).send(this.clientErrors.unknown)
         }
     }
 
     serverOn() {
-        this.app.listen(config.app.port, () => log.show({ type: log.TYPE_INFO, msg: `Servidor corriendo en http://${config.app.host}:${config.app.port}` }))
+        this.app.listen(config.app.port, () => log.show({ type: log.TYPE_INFO, msg: `Server running on http://${config.app.host}:${config.app.port}` }))
     }
 }

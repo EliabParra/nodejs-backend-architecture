@@ -16,32 +16,31 @@ const login = async (e) => {
 const logout = async (e) => {
     e.preventDefault()
     const data = await sender.send({ body: { msg: 'logout' } }, '/logout')
-    if (data.status === 200) return window.location.href = '/'
 }
 
 const crudPerson = async (e, action) => {
     e.preventDefault()
-    const id = parseInt(document.querySelector('#id').value)
-    const name = document.querySelector('#name').value
-    const lastName = document.querySelector('#lastName').value
+    const person_id = parseInt(document.querySelector('#id').value)
+    const person_na = document.querySelector('#name').value
+    const person_ln = document.querySelector('#lastName').value
     let tx = 0
-    let params = []
+    let params
     switch (action) {
         case 'get':
             tx = 53
-            params = name ? [name] : [id]
+            params = person_na ? person_na : person_id
             break
         case 'create':
             tx = 63
-            params = [name, lastName]
+            params = { person_na, person_ln }
             break
         case 'update':
             tx = 73
-            params = [name, lastName, id]
+            params = { person_id, person_na, person_ln }
             break
         case 'delete':
             tx = 83
-            params = name ? [name] : [id]
+            params = person_na ? person_na : person_id
             break
     }
 

@@ -33,8 +33,7 @@ export class Sender {
             else this._default[attr] = jd[attr]
         }
         const r = await fetch(this.url, this._default)
-        const data = await r.json()
-        data.status = r.status
+        const data = await r.json();
         if (data.alerts) this.statusBar.showAlerts(data.alerts)
         else this.statusBar.show(data.msg)
         this.endpoint = 'none'

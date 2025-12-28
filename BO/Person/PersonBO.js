@@ -1,87 +1,27 @@
-import { Person } from './model/Person.js'
+import { Person } from "./Person.js"
 
 export class PersonBO {
-    constructor() {}
-
-    getAll() {
-        return new Promise(async (resolve, reject) => {
-            try {
-                const r = await db.exe('enterprise', 'getAllPerson')
-                resolve(r.rows.map(row => new Person(row)))
-            } catch (error) {
-                log.show({ type: log.TYPE_ERROR, msg: `Error en Person.getAll: ${error.message}` })
-                reject(error)
-            }
-        })
+    async getPerson(value) {
+        const person = await Person.get(value)
+        if (person.code !== 200) return person
+        return { data: person, msg: `Persona ${person.person_na} ${person.person_ln} encontrada`, code: person.code }
     }
 
-    get(params) {
-        
+    async createPerson(params) {
+        const result = await Person.create(params)
+        if (result.code !== 201) return result
+        return { data: params, msg: `Persona ${params.person_na} ${params.person_ln} creada exitosamente`, code: result.code }
     }
 
-    getById(id) {
-        return new Promise(async (resolve, reject) => {
-            try {
-                const r = await db.exe('enterprise', 'getPerson', id)
-                if (r.rows.length === 0) return reject(new PersonNotFound('Person not found'))
-                resolve(new Person(r.rows[0]))
-            } catch (error) {
-                log.show({ type: log.TYPE_ERROR, msg: `Error en Person.getById: ${error.message}` })
-                reject(error)
-            }
-        })
+    async updatePerson(params) {
+        const result = await Person.update(params)
+        if (result.code !== 200) return result
+        return { data: params, msg: `Persona ${params.person_na} ${params.person_ln} actualizada exitosamente`, code: result.code }
     }
 
-    getByName(name) {
-        return new Promise(async (resolve, reject) => {
-            try {
-                const r = await db.exe('enterprise', 'getPersonByName', name)
-                if (r.rows.length === 0) return reject(new PersonNotFound('Person not found'))
-                resolve(new Person(r.rows[0]))
-            } catch (error) {
-                log.show({ type: log.TYPE_ERROR, msg: `Error en Person.getByName: ${error.message}` })
-                reject(error)
-            }
-        })
-    }
-
-    save() {
-        
-    }
-
-    create(params) {
-        return new Promise(async (resolve, reject) => {
-            try {
-                const r = await db.exe('enterprise', 'createPerson', params)
-                resolve(new Person(r.rows[0]))
-            } catch (error) {
-                log.show({ type: log.TYPE_ERROR, msg: `Error en Person.create: ${error.message}` })
-                reject(error)
-            }
-        })
-    }
-
-    update(params) {
-        return new Promise(async (resolve, reject) => {
-            try {
-                const r = await db.exe('enterprise', 'updatePerson', params)
-                resolve(new Person(r.rows[0]))
-            } catch (error) {
-                log.show({ type: log.TYPE_ERROR, msg: `Error en Person.update: ${error.message}` })
-                reject(error)
-            }
-        })
-    }
-
-    delete(params) {
-        return new Promise(async (resolve, reject) => {
-            try {
-                await db.exe('enterprise', 'deletePerson', params)
-                resolve()
-            } catch (error) {
-                log.show({ type: log.TYPE_ERROR, msg: `Error en Person.delete: ${error.message}` })
-                reject(error)
-            }
-        })
+    async deletePerson(params) {
+        const result = await Person.delete(params)
+        if (result.code !== 200) return result
+        return { data: params, msg: `Persona ${params.person_na} ${params.person_ln} eliminada exitosamente`, code: result.code }
     }
 }

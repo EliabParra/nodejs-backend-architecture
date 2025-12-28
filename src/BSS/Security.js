@@ -3,6 +3,7 @@ export default class Security {
         this.permission = new Map()
         this.txMap = new Map()
         this.instances = new Map()
+        this.serverErrors = msgs[config.app.lang].errors.server
         this.loadPermissions()
         this.loadDataTx()
     }
@@ -15,7 +16,7 @@ export default class Security {
                     this.permission.set(key, true)
                 })
             })
-        } catch (err) { log.show({ type: log.TYPE_ERROR, msg: `Exception in Security.loadPermissions: ${err.message}` }) }
+        } catch (err) { log.show({ type: log.TYPE_ERROR, msg: `${this.serverErrors.serverError.msg}, Security.loadPermissions: ${err.message}` }) }
     }
 
     getPermissions(jsonData) {
@@ -33,7 +34,7 @@ export default class Security {
                     this.txMap.set(key, value)
                 })
             })
-        } catch (err) { log.show({ type: log.TYPE_ERROR, msg: `Exception in Security.loadDataTx: ${err.message}` }) }
+        } catch (err) { log.show({ type: log.TYPE_ERROR, msg: `${this.serverErrors.serverError.msg}, Security.loadDataTx: ${err.message}` }) }
     }
 
     getDataTx(tx) {
@@ -48,11 +49,15 @@ export default class Security {
                 const instance = this.instances.get(key)
                 return await instance[jsonData.method_na](jsonData.params)
             } else {
-                const c = require(`${config.bo.path}${jsonData.object_na}.js`)
-                const instance = new c[jsonData.object_na]()
+                const modulePath = `${config.bo.path}${jsonData.object_na}/${jsonData.object_na}BO.js`
+                const c = await import(modulePath)
+                const instance = new c[`${jsonData.object_na}BO`]()
                 this.instances.set(key, instance)
                 return await instance[jsonData.method_na](jsonData.params)
             }
-        } catch (err) { log.show({ type: log.TYPE_ERROR, msg: `Exception in Security.executeMethod: ${err.message}` }) }
+        } catch (err) {
+            log.show({ type: log.TYPE_ERROR, msg: `${this.serverErrors.serverError.msg}, Security.executeMethod: ${err.message}` })
+            return this.serverErrors.serverError
+        }
     }
 }

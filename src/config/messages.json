@@ -12,7 +12,9 @@
                 "badRequest": { "msg": "Solicitud incorrecta", "code": 400 },
                 "unauthorized": { "msg": "No autorizado", "code": 401 },
                 "forbidden": { "msg": "Prohibido", "code": 403 },
-                "serverError": { "msg": "Error del servidor", "code": 500 }
+                "serverError": { "msg": "Error del servidor", "code": 500 },
+                "txNotFound": { "msg": "Transacción \"{tx}\" no encontrada", "code": 404 },
+                "dbError": { "msg": "Error al consultar la base de datos", "code": 500 }
             },
             "client": {
                 "login": { "msg": "Debe iniciar sesión", "code": 401 },
@@ -21,24 +23,41 @@
                 "invalidEmail": { "msg": "Email inválido", "code": 401 },
                 "invalidPassword": { "msg": "Contraseña inválida", "code": 401 },
                 "invalidUsername": { "msg": "Nombre de usuario inválido", "code": 401 },
-                "alreadyRegistered": { "msg": "Ya está registrado", "code": 401 }
+                "alreadyRegistered": { "msg": "Ya está registrado", "code": 401 },
+                "unknown": { "msg": "Error desconocido", "code": 500 },
+                "unauthorized": { "msg": "No estas autorizado para realizar esta acción", "code": 401 },
+                "permissionDenied": { "msg": "No tienes permiso para realizar esta acción", "code": 401 },
+                "invalidToken": { "msg": "Token inválido", "code": 401 },
+                "expiredToken": { "msg": "Token expirado", "code": 401 },
+                "usernameOrPasswordIncorrect": { "msg": "Nombre de usuario o contraseña incorrectos", "code": 401 },
+                "invalidParameters": { "msg": "Parámetros inválidos", "code": 400 },
+                "sessionExists": { "msg": "La sesión ya existe", "code": 401 },
+                "accessDenied": { "msg": "No tienes permiso para acceder a esta página", "code": 401 }
             }
         },
+        "success": {
+            "login": { "msg": "Sesión iniciada con éxito", "code": 200 },
+            "logout": { "msg": "Sesión cerrada con éxito", "code": 200 },
+            "register": { "msg": "Usuario registrado con éxito", "code": 201 },
+            "update": { "msg": "Datos actualizados con éxito", "code": 200 },
+            "delete": { "msg": "Elemento eliminado con éxito", "code": 200 },
+            "create": { "msg": "Elemento creado con éxito", "code": 201 }
+        },
         "alerts": {
-            "int": "\"{value}\" debe ser un número entero positivo",
-            "real": "\"{value}\" debe ser un número real",
-            "string": "\"{value}\" debe ser una cadena",
-            "lengthRange": "\"{value}\" debe tener entre {min} y {max} caracteres",
-            "lengthMin": "\"{value}\" debe tener mínimo {min} caracteres",
-            "lengthMax": "\"{value}\" debe tener máximo {max} caracteres",
-            "email": "\"{value}\" debe ser un correo electrónico válido",
-            "notEmpty": "\"{value}\" no puede estar vacío",
-            "date": "\"{value}\" debe ser una fecha válida",
-            "boolean": "\"{value}\" debe ser un booleano",
-            "array": "\"{value}\" debe ser un array",
-            "arrayNotEmpty": "\"{value}\" debe ser un array no vacío",
-            "object": "\"{value}\" debe ser un objeto",
-            "objectNotEmpty": "\"{value}\" debe ser un objeto no vacío"
+            "int": "{value} debe ser un número entero positivo",
+            "real": "{value} debe ser un número real",
+            "string": "{value} debe ser una cadena",
+            "lengthRange": "{value} debe tener entre {min} y {max} caracteres",
+            "lengthMin": "{value} debe tener mínimo {min} caracteres",
+            "lengthMax": "{value} debe tener máximo {max} caracteres",
+            "email": "{value} debe ser un correo electrónico válido",
+            "notEmpty": "{value} no puede estar vacío",
+            "date": "{value} debe ser una fecha válida",
+            "boolean": "{value} debe ser un booleano",
+            "array": "{value} debe ser un array",
+            "arrayNotEmpty": "{value} debe ser un array no vacío",
+            "object": "{value} debe ser un objeto",
+            "objectNotEmpty": "{value} debe ser un objeto no vacío"
         }
     },
     "en": {
@@ -54,7 +73,9 @@
                 "badRequest": { "msg": "Bad request", "code": 400 },
                 "unauthorized": { "msg": "Unauthorized", "code": 401 },
                 "forbidden": { "msg": "Forbidden", "code": 403 },
-                "serverError": { "msg": "Server error", "code": 500 }
+                "serverError": { "msg": "Server error", "code": 500 },
+                "txNotFound": { "msg": "Transaction \"{tx}\" not found", "code": 404 },
+                "dbError": { "msg": "Error querying the database", "code": 500 }
             },
             "client": {
                 "login": { "msg": "You must login", "code": 401 },
@@ -63,8 +84,25 @@
                 "invalidEmail": { "msg": "Invalid email", "code": 401 },
                 "invalidPassword": { "msg": "Invalid password", "code": 401 },
                 "invalidUsername": { "msg": "Invalid username", "code": 401 },
-                "alreadyRegistered": { "msg": "Already registered", "code": 401 }
+                "alreadyRegistered": { "msg": "Already registered", "code": 401 },
+                "unknown": { "msg": "Unknown error", "code": 500 },
+                "unauthorized": { "msg": "You are not authorized to perform this action", "code": 401 },
+                "permissionDenied": { "msg": "You don't have permission to perform this action", "code": 401 },
+                "invalidToken": { "msg": "Invalid token", "code": 401 },
+                "expiredToken": { "msg": "Expired token", "code": 401 },
+                "usernameOrPasswordIncorrect": { "msg": "Username or password incorrect", "code": 401 },
+                "invalidParameters": { "msg": "Invalid parameters", "code": 400 },
+                "sessionExists": { "msg": "Session already exists", "code": 401 },
+                "accessDenied": { "msg": "You don't have permission to access this page", "code": 401 }
             }
+        },
+        "success": {
+            "login": { "msg": "Session started successfully", "code": 200 },
+            "logout": { "msg": "Session closed successfully", "code": 200 },
+            "register": { "msg": "User registered successfully", "code": 200 },
+            "update": { "msg": "Data updated successfully", "code": 200 },
+            "delete": { "msg": "Element deleted successfully", "code": 200 },
+            "create": { "msg": "Element created successfully", "code": 200 }
         },
         "alerts": {
             "int": "\"{value}\" must be a positive integer",
