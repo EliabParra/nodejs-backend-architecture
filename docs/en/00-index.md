@@ -25,6 +25,7 @@ These docs describe the current architecture in this repository and the rules to
 7. [Validation and error handling](07-validation-and-errors.md)
 8. [Pages and session](08-pages-and-session.md)
 9. [BO CLI + tx + permissions](09-bo-cli-and-permissions.md)
+10. [Frontend tutorial (clients and requests)](10-frontend-clients-and-requests.md)
 
 ## Glossary
 
