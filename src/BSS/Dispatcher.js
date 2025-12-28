@@ -119,6 +119,7 @@ export default class Dispatcher {
 
         let response = this.clientErrors.unknown
         if (status === 400) response = this.clientErrors.invalidParameters
+        else if (status === 413) response = this.clientErrors.payloadTooLarge ?? this.clientErrors.unknown
         else if (status === 401) response = this.serverErrors.unauthorized
         else if (status === 403) response = this.serverErrors.forbidden
         else if (status === 404) response = this.serverErrors.notFound
