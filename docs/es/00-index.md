@@ -24,6 +24,7 @@ Esta documentación describe la arquitectura actual del repo y las reglas para p
 6. [Cómo crear un BO (dispatch dinámico)](06-dynamic-dispatch-and-bo.md)
 7. [Validación y manejo de errores](07-validation-and-errors.md)
 8. [Páginas y sesión](08-pages-and-session.md)
+9. [CLI para BO + tx + permisos](09-bo-cli-and-permissions.md)
 
 ## Glosario
 

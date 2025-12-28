@@ -24,6 +24,7 @@ These docs describe the current architecture in this repository and the rules to
 6. [How to create a BO (dynamic dispatch)](06-dynamic-dispatch-and-bo.md)
 7. [Validation and error handling](07-validation-and-errors.md)
 8. [Pages and session](08-pages-and-session.md)
+9. [BO CLI + tx + permissions](09-bo-cli-and-permissions.md)
 
 ## Glossary
 

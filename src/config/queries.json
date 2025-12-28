@@ -2,7 +2,23 @@
     "security": {
         "getUser": "select u.user_id, u.user_na, u.user_pw, up.profile_id from security.user u inner join security.user_profile up on up.user_id = u.user_id where u.user_na = $1",
         "loadPermissions": "select o.object_na, m.method_na, p.profile_id from security.permission_method pm inner join security.profile p on pm.profile_id = p.profile_id inner join security.user_profile up on p.profile_id = up.profile_id inner join security.method m on m.method_id = pm.method_id inner join security.object o on o.object_id = m.object_id",
-        "loadDataTx": "select m.tx_nu, o.object_na, m.method_na from security.method m inner join security.object o on m.object_id = o.object_id"
+        "loadDataTx": "select m.tx_nu, o.object_na, m.method_na from security.method m inner join security.object o on m.object_id = o.object_id",
+
+        "getNextTx": "select coalesce(max(m.tx_nu), 0) + 1 as next_tx from security.method m",
+
+        "ensureObject": "with existing as (select object_id from security.object where object_na = $1), ins as (insert into security.object (object_na) select $1 where not exists (select 1 from existing) returning object_id) select object_id from ins union all select object_id from existing",
+
+        "upsertMethodTx": "with obj as (with existing as (select object_id from security.object where object_na = $1), ins as (insert into security.object (object_na) select $1 where not exists (select 1 from existing) returning object_id) select object_id from ins union all select object_id from existing), existing as (select method_id from security.method where object_id = (select object_id from obj) and method_na = $2), upd as (update security.method set tx_nu = $3 where method_id in (select method_id from existing) returning method_id), ins as (insert into security.method (object_id, method_na, tx_nu) select (select object_id from obj), $2, $3 where not exists (select 1 from existing) returning method_id) select method_id from upd union all select method_id from ins",
+
+        "listObjects": "select object_id, object_na from security.object order by object_na asc",
+        "listProfiles": "select profile_id from security.profile order by profile_id asc",
+        "listMethodsByObject": "select m.method_id, o.object_na, m.method_na, m.tx_nu from security.method m inner join security.object o on o.object_id = m.object_id where o.object_na = $1 order by m.tx_nu asc nulls last, m.method_na asc",
+        "listMethods": "select m.method_id, o.object_na, m.method_na, m.tx_nu from security.method m inner join security.object o on o.object_id = m.object_id order by o.object_na asc, m.tx_nu asc nulls last, m.method_na asc",
+        "resolveMethodId": "select m.method_id, m.tx_nu from security.method m inner join security.object o on o.object_id = m.object_id where o.object_na = $1 and m.method_na = $2",
+
+        "grantPermission": "insert into security.permission_method (profile_id, method_id) select $1, $2 where not exists (select 1 from security.permission_method where profile_id = $1 and method_id = $2)",
+        "revokePermission": "delete from security.permission_method where profile_id = $1 and method_id = $2",
+        "listPermissionsByProfile": "select p.profile_id, o.object_na, m.method_na, m.tx_nu from security.permission_method pm inner join security.profile p on p.profile_id = pm.profile_id inner join security.method m on m.method_id = pm.method_id inner join security.object o on o.object_id = m.object_id where p.profile_id = $1 order by o.object_na asc, m.method_na asc"
     },
     "enterprise": {
         "getPerson": "select p.person_na, p.person_ln from enterprise.person p where p.person_id = $1",

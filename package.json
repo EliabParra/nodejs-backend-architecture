@@ -5,7 +5,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
-    "hash:pw": "node scripts/hash-password.js"
+    "hash:pw": "node scripts/hash-password.js",
+    "bo": "node scripts/bo.js"
   },
   "type": "module",
   "dependencies": {

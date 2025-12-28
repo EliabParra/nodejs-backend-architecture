@@ -3,12 +3,20 @@ const require = createRequire(import.meta.url)
 const labels = require('./errors/personAlerts.json')[config.app.lang].labels
 
 export class PersonValidate {
-    static ID = 0
-    static NAME = 1
+    static LOOKUP_ID = 'id'
+    static LOOKUP_NAME = 'name'
+
+    static normalizeId(value) {
+        return typeof value === 'string' ? Number(value) : value
+    }
+
+    static normalizeName(value) {
+        return typeof value === 'string' ? value.trim() : value
+    }
 
     static validate({ person_id, person_na, person_ln }) {
         if (!person_id) return this.validateNameAndLastName({ person_na, person_ln })
-        const pid = typeof person_id === 'string' ? Number(person_id) : person_id
+        const pid = this.normalizeId(person_id)
         return v.validateAll([
             { value: pid, label: labels.person_id },
             { value: person_na, min: 3, max: 30, label: labels.person_na },
@@ -16,22 +24,27 @@ export class PersonValidate {
         ], ['int', 'length', 'length'])
     }
 
-    static isIdOrNameLookup(value, sentences) {
-        const num = typeof value === 'string' ? Number(value) : value
-        if (v.validateInt({ value: num, label: labels.person_id })) return sentences[this.ID]
-        else if (typeof value === 'string' && v.validateLength({ value, label: labels.person_na }, 3, 30)) return sentences[this.NAME]
-        return false
+    static getLookupMode(value) {
+        const num = this.normalizeId(value)
+        if (v.validateInt({ value: num, label: labels.person_id })) return this.LOOKUP_ID
+
+        const name = this.normalizeName(value)
+        if (typeof name === 'string' && v.validateLength({ value: name, label: labels.person_na }, 3, 30)) return this.LOOKUP_NAME
+
+        return null
     }
 
     static validateId(value) {
-        const num = typeof value === 'string' ? Number(value) : value
+        const num = this.normalizeId(value)
         return v.validateInt({ value: num, label: labels.person_id })
     }
     static validateName(value) {
-        return v.validateLength({ value, label: labels.person_na }, 3, 30)
+        const name = this.normalizeName(value)
+        return v.validateLength({ value: name, label: labels.person_na }, 3, 30)
     }
     static validateLastName(value) {
-        return v.validateLength({ value, label: labels.person_ln }, 3, 30)
+        const ln = this.normalizeName(value)
+        return v.validateLength({ value: ln, label: labels.person_ln }, 3, 30)
     }
     static validateNameAndLastName({ person_na, person_ln }) {
         return v.validateAll([

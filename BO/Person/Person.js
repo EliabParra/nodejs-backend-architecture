@@ -1,58 +1,41 @@
-import { PersonErrorHandler } from "./errors/PersonErrorHandler.js"
-import { PersonValidate } from "./PersonValidate.js"
-const serverErrorMsg = msgs[config.app.lang].errors.server.serverError.msg
-
 export class Person {
     constructor(params) {
         this.person_id = params?.person_id
         this.person_na = params.person_na
         this.person_ln = params.person_ln
     }
+}
 
-    static async get(value) {
-        try {
-            if (!PersonValidate.isIdOrNameLookup(value, ['getPerson', 'getPersonByName'])) return PersonErrorHandler.PersonInvalidParameters(v.getAlerts())
-            const r = await db.exe('enterprise', PersonValidate.isIdOrNameLookup(value, ['getPerson', 'getPersonByName']), [value])
-            if (r.rows.length === 0) return PersonErrorHandler.PersonNotFound()
-            const result = new Person(r.rows[0])
-            result.code = 200
-            return result
-        } catch (err) {
-            log.show({ type: log.TYPE_ERROR, msg: `${serverErrorMsg}, Person.get: ${err?.message || err}` })
-            return PersonErrorHandler.UnknownError()
-        }
+export class PersonRepository {
+    static async getById(person_id) {
+        const r = await db.exe('enterprise', 'getPerson', [person_id])
+        if (!r?.rows || r.rows.length === 0) return null
+        return new Person(r.rows[0])
     }
 
-    static async create(params) {
-        try {
-            if (!PersonValidate.validate(params)) return PersonErrorHandler.PersonInvalidParameters(v.getAlerts())
-            await db.exe('enterprise', 'createPerson', params)
-            return { code: 201 }
-        } catch (err) {
-            log.show({ type: log.TYPE_ERROR, msg: `${serverErrorMsg}, Person.create: ${err?.message || err}` })
-            return PersonErrorHandler.UnknownError()
-        }
+    static async getByName(person_na) {
+        const r = await db.exe('enterprise', 'getPersonByName', [person_na])
+        if (!r?.rows || r.rows.length === 0) return null
+        return new Person(r.rows[0])
     }
 
-    static async update(params) {
-        try {
-            if (!PersonValidate.validate(params)) return PersonErrorHandler.PersonInvalidParameters(v.getAlerts())
-            await db.exe('enterprise', 'updatePerson', params)
-            return { code: 200 }
-        } catch (err) {
-            log.show({ type: log.TYPE_ERROR, msg: `${serverErrorMsg}, Person.update: ${err?.message || err}` })
-            return PersonErrorHandler.UnknownError()
-        }
+    static async create({ person_na, person_ln }) {
+        await db.exe('enterprise', 'createPerson', { person_na, person_ln })
+        return true
     }
 
-    static async delete(value) {
-        try {
-            if (!PersonValidate.isIdOrNameLookup(value, ['deletePerson', 'deletePersonByName'])) return PersonErrorHandler.PersonInvalidParameters(v.getAlerts())
-            await db.exe('enterprise', PersonValidate.isIdOrNameLookup(value, ['deletePerson', 'deletePersonByName']), [value])
-            return { code: 200 }
-        } catch (err) {
-            log.show({ type: log.TYPE_ERROR, msg: `${serverErrorMsg}, Person.delete: ${err?.message || err}` })
-            return PersonErrorHandler.UnknownError()
-        }
+    static async update({ person_id, person_na, person_ln }) {
+        await db.exe('enterprise', 'updatePerson', { person_id, person_na, person_ln })
+        return true
+    }
+
+    static async deleteById(person_id) {
+        await db.exe('enterprise', 'deletePerson', [person_id])
+        return true
+    }
+
+    static async deleteByName(person_na) {
+        await db.exe('enterprise', 'deletePersonByName', [person_na])
+        return true
     }
 }

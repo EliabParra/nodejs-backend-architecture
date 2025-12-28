@@ -59,9 +59,21 @@ Ejemplo:
 2. Implementar clase `export class <object_na>BO` con métodos `method_na`.
 3. Crear (opcional pero recomendado) `BO/<object_na>/<object_na>.js` y `<object_na>Validate.js`.
 4. Agregar queries al schema correspondiente en [src/config/queries.json](../../src/config/queries.json).
-5. Registrar `object_na` y `method_na` + `tx_nu` en schema `security` (ver [docs/es/04-database-security-model.md](04-database-security-model.md)).
+5. Registrar `object_na` y `method_na` + `tx_nu` en schema `security`. ver [docs/es/04-database-security-model.md](04-database-security-model.md).
 6. Dar permisos al/los perfiles.
 7. Consumir desde cliente enviando `{ tx, params }`.
+
+## Forma recomendada (CLI)
+
+Para evitar trabajo manual en DB y mantener el estándar de archivos, usa el CLI:
+
+- Guía: [docs/es/09-bo-cli-and-permissions.md](09-bo-cli-and-permissions.md)
+
+Ejemplos rápidos:
+
+- Crear BO: `npm run bo -- new Order --methods getOrder,createOrder,updateOrder,deleteOrder`
+- Mapear a DB (tx): `npm run bo -- sync Order --txStart 200`
+- Asignar permisos: `npm run bo -- perms --profile 2 --allow Order.getOrder,Order.createOrder`
 
 ## Nota sobre `config.bo.path`
 
