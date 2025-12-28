@@ -10,6 +10,23 @@ Loaded at startup in [src/globals.js](../../src/globals.js) via `createRequire()
 
 Exposed globally as `globalThis.config`, `globalThis.queries`, `globalThis.msgs`.
 
+## Environment variable overrides (recommended)
+
+To avoid hardcoding secrets (DB password, `session.secret`, etc.), the runtime supports overriding `config.json` via `process.env`.
+
+In this repo, [src/config/config.json](../../src/config/config.json) keeps "placeholder" values (`CHANGE_ME`) so real secrets are not committed.
+
+- Locally, copy [\.env.example](../../.env.example) to `.env`.
+- In production, set these variables in your platform (Render/Docker/K8s/etc.).
+
+Supported variables:
+
+- App: `APP_PORT`, `APP_HOST`, `APP_LANG`
+- Postgres: `DATABASE_URL` or `PGHOST`, `PGPORT`, `PGDATABASE`, `PGUSER`, `PGPASSWORD`, `PGSSL`
+- Session (rotation): `SESSION_SECRET` or `SESSION_SECRETS` (comma-separated)
+  - Example: `SESSION_SECRETS=current_secret,previous_secret`
+- Cookies (optional): `SESSION_COOKIE_SECURE`, `SESSION_COOKIE_SAMESITE`, `SESSION_COOKIE_MAXAGE_MS`
+
 ## config.json
 
 File: [src/config/config.json](../../src/config/config.json)

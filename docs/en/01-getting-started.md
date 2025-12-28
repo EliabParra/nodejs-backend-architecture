@@ -3,13 +3,15 @@
 ## Requirements
 
 - Node.js (ESM project: `"type": "module"`) see [package.json](../../package.json)
-- PostgreSQL (connection config in [src/config/config.json](../../src/config/config.json))
+- PostgreSQL (credentials via `.env` / environment variables; see [docs/en/03-configuration.md](03-configuration.md))
 
 ## Install
 
 1. `npm install`
 2. Set up the DB and the `security` schema (see [docs/en/04-database-security-model.md](04-database-security-model.md)).
-3. Update connection settings in [src/config/config.json](../../src/config/config.json) if needed.
+3. Copy [\.env.example](../../.env.example) to `.env` and set `PG*` or `DATABASE_URL`.
+
+> Note: [src/config/config.json](../../src/config/config.json) keeps `CHANGE_ME` placeholders so real secrets are not committed.
 
 ## Users and passwords (bcrypt)
 

@@ -1,0 +1,51 @@
+{
+    "app": {
+        "port": 3000,
+        "host": "localhost",
+        "lang": "es"
+    },
+    "db": {
+        "database": "curso-node",
+        "user": "postgres",
+        "password": "CHANGE_ME",
+        "port": 5432,
+        "ssl": false,
+        "max": 20,
+        "idleTimeoutMillis": 1000,
+        "connectionTimeoutMillis": 1000,
+        "maxUses": 7500
+    },
+    "session": {
+        "secret": "CHANGE_ME",
+        "resave": false,
+        "saveUninitialized": false,
+        "duration": 1800000,
+        "activeDuration": 900000,
+        "store": {
+            "type": "pg",
+            "tableName": "session",
+            "ttlSeconds": 1800,
+            "pruneIntervalSeconds": 300
+        },
+        "cookie": {
+            "maxAge": 1800000,
+            "secure": false,
+            "sameSite": "lax",
+            "httpOnly": true
+        }
+    },
+    "bo": {
+        "path": "../../BO/"
+    },
+    "log": {
+        "activation": [true, true, true, true]
+    },
+    "cors": {
+        "enabled": true,
+        "credentials": true,
+        "origins": [
+            "http://localhost:5173",
+            "http://localhost:4200"
+        ]
+    }
+}
