@@ -34,6 +34,20 @@ Implementación: [src/BSS/Session.js](../../src/BSS/Session.js)
 - Se inicializa con `app.use(session(config.session))` usando [src/config/config.json](../../src/config/config.json).
 - Criterio de sesión activa: `req.session && req.session.user_id`.
 
+### Cookies (seguridad)
+
+Config: [src/config/config.json](../../src/config/config.json) → `session.cookie`
+
+- `httpOnly: true`: el JS del navegador no puede leer la cookie.
+- `sameSite: "lax"`: reduce CSRF en escenarios típicos.
+- `secure: true` (recomendado en producción con HTTPS): la cookie solo viaja por HTTPS.
+- `maxAge`: TTL en ms.
+
+Notas:
+
+- Si usas frontend en otro origen y necesitas cookies cross-site reales, normalmente se requiere `sameSite: "none"` + `secure: true` + HTTPS.
+- Si `secure: true` y hay reverse proxy (Nginx/Render/Heroku), se necesita `trust proxy` (ya soportado por el BSS `Session`).
+
 ### Crear sesión
 
 `Session.createSession(req, res)`:

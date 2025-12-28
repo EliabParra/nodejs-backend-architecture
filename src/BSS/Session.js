@@ -4,7 +4,33 @@ import bcrypt from "bcryptjs"
 export default class Session {
     constructor(app) {
         this.session = session
-        app.use(this.session(config.session))
+
+        const sessionConfig = JSON.parse(JSON.stringify(config.session ?? {}))
+        sessionConfig.cookie = sessionConfig.cookie ?? {}
+
+        if (sessionConfig.cookie.httpOnly == null) sessionConfig.cookie.httpOnly = true
+
+        if (typeof sessionConfig.cookie.sameSite === 'boolean') {
+            sessionConfig.cookie.sameSite = sessionConfig.cookie.sameSite ? 'lax' : 'strict'
+        }
+
+        if (sessionConfig.cookie.maxAge == null && sessionConfig.duration != null) {
+            sessionConfig.cookie.maxAge = sessionConfig.duration
+        }
+
+        if (sessionConfig.cookie.sameSite === 'none' && sessionConfig.cookie.secure !== true) {
+            log.show({
+                type: log.TYPE_WARNING,
+                msg: 'Session cookie sameSite="none" without secure=true. Browsers will reject this cookie in most cases.'
+            })
+        }
+
+        if (sessionConfig.cookie.secure === true) {
+            app.set('trust proxy', 1)
+            sessionConfig.proxy = true
+        }
+
+        app.use(this.session(sessionConfig))
         this.serverErrors = msgs[config.app.lang].errors.server
         this.clientErrors = msgs[config.app.lang].errors.client
         this.successMsgs = msgs[config.app.lang].success
