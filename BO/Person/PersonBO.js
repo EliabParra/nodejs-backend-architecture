@@ -13,9 +13,10 @@ export class PersonBO {
             const mode = PersonValidate.getLookupMode(value)
             if (!mode) return PersonErrorHandler.PersonInvalidParameters(v.getAlerts())
 
+            const raw = PersonValidate.getLookupValue(value)
             const lookupValue = mode === PersonValidate.LOOKUP_ID
-                ? PersonValidate.normalizeId(value)
-                : PersonValidate.normalizeName(value)
+                ? PersonValidate.normalizeId(raw)
+                : PersonValidate.normalizeName(raw)
 
             const person = mode === PersonValidate.LOOKUP_ID
                 ? await PersonRepository.getById(lookupValue)
@@ -82,9 +83,10 @@ export class PersonBO {
             const mode = PersonValidate.getLookupMode(value)
             if (!mode) return PersonErrorHandler.PersonInvalidParameters(v.getAlerts())
 
+            const raw = PersonValidate.getLookupValue(value)
             const lookupValue = mode === PersonValidate.LOOKUP_ID
-                ? PersonValidate.normalizeId(value)
-                : PersonValidate.normalizeName(value)
+                ? PersonValidate.normalizeId(raw)
+                : PersonValidate.normalizeName(raw)
 
             if (mode === PersonValidate.LOOKUP_ID) await PersonRepository.deleteById(lookupValue)
             else await PersonRepository.deleteByName(lookupValue)

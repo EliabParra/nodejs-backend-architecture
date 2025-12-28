@@ -24,11 +24,22 @@ export class PersonValidate {
         ], ['int', 'length', 'length'])
     }
 
+    static getLookupValue(input) {
+        if (input && typeof input === 'object' && !Array.isArray(input)) {
+            if (input.person_id != null) return input.person_id
+            if (input.person_na != null) return input.person_na
+            if (input.value != null) return input.value
+        }
+        return input
+    }
+
     static getLookupMode(value) {
-        const num = this.normalizeId(value)
+        const raw = this.getLookupValue(value)
+
+        const num = this.normalizeId(raw)
         if (v.validateInt({ value: num, label: labels.person_id })) return this.LOOKUP_ID
 
-        const name = this.normalizeName(value)
+        const name = this.normalizeName(raw)
         if (typeof name === 'string' && v.validateLength({ value: name, label: labels.person_na }, 3, 30)) return this.LOOKUP_NAME
 
         return null
