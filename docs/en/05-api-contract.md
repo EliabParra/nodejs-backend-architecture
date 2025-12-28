@@ -22,6 +22,10 @@ Most responses follow this shape (not all fields are always present):
 
 The example client shows `alerts` if present; otherwise it shows `msg` (see [public/js/Sender.js](../../public/js/Sender.js)).
 
+Note: if the client sends `Content-Type: application/json` but the body is not valid JSON, the server normalizes the response to:
+
+- `400 invalidParameters` + `alerts` (as JSON, not HTML).
+
 ## Correlation (requestId)
 
 Every request gets a unique identifier and the server returns the header:
@@ -71,6 +75,8 @@ Schema validation (shape):
 - `username` and `password` must be `string`.
 - On failure: `400 invalidParameters` + `alerts`.
 
+If the body is invalid JSON, it also returns `400 invalidParameters` + `alerts`.
+
 ### Response
 
 - Success: `200` with `msgs[lang].success.login`
@@ -99,6 +105,8 @@ Schema validation (shape):
 
 - If a `body` is sent, it must be a JSON object.
 - On failure: `400 invalidParameters` + `alerts`.
+
+If the body is invalid JSON, it also returns `400 invalidParameters` + `alerts`.
 
 ### Response
 
@@ -130,6 +138,8 @@ On failure it returns:
 
 - `400 invalidParameters`
 - `alerts: []` with field-level details.
+
+If the body is invalid JSON, it also returns `400 invalidParameters` + `alerts`.
 
 ### Rules
 

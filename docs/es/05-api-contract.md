@@ -22,6 +22,10 @@ La mayoría de las respuestas siguen este shape (no siempre vienen todos los cam
 
 El cliente ejemplo muestra `alerts` si existen; si no, muestra `msg` (ver [public/js/Sender.js](../../public/js/Sender.js)).
 
+Nota: si el cliente envía un `Content-Type: application/json` pero el body no es JSON válido, el servidor normaliza la respuesta a:
+
+- `400 invalidParameters` + `alerts` (en formato JSON, no HTML).
+
 ## Correlación (requestId)
 
 Cada request recibe un identificador único y el servidor responde el header:
@@ -71,6 +75,8 @@ Validación de esquema (shape):
 - `username` y `password` deben ser `string`.
 - Si falla: `400 invalidParameters` + `alerts`.
 
+Si el body llega como JSON inválido, también se responde `400 invalidParameters` + `alerts`.
+
 ### Response
 
 - Éxito: `200` con `msgs[lang].success.login`
@@ -99,6 +105,8 @@ Validación de esquema (shape):
 
 - Si se envía `body`, debe ser un objeto JSON.
 - Si falla: `400 invalidParameters` + `alerts`.
+
+Si el body llega como JSON inválido, también se responde `400 invalidParameters` + `alerts`.
 
 ### Response
 
@@ -130,6 +138,8 @@ Si falla, responde:
 
 - `400 invalidParameters`
 - `alerts: []` con detalles del campo.
+
+Si el body llega como JSON inválido, también se responde `400 invalidParameters` + `alerts`.
 
 ### Reglas
 

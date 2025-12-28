@@ -50,6 +50,9 @@ export default class Dispatcher {
         this.clientErrors = msgs[config.app.lang].errors.client
         this.successMsgs = msgs[config.app.lang].success
 
+        // Normalize malformed JSON bodies (Express/body-parser defaults to HTML)
+        this.app.use(this.jsonBodySyntaxErrorHandler.bind(this))
+
         this.loginRateLimiter = rateLimit({
             windowMs: 60 * 1000,
             limit: 10,
@@ -75,6 +78,22 @@ export default class Dispatcher {
         })
 
         this.init()
+    }
+
+    jsonBodySyntaxErrorHandler(err, req, res, next) {
+        const status = err?.status ?? err?.statusCode
+        const isEntityParseFailed = err?.type === 'entity.parse.failed'
+        const isSyntaxError = err instanceof SyntaxError
+        const looksLikeJsonParseError = (status === 400) && (isEntityParseFailed || isSyntaxError)
+
+        if (!looksLikeJsonParseError) return next(err)
+
+        const alert = msgs[config.app.lang].alerts.invalidJson.replace('{value}', 'body')
+        return res.status(this.clientErrors.invalidParameters.code).send({
+            msg: this.clientErrors.invalidParameters.msg,
+            code: this.clientErrors.invalidParameters.code,
+            alerts: [alert]
+        })
     }
 
     init() {
