@@ -28,6 +28,10 @@ Nota: si el cliente envía un `Content-Type: application/json` pero el body no e
 
 Nota: de forma general, cualquier error no controlado también se normaliza a JSON siguiendo el contrato (no se devuelven páginas HTML).
 
+Nota: si el body excede `config.app.bodyLimit`, el servidor puede responder:
+
+- `413 payloadTooLarge`
+
 ## Correlación (requestId)
 
 Cada request recibe un identificador único y el servidor responde el header:

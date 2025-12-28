@@ -28,6 +28,10 @@ Note: if the client sends `Content-Type: application/json` but the body is not v
 
 Note: in general, any unhandled error is also normalized to JSON following the contract (no HTML error pages).
 
+Note: if the request body exceeds `config.app.bodyLimit`, the server may return:
+
+- `413 payloadTooLarge`
+
 ## Correlation (requestId)
 
 Every request gets a unique identifier and the server returns the header:
