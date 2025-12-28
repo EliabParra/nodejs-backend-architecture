@@ -6,7 +6,7 @@ This architecture uses a **transaction-driven** model: the client sends a `tx`, 
 
 All security SQL is under the `security` key in [src/config/queries.json](../../src/config/queries.json).
 
-- `security.getUser`: login by `(user_na, user_pw)` → returns `user_id`, `user_na`, `profile_id`
+- `security.getUser`: fetches the user by `user_na` and returns `user_pw` (hash) so the server can verify passwords with bcrypt
 - `security.loadPermissions`: loads allowed `(object_na, method_na)` per profile
 - `security.loadDataTx`: loads `tx_nu` → `(object_na, method_na)` mapping
 
@@ -16,7 +16,7 @@ These are loaded at process startup by [src/BSS/Security.js](../../src/BSS/Secur
 
 The current queries imply these minimum tables/fields:
 
-- `security.user`: `user_id` (PK), `user_na`, `user_pw`
+- `security.user`: `user_id` (PK), `user_na`, `user_pw` (**bcrypt hash**)
 - `security.profile`: `profile_id` (PK)
 - `security.user_profile`: `user_id` (FK), `profile_id` (FK)
 - `security.object`: `object_id` (PK), `object_na`
@@ -63,3 +63,12 @@ Minimum steps to make a new feature executable:
 ## Operational note
 
 Permissions and tx mappings are loaded **once at startup** (in-memory cache). If you change `security.method` or permissions in the DB, you need to restart the server in the current version.
+
+## Login (detail)
+
+Implementation: [src/BSS/Session.js](../../src/BSS/Session.js)
+
+- The `security.getUser` query no longer checks the password in SQL.
+- The server compares `password` vs `user.user_pw` using bcrypt.
+
+Benefit: passwords are never stored in plaintext; this reduces impact if the DB leaks.

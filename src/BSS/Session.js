@@ -1,4 +1,5 @@
 import session from "express-session"
+import bcrypt from "bcryptjs"
 
 export default class Session {
     constructor(app) {
@@ -22,14 +23,20 @@ export default class Session {
                     code: this.clientErrors.invalidParameters.code,
                     alerts: v.getAlerts()
                 })
-            db.exe('security', 'getUser', [req.body.username, req.body.password]).then(result => {
+            db.exe('security', 'getUser', [req.body.username]).then(async (result) => {
                 if (this.sessionExists(req)) return res.status(this.clientErrors.sessionExists.code).send({ msg: this.clientErrors.sessionExists.msg, code: this.clientErrors.sessionExists.code })
-                if (result.rows.length > 0) {
-                    req.session.user_id = result.rows[0].user_id
-                    req.session.user_na = result.rows[0].user_na
-                    req.session.profile_id = result.rows[0].profile_id
-                    return res.status(this.successMsgs.login.code).send(this.successMsgs.login)
-                } else return res.status(this.clientErrors.usernameOrPasswordIncorrect.code).send(this.clientErrors.usernameOrPasswordIncorrect)
+                if (!result || !result.rows) return res.status(this.clientErrors.unknown.code).send(this.clientErrors.unknown)
+                if (result.rows.length === 0) return res.status(this.clientErrors.usernameOrPasswordIncorrect.code).send(this.clientErrors.usernameOrPasswordIncorrect)
+
+                const user = result.rows[0]
+                const storedHash = user.user_pw
+                const ok = typeof storedHash === 'string' && await bcrypt.compare(req.body.password, storedHash)
+                if (!ok) return res.status(this.clientErrors.usernameOrPasswordIncorrect.code).send(this.clientErrors.usernameOrPasswordIncorrect)
+
+                req.session.user_id = user.user_id
+                req.session.user_na = user.user_na
+                req.session.profile_id = user.profile_id
+                return res.status(this.successMsgs.login.code).send(this.successMsgs.login)
             })
         } catch (err) {
             log.show({ type: log.TYPE_ERROR, msg: `${this.serverErrors.serverError.msg}, Session.createSession: ${err.message}` })

@@ -11,6 +11,16 @@
 2. Configura la DB y el esquema `security` (ver [docs/es/04-database-security-model.md](04-database-security-model.md)).
 3. Ajusta conexión en [src/config/config.json](../../src/config/config.json) si es necesario.
 
+## Usuarios y passwords (bcrypt)
+
+El login ya **no compara contraseña en texto plano**. En `security.user.user_pw` debes guardar un **hash bcrypt**.
+
+- Generar hash:
+	- `npm run hash:pw -- "MiPasswordSegura123"`
+	- (opcional) rounds: `npm run hash:pw -- "MiPasswordSegura123" 10`
+
+Luego guarda ese hash como `user_pw` en tu tabla `security.user`.
+
 ## Ejecutar
 
 - Modo normal: `npm start` (corre [src/index.js](../../src/index.js))

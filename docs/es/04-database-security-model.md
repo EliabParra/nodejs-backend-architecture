@@ -7,6 +7,7 @@ Tu arquitectura usa un **modelo transaccional**: el cliente envía un `tx`, el s
 Todas las queries de seguridad están en [src/config/queries.json](../../src/config/queries.json) bajo `security`.
 
 - `security.getUser`: login por `(user_na, user_pw)` → devuelve `user_id`, `user_na`, `profile_id`
+- `security.getUser`: obtiene el usuario por `user_na` y retorna `user_pw` (hash) para validar password vía bcrypt en servidor
 - `security.loadPermissions`: carga permisos de cada perfil por `(object_na, method_na)`
 - `security.loadDataTx`: carga mapping `tx_nu` → `(object_na, method_na)`
 
@@ -19,7 +20,7 @@ Las queries actuales implican estas tablas y campos mínimos:
 - `security.user`:
   - `user_id` (PK)
   - `user_na` (username)
-  - `user_pw` (password)
+  - `user_pw` (**hash bcrypt**)
 
 - `security.profile`:
   - `profile_id` (PK)
@@ -82,3 +83,12 @@ Cuando agregas una feature nueva, estos son los pasos **mínimos** para que el d
 ## Nota operativa
 
 Los permisos y el tx-map se cargan **una vez al inicio** (caché en memoria). Si cambias `security.method` o permisos en DB, en esta versión necesitas reiniciar el servidor para recargar.
+
+## Login (detalle)
+
+Implementación: [src/BSS/Session.js](../../src/BSS/Session.js)
+
+- La query `security.getUser` ya no valida password en SQL.
+- El servidor compara `password` vs `user.user_pw` usando bcrypt.
+
+Ventaja: nunca envías ni guardas passwords en texto plano; reduces el riesgo ante filtraciones de DB.

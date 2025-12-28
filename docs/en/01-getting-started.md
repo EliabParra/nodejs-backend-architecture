@@ -11,6 +11,16 @@
 2. Set up the DB and the `security` schema (see [docs/en/04-database-security-model.md](04-database-security-model.md)).
 3. Update connection settings in [src/config/config.json](../../src/config/config.json) if needed.
 
+## Users and passwords (bcrypt)
+
+Login no longer compares plaintext passwords. In `security.user.user_pw` you must store a **bcrypt hash**.
+
+- Generate a hash:
+	- `npm run hash:pw -- "MyStrongPassword123"`
+	- (optional) rounds: `npm run hash:pw -- "MyStrongPassword123" 10`
+
+Then store that hash as `user_pw` in the `security.user` table.
+
 ## Run
 
 - Normal: `npm start` (runs [src/index.js](../../src/index.js))
