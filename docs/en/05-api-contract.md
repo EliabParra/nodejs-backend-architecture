@@ -30,6 +30,26 @@ Every request gets a unique identifier and the server returns the header:
 
 Use it for debugging/support: when you see an error on the client, report that `requestId` and you can find the matching log entry.
 
+## CORS + session (frontend on another port)
+
+If you run React/Vite/Angular on a different port (e.g. `http://localhost:5173`) and keep cookie-based sessions (as in this architecture), you need:
+
+1. Backend: allow the origin in `config.cors.origins` and set `config.cors.credentials=true` (see [docs/en/03-configuration.md](03-configuration.md)).
+2. Frontend: explicitly include cookies.
+
+`fetch` example:
+
+```js
+fetch('http://localhost:3000/login', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  credentials: 'include',
+  body: JSON.stringify({ username, password })
+})
+```
+
+Same for `/toProccess`: use `credentials: 'include'`.
+
 ## POST /login
 
 Implementation: [src/BSS/Session.js](../../src/BSS/Session.js)

@@ -9,6 +9,7 @@
   },
   "type": "module",
   "dependencies": {
+    "cors": "^2.8.5",
     "colors": "^1.4.0",
     "bcryptjs": "^2.4.3",
     "express-rate-limit": "^7.5.1",

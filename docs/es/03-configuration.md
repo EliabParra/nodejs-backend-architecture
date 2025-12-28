@@ -21,6 +21,16 @@ Archivo: [src/config/config.json](../../src/config/config.json)
 - `bo.path`: ruta relativa usada por `Security` para importar BO dinámicamente (ver [src/BSS/Security.js](../../src/BSS/Security.js))
 - `log.activation`: flags por nivel (error/info/debug/warn) usados por [src/BSS/Log.js](../../src/BSS/Log.js)
 
+### CORS (compatibilidad con frontends en otro puerto)
+
+Config: [src/config/config.json](../../src/config/config.json) → `cors`
+
+- `cors.enabled`: activa el middleware CORS en el servidor.
+- `cors.credentials`: permite cookies/sesión cross-origin (necesario si el frontend corre en otro origen).
+- `cors.origins`: allowlist de orígenes permitidos en dev (ej. Vite `http://localhost:5173`, Angular `http://localhost:4200`).
+
+Implementación: [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.js)
+
 ## messages.json
 
 Archivo: [src/config/messages.json](../../src/config/messages.json)

@@ -3,6 +3,7 @@ import express from "express"
 import { buildPagesRouter, pagesPath } from "../router/pages.js"
 import rateLimit from "express-rate-limit"
 import { randomUUID } from "node:crypto"
+import cors from "cors"
 
 export default class Dispatcher {
     constructor() {
@@ -15,6 +16,22 @@ export default class Dispatcher {
             res.setHeader('X-Request-Id', requestId)
             next()
         })
+
+        if (config.cors?.enabled) {
+            const allowedOrigins = Array.isArray(config.cors.origins) ? config.cors.origins : []
+            this.app.use(cors({
+                origin: (origin, callback) => {
+                    if (!origin) return callback(null, true)
+                    if (allowedOrigins.includes(origin)) return callback(null, true)
+                    return callback(new Error(`CORS origin not allowed: ${origin}`))
+                },
+                credentials: Boolean(config.cors.credentials),
+                methods: ['GET', 'POST', 'OPTIONS'],
+                allowedHeaders: ['Content-Type', 'X-Request-Id'],
+                exposedHeaders: ['X-Request-Id'],
+                optionsSuccessStatus: 204
+            }))
+        }
 
         this.app.use(express.json())
         this.app.use(express.urlencoded({ extended: false }))

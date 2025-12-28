@@ -30,6 +30,26 @@ Cada request recibe un identificador único y el servidor responde el header:
 
 Úsalo para depurar/soporte: si ves un error en cliente, reporta ese `requestId` y podrás encontrar el log correspondiente.
 
+## CORS + sesión (frontend en otro puerto)
+
+Si usas React/Vite/Angular en otro puerto (ej. `http://localhost:5173`) y mantienes sesión por cookie (como en esta arquitectura), necesitas:
+
+1. Backend: permitir el origen en `config.cors.origins` y `config.cors.credentials=true` (ver [docs/es/03-configuration.md](03-configuration.md)).
+2. Frontend: enviar cookies explícitamente.
+
+Ejemplo con `fetch`:
+
+```js
+fetch('http://localhost:3000/login', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  credentials: 'include',
+  body: JSON.stringify({ username, password })
+})
+```
+
+Para `/toProccess` igual: `credentials: 'include'`.
+
 ## POST /login
 
 Archivo: [src/BSS/Session.js](../../src/BSS/Session.js)
