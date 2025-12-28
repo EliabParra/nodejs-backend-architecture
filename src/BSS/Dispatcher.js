@@ -118,9 +118,9 @@ export default class Dispatcher {
         }
     }
 
-    login(req, res) {
+    async login(req, res) {
         try {
-            this.session.createSession(req, res)
+            await this.session.createSession(req, res)
         } catch (err) {
             log.show({ type: log.TYPE_ERROR, msg: `${this.serverErrors.serverError.msg}, /login: ${err.message}` })
             res.status(this.clientErrors.unknown.code).send(this.clientErrors.unknown)

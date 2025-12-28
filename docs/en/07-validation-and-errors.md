@@ -44,8 +44,20 @@ This allows BO methods to return standardized errors, and the dispatcher uses th
 
 [src/BSS/DBComponent.js](../../src/BSS/DBComponent.js) executes queries from `queries[schema][queryName]`.
 
-- On exception, it logs and returns `null`.
-- Domain/BO code should expect `db.exe(...)` may return `null`.
+- On exception, it logs and **throws** an `Error` (it does not return `null`).
+- Domain/BO code should expect `await db.exe(...)` can throw and must handle it with `try/catch`.
+
+Recommended pattern:
+
+```js
+try {
+	const r = await db.exe('schema', 'queryName', [/* params */])
+	// use r.rows
+} catch (err) {
+	// infrastructure error (DB), respond with a standard error
+	return personErrors.UnknownError() // or msgs[lang].errors.client.unknown
+}
+```
 
 ### Dispatcher
 

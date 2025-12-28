@@ -44,8 +44,20 @@ Esto permite que el BO devuelva directamente el objeto de error y el dispatcher 
 
 [src/BSS/DBComponent.js](../../src/BSS/DBComponent.js) ejecuta queries desde `queries[schema][queryName]`.
 
-- En caso de excepción, loguea y devuelve `null`.
-- Por diseño actual, los modelos/BO deberían contemplar que `db.exe(...)` pueda retornar `null`.
+- En caso de excepción, loguea y **lanza** un `Error` (no devuelve `null`).
+- Por diseño, los modelos/BO deben asumir que `await db.exe(...)` puede lanzar y deben manejarlo con `try/catch`.
+
+Patrón recomendado:
+
+```js
+try {
+	const r = await db.exe('schema', 'queryName', [/* params */])
+	// usar r.rows
+} catch (err) {
+	// error de infraestructura (DB), responder con error estándar
+	return personErrors.UnknownError() // o msgs[lang].errors.client.unknown
+}
+```
 
 ### Dispatcher
 

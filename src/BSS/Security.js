@@ -8,6 +8,8 @@ export default class Security {
         this.isReady = false
         this.initError = null
         this.ready = this.init()
+        // Ensure startup failures don't become unhandled rejections.
+        this.ready.catch(() => { })
     }
 
     async init() {
