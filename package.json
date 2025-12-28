@@ -5,6 +5,9 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
+    "dev:backend": "nodemon src/index.js",
+    "dev:frontend": "npm --prefix ..\\frontend-angular-repo start",
+    "dev:full": "concurrently -n backend,angular -c blue,green \"npm run dev:backend\" \"npm run dev:frontend\"",
     "hash:pw": "node scripts/hash-password.js",
     "bo": "node scripts/bo.js"
   },
@@ -21,5 +24,8 @@
     "helmet": "^8.1.0",
     "nodemon": "^3.1.11",
     "pg": "^8.16.3"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
   }
 }
