@@ -84,9 +84,75 @@ export default class Dispatcher {
         this.app.post("/logout", this.logout.bind(this))        
     }
 
+    validateToProccessSchema(body) {
+        const alerts = []
+
+        const isPlainObject = (val) => val !== null && typeof val === 'object' && !Array.isArray(val)
+        if (!isPlainObject(body)) {
+            alerts.push(v.getMessage('object', { value: body, label: 'body' }))
+            return alerts
+        }
+
+        const tx = body.tx
+        if (!Number.isInteger(tx) || tx <= 0) {
+            alerts.push(v.getMessage('int', { value: tx, label: 'tx' }))
+        }
+
+        const params = body.params
+        if (params !== undefined && params !== null) {
+            const isOk =
+                (typeof params === 'string') ||
+                (typeof params === 'number' && Number.isFinite(params)) ||
+                (params !== null && typeof params === 'object' && !Array.isArray(params))
+
+            if (!isOk) {
+                alerts.push(msgs[config.app.lang].alerts.paramsType.replace('{value}', 'params'))
+            }
+        }
+
+        return alerts
+    }
+
+    validateLoginSchema(body) {
+        const alerts = []
+        const isPlainObject = (val) => val !== null && typeof val === 'object' && !Array.isArray(val)
+        if (!isPlainObject(body)) {
+            alerts.push(v.getMessage('object', { value: body, label: 'body' }))
+            return alerts
+        }
+
+        if (typeof body.username !== 'string') {
+            alerts.push(v.getMessage('string', { value: body.username, label: 'username' }))
+        }
+        if (typeof body.password !== 'string') {
+            alerts.push(v.getMessage('string', { value: body.password, label: 'password' }))
+        }
+
+        return alerts
+    }
+
+    validateLogoutSchema(body) {
+        const alerts = []
+        if (body == null) return alerts
+        const isPlainObject = (val) => val !== null && typeof val === 'object' && !Array.isArray(val)
+        if (!isPlainObject(body)) {
+            alerts.push(v.getMessage('object', { value: body, label: 'body' }))
+        }
+        return alerts
+    }
+
     async toProccess(req, res) {
         try {
             if (!this.session.sessionExists(req)) return res.status(this.clientErrors.login.code).send(this.clientErrors.login)
+
+            const schemaAlerts = this.validateToProccessSchema(req.body)
+            if (schemaAlerts.length > 0) {
+                return res.status(this.clientErrors.invalidParameters.code).send({
+                    msg: this.clientErrors.invalidParameters.msg,
+                    code: this.clientErrors.invalidParameters.code,
+                    alerts: schemaAlerts
+                })
+            }
 
             if (!security.isReady) {
                 try {
@@ -129,6 +195,14 @@ export default class Dispatcher {
 
     async login(req, res) {
         try {
+            const schemaAlerts = this.validateLoginSchema(req.body)
+            if (schemaAlerts.length > 0) {
+                return res.status(this.clientErrors.invalidParameters.code).send({
+                    msg: this.clientErrors.invalidParameters.msg,
+                    code: this.clientErrors.invalidParameters.code,
+                    alerts: schemaAlerts
+                })
+            }
             await this.session.createSession(req, res)
         } catch (err) {
             log.show({ type: log.TYPE_ERROR, msg: `${this.serverErrors.serverError.msg}, /login: ${err.message}` })
@@ -138,6 +212,14 @@ export default class Dispatcher {
 
     logout(req, res) {
         try {
+            const schemaAlerts = this.validateLogoutSchema(req.body)
+            if (schemaAlerts.length > 0) {
+                return res.status(this.clientErrors.invalidParameters.code).send({
+                    msg: this.clientErrors.invalidParameters.msg,
+                    code: this.clientErrors.invalidParameters.code,
+                    alerts: schemaAlerts
+                })
+            }
             if (this.session.sessionExists(req)) {
                 this.session.destroySession(req)
                 return res.status(this.successMsgs.logout.code).send(this.successMsgs.logout)

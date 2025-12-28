@@ -65,6 +65,12 @@ Validation:
 - `username`: `string`
 - `password`: min length 8
 
+Schema validation (shape):
+
+- `body` must be a JSON object.
+- `username` and `password` must be `string`.
+- On failure: `400 invalidParameters` + `alerts`.
+
 ### Response
 
 - Success: `200` with `msgs[lang].success.login`
@@ -89,6 +95,11 @@ Implementation: [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.js)
 
 No specific body required (the demo frontend sends `{ msg: "logout" }`).
 
+Schema validation (shape):
+
+- If a `body` is sent, it must be a JSON object.
+- On failure: `400 invalidParameters` + `alerts`.
+
 ### Response
 
 - If session exists: `200` with `msgs[lang].success.logout`
@@ -106,6 +117,19 @@ Implementation: [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.js)
 
 - `tx`: transaction number resolved to `(object_na, method_na)` from `security.method` (see [docs/en/04-database-security-model.md](04-database-security-model.md)).
 - `params`: passed directly to the BO method.
+
+### Schema validation (shape)
+
+Before permissions/BO execution, the server validates the request body shape:
+
+- `body` must be a JSON object.
+- `tx` must be a positive integer.
+- `params` (if present) must be a `string`, `number`, `object`, or `null` (not an array).
+
+On failure it returns:
+
+- `400 invalidParameters`
+- `alerts: []` with field-level details.
 
 ### Rules
 

@@ -65,6 +65,12 @@ Validaciones:
 - `username`: `string`
 - `password`: length mínimo 8
 
+Validación de esquema (shape):
+
+- `body` debe ser un objeto JSON.
+- `username` y `password` deben ser `string`.
+- Si falla: `400 invalidParameters` + `alerts`.
+
 ### Response
 
 - Éxito: `200` con `msgs[lang].success.login`
@@ -89,6 +95,11 @@ Archivo: [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.js)
 
 No requiere un body específico (el frontend envía `{ msg: "logout" }`).
 
+Validación de esquema (shape):
+
+- Si se envía `body`, debe ser un objeto JSON.
+- Si falla: `400 invalidParameters` + `alerts`.
+
 ### Response
 
 - Si hay sesión: `200` con `msgs[lang].success.logout`
@@ -106,6 +117,19 @@ Archivo: [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.js)
 
 - `tx`: número que se mapea a `(object_na, method_na)` usando `security.method` (ver [docs/es/04-database-security-model.md](04-database-security-model.md)).
 - `params`: se pasa directo al método del BO.
+
+### Validación de esquema (shape)
+
+Antes de ejecutar permisos/BO, el servidor valida el **shape** del body:
+
+- `body` debe ser un objeto JSON.
+- `tx` debe ser un entero positivo.
+- `params` (si viene) debe ser `string`, `number`, `object` o `null` (no array).
+
+Si falla, responde:
+
+- `400 invalidParameters`
+- `alerts: []` con detalles del campo.
 
 ### Reglas
 
