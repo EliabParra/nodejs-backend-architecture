@@ -14,9 +14,9 @@ export class Person {
             if (!PersonValidate.isIdOrNameLookup(value, ['getPerson', 'getPersonByName'])) return PersonErrorHandler.PersonInvalidParameters(v.getAlerts())
             const r = await db.exe('enterprise', PersonValidate.isIdOrNameLookup(value, ['getPerson', 'getPersonByName']), [value])
             if (r.rows.length === 0) return PersonErrorHandler.PersonNotFound()
-            const person = new Person(r.rows[0])
-            person.code = 200
-            return person
+            const result = new Person(r.rows[0])
+            result.code = 200
+            return result
         } catch (err) {
             log.show({ type: log.TYPE_ERROR, msg: `${serverErrorMsg}, Person.get: ${err?.message || err}` })
             return PersonErrorHandler.UnknownError()

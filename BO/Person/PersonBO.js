@@ -2,9 +2,9 @@ import { Person } from "./Person.js"
 
 export class PersonBO {
     async getPerson(value) {
-        const person = await Person.get(value)
-        if (person.code !== 200) return person
-        return { data: person, msg: `Persona ${person.person_na} ${person.person_ln} encontrada`, code: person.code }
+        const result = await Person.get(value)
+        if (result.code !== 200) return result
+        return { data: result, msg: `Persona ${result.person_na} ${result.person_ln} encontrada`, code: result.code }
     }
 
     async createPerson(params) {
