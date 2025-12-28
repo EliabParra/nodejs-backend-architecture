@@ -34,6 +34,30 @@ Implementation: [src/BSS/Session.js](../../src/BSS/Session.js)
 - Initialized via `app.use(session(config.session))` using [src/config/config.json](../../src/config/config.json).
 - Session active rule: `req.session && req.session.user_id`.
 
+Recommendation:
+
+- Set `saveUninitialized: false` to avoid persisting empty sessions (less DB noise, better performance).
+
+### Store (Postgres)
+
+For production/scaling, sessions can be persisted in Postgres (instead of the in-memory store).
+
+Config: [src/config/config.json](../../src/config/config.json) → `session.store`
+
+```json
+"store": {
+  "type": "pg",
+  "tableName": "session",
+  "ttlSeconds": 1800,
+  "pruneIntervalSeconds": 300
+}
+```
+
+- `ttlSeconds`: DB TTL for sessions (seconds). If not provided, it is derived from `cookie.maxAge`.
+- `pruneIntervalSeconds`: how often the store prunes expired sessions.
+
+You must create the table once by running: [postgres.session.sql](../../postgres.session.sql)
+
 ### Cookies (security)
 
 Config: [src/config/config.json](../../src/config/config.json) → `session.cookie`
@@ -53,7 +77,8 @@ Notes:
 `Session.createSession(req, res)`:
 
 - Validates `username` and `password` (min length 8)
-- Queries DB: `db.exe('security', 'getUser', [username, password])`
+- Queries DB: `db.exe('security', 'getUser', [username])`
+- Compares password with `bcrypt.compare(password, user.user_pw)` (hash)
 - On success, sets:
   - `req.session.user_id`
   - `req.session.user_na`

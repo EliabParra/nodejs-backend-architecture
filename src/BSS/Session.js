@@ -1,9 +1,12 @@
 import session from "express-session"
 import bcrypt from "bcryptjs"
+import connectPgSimple from "connect-pg-simple"
 
 export default class Session {
     constructor(app) {
         this.session = session
+
+        const PgSession = connectPgSimple(session)
 
         const sessionConfig = JSON.parse(JSON.stringify(config.session ?? {}))
         sessionConfig.cookie = sessionConfig.cookie ?? {}
@@ -28,6 +31,23 @@ export default class Session {
         if (sessionConfig.cookie.secure === true) {
             app.set('trust proxy', 1)
             sessionConfig.proxy = true
+        }
+
+        if (sessionConfig.store?.type === 'pg') {
+            const tableName = sessionConfig.store?.tableName || 'session'
+            const ttlSecondsFromCookie = typeof sessionConfig.cookie?.maxAge === 'number'
+                ? Math.ceil(sessionConfig.cookie.maxAge / 1000)
+                : undefined
+            const ttlSeconds = sessionConfig.store?.ttlSeconds ?? ttlSecondsFromCookie
+            const pruneIntervalSeconds = sessionConfig.store?.pruneIntervalSeconds ?? 300
+            sessionConfig.store = new PgSession({
+                pool: db.pool,
+                tableName,
+                ...(ttlSeconds != null ? { ttl: ttlSeconds } : {}),
+                ...(pruneIntervalSeconds != null ? { pruneSessionInterval: pruneIntervalSeconds } : {})
+            })
+        } else {
+            delete sessionConfig.store
         }
 
         app.use(this.session(sessionConfig))
