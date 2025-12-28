@@ -101,6 +101,48 @@ export default class Dispatcher {
         this.app.post("/toProccess", this.toProccessRateLimiter, this.toProccess.bind(this))
         this.app.post("/login", this.loginRateLimiter, this.login.bind(this))
         this.app.post("/logout", this.logout.bind(this))        
+
+        // Final error handler: keep API contract stable (no default HTML errors)
+        this.app.use(this.finalErrorHandler.bind(this))
+    }
+
+    finalErrorHandler(err, req, res, next) {
+        if (res.headersSent) return next(err)
+
+        let status = err?.status ?? err?.statusCode
+        if (!Number.isInteger(status) || status < 400 || status > 599) status = 500
+
+        // Common infra errors we may emit
+        if (typeof err?.message === 'string' && err.message.startsWith('CORS origin not allowed:')) {
+            status = 403
+        }
+
+        let response = this.clientErrors.unknown
+        if (status === 400) response = this.clientErrors.invalidParameters
+        else if (status === 401) response = this.serverErrors.unauthorized
+        else if (status === 403) response = this.serverErrors.forbidden
+        else if (status === 404) response = this.serverErrors.notFound
+        else if (status === 503) response = this.clientErrors.serviceUnavailable
+
+        log.show({
+            type: log.TYPE_ERROR,
+            msg: `${this.serverErrors.serverError.msg}, unhandled: ${err?.message ?? 'unknown'}`,
+            ctx: {
+                requestId: req.requestId,
+                method: req.method,
+                path: req.originalUrl,
+                status,
+                user_id: req.session?.user_id,
+                profile_id: req.session?.profile_id,
+                durationMs: typeof req.requestStartMs === 'number' ? (Date.now() - req.requestStartMs) : undefined
+            }
+        })
+
+        return res.status(status).send({
+            msg: response.msg,
+            code: status,
+            alerts: []
+        })
     }
 
     validateToProccessSchema(body) {

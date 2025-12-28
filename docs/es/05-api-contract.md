@@ -26,6 +26,8 @@ Nota: si el cliente envía un `Content-Type: application/json` pero el body no e
 
 - `400 invalidParameters` + `alerts` (en formato JSON, no HTML).
 
+Nota: de forma general, cualquier error no controlado también se normaliza a JSON siguiendo el contrato (no se devuelven páginas HTML).
+
 ## Correlación (requestId)
 
 Cada request recibe un identificador único y el servidor responde el header:
