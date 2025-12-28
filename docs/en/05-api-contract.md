@@ -22,6 +22,14 @@ Most responses follow this shape (not all fields are always present):
 
 The example client shows `alerts` if present; otherwise it shows `msg` (see [public/js/Sender.js](../../public/js/Sender.js)).
 
+## Correlation (requestId)
+
+Every request gets a unique identifier and the server returns the header:
+
+- `X-Request-Id: <uuid>`
+
+Use it for debugging/support: when you see an error on the client, report that `requestId` and you can find the matching log entry.
+
 ## POST /login
 
 Implementation: [src/BSS/Session.js](../../src/BSS/Session.js)

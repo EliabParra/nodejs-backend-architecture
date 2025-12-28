@@ -2,10 +2,20 @@ import Session from "./Session.js"
 import express from "express"
 import { buildPagesRouter, pagesPath } from "../router/pages.js"
 import rateLimit from "express-rate-limit"
+import { randomUUID } from "node:crypto"
 
 export default class Dispatcher {
     constructor() {
         this.app = express()
+
+        this.app.use((req, res, next) => {
+            const requestId = randomUUID()
+            req.requestId = requestId
+            req.requestStartMs = Date.now()
+            res.setHeader('X-Request-Id', requestId)
+            next()
+        })
+
         this.app.use(express.json())
         this.app.use(express.urlencoded({ extended: false }))
         this.app.use(express.static(pagesPath))
@@ -74,7 +84,19 @@ export default class Dispatcher {
             const response = await security.executeMethod(data)
             res.status(response.code).send(response)
         } catch (err) {
-            log.show({ type: log.TYPE_ERROR, msg: `${this.serverErrors.serverError.msg}, /toProccess: ${err.message}` })
+            log.show({
+                type: log.TYPE_ERROR,
+                msg: `${this.serverErrors.serverError.msg}, /toProccess: ${err.message}`,
+                ctx: {
+                    requestId: req.requestId,
+                    tx: req.body?.tx,
+                    object_na: req.body?.tx != null ? security.getDataTx(req.body.tx)?.object_na : undefined,
+                    method_na: req.body?.tx != null ? security.getDataTx(req.body.tx)?.method_na : undefined,
+                    user_id: req.session?.user_id,
+                    profile_id: req.session?.profile_id,
+                    durationMs: typeof req.requestStartMs === 'number' ? (Date.now() - req.requestStartMs) : undefined
+                }
+            })
             res.status(this.clientErrors.unknown.code).send(this.clientErrors.unknown)
         }
     }

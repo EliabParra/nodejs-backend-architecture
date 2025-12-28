@@ -81,7 +81,16 @@ export default class Security {
                 return await instance[jsonData.method_na](jsonData.params)
             }
         } catch (err) {
-            log.show({ type: log.TYPE_ERROR, msg: `${this.serverErrors.serverError.msg}, Security.executeMethod: ${err.message}` })
+            log.show({
+                type: log.TYPE_ERROR,
+                msg: `${this.serverErrors.serverError.msg}, Security.executeMethod: ${err?.message || err}`,
+                ctx: {
+                    object_na: jsonData?.object_na,
+                    method_na: jsonData?.method_na,
+                    key: jsonData?.object_na && jsonData?.method_na ? `${jsonData.object_na}_${jsonData.method_na}` : undefined,
+                    modulePath: jsonData?.object_na ? `${config.bo.path}${jsonData.object_na}/${jsonData.object_na}BO.js` : undefined
+                }
+            })
             return this.serverErrors.serverError
         }
     }

@@ -15,21 +15,28 @@ export default class Log {
                 console.log(params)
                 break
             case 'object':
+                {
+                    const ctx = params.ctx
+                    let ctxText = ''
+                    if (ctx && typeof ctx === 'object') {
+                        try { ctxText = ` | ctx=${JSON.stringify(ctx)}` } catch { ctxText = ' | ctx=[unserializable]' }
+                    }
                 switch(params.type) {
                     case this.TYPE_ERROR: 
-                        if (this.activation[0]) console.log("[MESSAGE]: ".white + `${params.msg} - TYPE: Error`.red)
+                        if (this.activation[0]) console.log("[MESSAGE]: ".white + `${params.msg}${ctxText} - TYPE: Error`.red)
                         break
                     case this.TYPE_WARNING:
-                        if (this.activation[3]) console.log("[MESSAGE]: ".white + `${params.msg} - TYPE: Warning`.yellow)
+                        if (this.activation[3]) console.log("[MESSAGE]: ".white + `${params.msg}${ctxText} - TYPE: Warning`.yellow)
                         break
                     case this.TYPE_INFO: 
-                        if (this.activation[1]) console.log("[MESSAGE]: ".white + `${params.msg} - TYPE: Info`.blue)
+                        if (this.activation[1]) console.log("[MESSAGE]: ".white + `${params.msg}${ctxText} - TYPE: Info`.blue)
                         break
                     case this.TYPE_DEBUG: 
-                        if (this.activation[2]) console.log("[MESSAGE]: ".white + `${params.msg} - TYPE: Debug`.magenta)
+                        if (this.activation[2]) console.log("[MESSAGE]: ".white + `${params.msg}${ctxText} - TYPE: Debug`.magenta)
                         break
                 }
                 break
+                }
         }
     }
 }

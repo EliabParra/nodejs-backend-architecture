@@ -22,6 +22,14 @@ La mayoría de las respuestas siguen este shape (no siempre vienen todos los cam
 
 El cliente ejemplo muestra `alerts` si existen; si no, muestra `msg` (ver [public/js/Sender.js](../../public/js/Sender.js)).
 
+## Correlación (requestId)
+
+Cada request recibe un identificador único y el servidor responde el header:
+
+- `X-Request-Id: <uuid>`
+
+Úsalo para depurar/soporte: si ves un error en cliente, reporta ese `requestId` y podrás encontrar el log correspondiente.
+
 ## POST /login
 
 Archivo: [src/BSS/Session.js](../../src/BSS/Session.js)
