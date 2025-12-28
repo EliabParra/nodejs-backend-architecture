@@ -5,10 +5,12 @@ export class Sender {
         this._port = 3000
         this._endpoint = "/toProccess"
         this.url = `http://${this._server}:${this._port}${this._endpoint}`
+        this._csrfToken = null
         this._default = {
             method:'post',
             headers:{ "Content-Type": "application/json" },
             mode: 'cors', 
+            credentials: 'include',
             cache: 'default',
         }
     }
@@ -24,6 +26,20 @@ export class Sender {
     set port(value) { this._port = value; this.#updateUrl() }
     get port() { return this._port } 
 
+    async #ensureCsrfToken() {
+        if (this._csrfToken) return this._csrfToken
+        const url = `http://${this._server}:${this._port}/csrf`
+        const r = await fetch(url, {
+            method: 'get',
+            mode: 'cors',
+            credentials: 'include',
+            cache: 'no-store'
+        })
+        const data = await r.json()
+        this._csrfToken = data.csrfToken
+        return this._csrfToken
+    }
+
     async send(jd, endpoint = 'none') {
         if (endpoint === 'none') this.endpoint = '/toProccess'
         else this.endpoint = endpoint
@@ -32,6 +48,10 @@ export class Sender {
             if (attr === "body") { this._default[attr] = JSON.stringify(jd[attr]) }
             else this._default[attr] = jd[attr]
         }
+        const csrf = await this.#ensureCsrfToken()
+        this._default.headers = this._default.headers || {}
+        this._default.headers['X-CSRF-Token'] = csrf
+
         const r = await fetch(this.url, this._default)
         const data = await r.json();
         if (data.alerts) this.statusBar.showAlerts(data.alerts)

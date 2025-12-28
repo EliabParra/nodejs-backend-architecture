@@ -31,6 +31,7 @@
                 "expiredToken": { "msg": "Token expirado", "code": 401 },
                 "usernameOrPasswordIncorrect": { "msg": "Nombre de usuario o contraseña incorrectos", "code": 401 },
                 "invalidParameters": { "msg": "Parámetros inválidos", "code": 400 },
+                "csrfInvalid": { "msg": "CSRF inválido o faltante", "code": 403 },
                 "payloadTooLarge": { "msg": "El body excede el tamaño permitido", "code": 413 },
                 "sessionExists": { "msg": "La sesión ya existe", "code": 401 },
                 "accessDenied": { "msg": "No tienes permiso para acceder a esta página", "code": 401 }
@@ -97,6 +98,7 @@
                 "expiredToken": { "msg": "Expired token", "code": 401 },
                 "usernameOrPasswordIncorrect": { "msg": "Username or password incorrect", "code": 401 },
                 "invalidParameters": { "msg": "Invalid parameters", "code": 400 },
+                "csrfInvalid": { "msg": "Invalid or missing CSRF", "code": 403 },
                 "payloadTooLarge": { "msg": "Request body exceeds the allowed size", "code": 413 },
                 "sessionExists": { "msg": "Session already exists", "code": 401 },
                 "accessDenied": { "msg": "You don't have permission to access this page", "code": 401 }

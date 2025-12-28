@@ -2,7 +2,7 @@ import Session from "./Session.js"
 import express from "express"
 import { buildPagesRouter, pagesPath } from "../router/pages.js"
 import rateLimit from "express-rate-limit"
-import { randomUUID } from "node:crypto"
+import { randomUUID, randomBytes } from "node:crypto"
 import cors from "cors"
 import helmet from "helmet"
 
@@ -35,7 +35,7 @@ export default class Dispatcher {
                 },
                 credentials: Boolean(config.cors.credentials),
                 methods: ['GET', 'POST', 'OPTIONS'],
-                allowedHeaders: ['Content-Type', 'X-Request-Id'],
+                allowedHeaders: ['Content-Type', 'X-Request-Id', 'X-CSRF-Token'],
                 exposedHeaders: ['X-Request-Id'],
                 optionsSuccessStatus: 204
             }))
@@ -80,6 +80,42 @@ export default class Dispatcher {
         this.init()
     }
 
+    ensureCsrfToken(req) {
+        if (req.session == null) return null
+        if (typeof req.session.csrfToken === 'string' && req.session.csrfToken.length > 0) {
+            return req.session.csrfToken
+        }
+        const token = randomBytes(32).toString('hex')
+        req.session.csrfToken = token
+        return token
+    }
+
+    csrfToken(req, res) {
+        const token = this.ensureCsrfToken(req)
+        if (!token) {
+            return res.status(this.clientErrors.unknown.code).send(this.clientErrors.unknown)
+        }
+        return res.status(200).send({ csrfToken: token })
+    }
+
+    csrfProtection(req, res, next) {
+        // Preserve previous semantics: if there's no authenticated session yet,
+        // keep returning the existing 401 behavior for endpoints that already check auth.
+        if ((req.path === '/toProccess' || req.path === '/logout') && !req.session?.user_id) {
+            return next()
+        }
+
+        const expected = req.session?.csrfToken
+        const provided = req.get('X-CSRF-Token')
+        if (typeof expected !== 'string' || expected.length === 0) {
+            return res.status(this.clientErrors.csrfInvalid.code).send(this.clientErrors.csrfInvalid)
+        }
+        if (typeof provided !== 'string' || provided !== expected) {
+            return res.status(this.clientErrors.csrfInvalid.code).send(this.clientErrors.csrfInvalid)
+        }
+        return next()
+    }
+
     jsonBodySyntaxErrorHandler(err, req, res, next) {
         const status = err?.status ?? err?.statusCode
         const isEntityParseFailed = err?.type === 'entity.parse.failed'
@@ -98,9 +134,10 @@ export default class Dispatcher {
 
     init() {
         this.app.use(buildPagesRouter({ session: this.session }))
-        this.app.post("/toProccess", this.toProccessRateLimiter, this.toProccess.bind(this))
-        this.app.post("/login", this.loginRateLimiter, this.login.bind(this))
-        this.app.post("/logout", this.logout.bind(this))        
+        this.app.get("/csrf", this.csrfToken.bind(this))
+        this.app.post("/toProccess", this.toProccessRateLimiter, this.csrfProtection.bind(this), this.toProccess.bind(this))
+        this.app.post("/login", this.loginRateLimiter, this.csrfProtection.bind(this), this.login.bind(this))
+        this.app.post("/logout", this.csrfProtection.bind(this), this.logout.bind(this))        
 
         // Final error handler: keep API contract stable (no default HTML errors)
         this.app.use(this.finalErrorHandler.bind(this))

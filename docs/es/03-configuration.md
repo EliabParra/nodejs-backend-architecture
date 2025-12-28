@@ -49,6 +49,8 @@ Config: [src/config/config.json](../../src/config/config.json) → `cors`
 
 Implementación: [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.js)
 
+Nota (CSRF): para requests `POST` debes enviar el header `X-CSRF-Token` (ver [docs/es/05-api-contract.md](05-api-contract.md)).
+
 ### Headers de seguridad (helmet)
 
 El servidor aplica headers de seguridad estándar via `helmet` y deshabilita `X-Powered-By`.

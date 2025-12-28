@@ -60,6 +60,24 @@ fetch('http://localhost:3000/login', {
 
 Same for `/toProccess`: use `credentials: 'include'`.
 
+## CSRF (cookie-based session)
+
+Because this backend uses a cookie-based session, `POST` requests require a CSRF token.
+
+1. Get the token:
+
+- `GET /csrf` → `{ "csrfToken": "..." }`
+
+2. For every `POST`, send the header:
+
+- `X-CSRF-Token: <csrfToken>`
+
+If missing or invalid, the server returns:
+
+- `403 csrfInvalid`
+
+Note: `/toProccess` and `/logout` still return `401 login` if there is no session.
+
 ## POST /login
 
 Implementation: [src/BSS/Session.js](../../src/BSS/Session.js)
@@ -82,6 +100,10 @@ Schema validation (shape):
 - On failure: `400 invalidParameters` + `alerts`.
 
 If the body is invalid JSON, it also returns `400 invalidParameters` + `alerts`.
+
+CSRF:
+
+- Requires `X-CSRF-Token` (see CSRF section).
 
 ### Response
 
@@ -113,6 +135,10 @@ Schema validation (shape):
 - On failure: `400 invalidParameters` + `alerts`.
 
 If the body is invalid JSON, it also returns `400 invalidParameters` + `alerts`.
+
+CSRF:
+
+- Requires `X-CSRF-Token`.
 
 ### Response
 
@@ -152,6 +178,10 @@ If the body is invalid JSON, it also returns `400 invalidParameters` + `alerts`.
 1. A session must exist (`req.session.user_id`).
 2. The `tx` must exist.
 3. The current `profile_id` must have permission.
+
+Also:
+
+- Requires `X-CSRF-Token`.
 
 ### Response
 

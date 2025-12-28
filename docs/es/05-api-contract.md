@@ -60,6 +60,24 @@ fetch('http://localhost:3000/login', {
 
 Para `/toProccess` igual: `credentials: 'include'`.
 
+## CSRF (sesión por cookie)
+
+Como este backend usa sesión por cookie, los requests `POST` requieren un token CSRF.
+
+1. Obtén el token:
+
+- `GET /csrf` → `{ "csrfToken": "..." }`
+
+2. En cada `POST`, envía el header:
+
+- `X-CSRF-Token: <csrfToken>`
+
+Si falta o es inválido, el servidor responde:
+
+- `403 csrfInvalid`
+
+Nota: `/toProccess` y `/logout` siguen respondiendo `401 login` si no existe sesión.
+
 ## POST /login
 
 Archivo: [src/BSS/Session.js](../../src/BSS/Session.js)
@@ -82,6 +100,10 @@ Validación de esquema (shape):
 - Si falla: `400 invalidParameters` + `alerts`.
 
 Si el body llega como JSON inválido, también se responde `400 invalidParameters` + `alerts`.
+
+CSRF:
+
+- Requiere `X-CSRF-Token` (ver sección CSRF).
 
 ### Response
 
@@ -113,6 +135,10 @@ Validación de esquema (shape):
 - Si falla: `400 invalidParameters` + `alerts`.
 
 Si el body llega como JSON inválido, también se responde `400 invalidParameters` + `alerts`.
+
+CSRF:
+
+- Requiere `X-CSRF-Token`.
 
 ### Response
 
@@ -152,6 +178,10 @@ Si el body llega como JSON inválido, también se responde `400 invalidParameter
 1. Debe existir sesión (`req.session.user_id`).
 2. Debe existir el `tx`.
 3. Debe haber permiso para el `profile_id` actual.
+
+Además:
+
+- Requiere `X-CSRF-Token`.
 
 ### Response
 
