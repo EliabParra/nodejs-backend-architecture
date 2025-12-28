@@ -44,6 +44,14 @@ Validaciones:
   - `400 invalidParameters` + `alerts` (si falla validación)
   - `401 sessionExists` (si ya hay sesión)
   - `401 usernameOrPasswordIncorrect`
+  - `429 tooManyRequests` (si hay demasiados intentos en ventana de tiempo)
+
+### Rate limiting (anti brute-force)
+
+El endpoint `/login` está protegido con rate limiting en [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.js). Cuando se excede el límite, devuelve:
+
+- HTTP `429`
+- Body: `msgs[lang].errors.client.tooManyRequests`
 
 ## POST /logout
 

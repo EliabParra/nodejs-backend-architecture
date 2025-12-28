@@ -1,6 +1,7 @@
 import Session from "./Session.js"
 import express from "express"
 import { buildPagesRouter, pagesPath } from "../router/pages.js"
+import rateLimit from "express-rate-limit"
 
 export default class Dispatcher {
     constructor() {
@@ -12,13 +13,24 @@ export default class Dispatcher {
         this.serverErrors = msgs[config.app.lang].errors.server
         this.clientErrors = msgs[config.app.lang].errors.client
         this.successMsgs = msgs[config.app.lang].success
+
+        this.loginRateLimiter = rateLimit({
+            windowMs: 60 * 1000,
+            limit: 10,
+            standardHeaders: true,
+            legacyHeaders: false,
+            handler: (req, res) => res
+                .status(this.clientErrors.tooManyRequests.code)
+                .send(this.clientErrors.tooManyRequests)
+        })
+
         this.init()
     }
 
     init() {
         this.app.use(buildPagesRouter({ session: this.session }))
         this.app.post("/toProccess", this.toProccess.bind(this))
-        this.app.post("/login", this.login.bind(this))
+        this.app.post("/login", this.loginRateLimiter, this.login.bind(this))
         this.app.post("/logout", this.logout.bind(this))        
     }
 

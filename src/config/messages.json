@@ -33,6 +33,7 @@
                 "invalidParameters": { "msg": "Parámetros inválidos", "code": 400 },
                 "sessionExists": { "msg": "La sesión ya existe", "code": 401 },
                 "accessDenied": { "msg": "No tienes permiso para acceder a esta página", "code": 401 }
+                ,"tooManyRequests": { "msg": "Demasiados intentos, inténtalo de nuevo más tarde", "code": 429 }
             }
         },
         "success": {
@@ -94,6 +95,7 @@
                 "invalidParameters": { "msg": "Invalid parameters", "code": 400 },
                 "sessionExists": { "msg": "Session already exists", "code": 401 },
                 "accessDenied": { "msg": "You don't have permission to access this page", "code": 401 }
+                ,"tooManyRequests": { "msg": "Too many attempts, please try again later", "code": 429 }
             }
         },
         "success": {
