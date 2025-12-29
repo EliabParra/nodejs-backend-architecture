@@ -1,0 +1,14 @@
+{
+  "es": {
+    "getOrder": "Order getOrder OK",
+    "createOrder": "Order createOrder OK",
+    "shipOrder": "Order shipOrder OK",
+    "cancelOrder": "Order cancelOrder OK"
+  },
+  "en": {
+    "getOrder": "Order getOrder OK",
+    "createOrder": "Order createOrder OK",
+    "shipOrder": "Order shipOrder OK",
+    "cancelOrder": "Order cancelOrder OK"
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "es": {
+    "notFound": {
+      "msg": "Recurso no encontrado",
+      "code": 404
+    },
+    "invalidParameters": {
+      "msg": "Parámetros inválidos",
+      "code": 400
+    },
+    "unauthorized": {
+      "msg": "No autorizado",
+      "code": 401
+    },
+    "unknownError": {
+      "msg": "Error desconocido",
+      "code": 500
+    }
+  },
+  "en": {
+    "notFound": {
+      "msg": "Resource not found",
+      "code": 404
+    },
+    "invalidParameters": {
+      "msg": "Invalid parameters",
+      "code": 400
+    },
+    "unauthorized": {
+      "msg": "Unauthorized",
+      "code": 401
+    },
+    "unknownError": {
+      "msg": "Unknown error",
+      "code": 500
+    }
+  }
+}
