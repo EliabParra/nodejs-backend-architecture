@@ -28,11 +28,45 @@ Then store that hash as `user_pw` in the `security.user` table.
 - Normal: `npm start` (runs [src/index.js](../../src/index.js))
 - Dev: `npm run dev` (nodemon)
 
+## Deployment (production)
+
+In production you typically run the backend with:
+
+- `npm start`
+
+And configure secrets/DB via environment variables (see [03-configuration.md](03-configuration.md)).
+
+### Checks (health and readiness)
+
+- `GET /health`: liveness (process is up) → expected `200`
+- `GET /ready`: readiness (dependencies OK) → `200` when DB + security are ready; otherwise `503`
+
+See details in [05-api-contract.md](05-api-contract.md).
+
+### Scenario A — Separate frontend (recommended, API-only)
+
+1. On the backend: `APP_FRONTEND_MODE=none`.
+2. Deploy the frontend on its own hosting (Vercel/Netlify/S3+CloudFront/etc.).
+3. Configure CORS for your frontend domain (see `config.cors.*` in [03-configuration.md](03-configuration.md)).
+4. If you use cookie-based sessions cross-origin, review `SESSION_COOKIE_SECURE` / `SESSION_COOKIE_SAMESITE`.
+
+### Scenario B — Backend serving the SPA build
+
+1. Build your frontend (in the frontend repo): `npm run build`.
+2. On the backend:
+	- `APP_FRONTEND_MODE=spa`
+	- `SPA_DIST_PATH=<folder that contains index.html>`
+3. Start the backend with `npm start`.
+
+The backend will serve static build assets and fall back to `index.html` for SPA routes.
+
 ### (Optional) start backend + frontend together
 
 If your team wants a single command to start both (without coupling the backend to any specific framework), use:
 
 - `npm run full`
+
+> Note: `npm run full` is a development helper only, not a production pattern.
 
 In backend `.env` set:
 
