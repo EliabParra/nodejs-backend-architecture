@@ -28,6 +28,34 @@ Luego guarda ese hash como `user_pw` en tu tabla `security.user`.
 - Modo normal: `npm start` (corre [src/index.js](../../src/index.js))
 - Modo dev: `npm run dev` (nodemon)
 
+## Desarrollo (watch) con backend + SPA separados
+
+Objetivo: tener **backend** y **frontend SPA** corriendo en puertos distintos, ambos en modo watch/hot-reload, y que el **frontend** sea quien maneje las rutas del SPA.
+
+### Recomendado: usar proxy del dev server (sin CORS en el browser)
+
+Esto evita problemas de cookies/CORS en dev, porque el browser solo habla con el dev server del frontend y este proxy-ea al backend.
+
+1. Backend (API-only):
+	- En `.env`: `APP_FRONTEND_MODE=none`
+	- Ejecuta: `npm run dev` (puerto `APP_PORT`, por default `3000`)
+2. Frontend (Angular ejemplo):
+	- Ejecuta en el repo del frontend: `npm start`
+	- El script ya usa `ng serve --proxy-config proxy.conf.json`.
+	- Asegúrate de que el frontend llame al backend con rutas relativas: `/csrf`, `/login`, `/logout`, `/toProccess`.
+
+### Alternativa: CORS directo (frontend llama a http://localhost:3000)
+
+Útil si quieres probar el setup “real” cross-origin (por ejemplo, para ver cookies y headers tal como en producción).
+
+1. Backend:
+	- `cors.enabled=true`, `cors.credentials=true`
+	- agrega `http://localhost:4200` (o tu puerto) a `cors.origins`
+2. Frontend:
+	- Llama a `http://localhost:3000/...`
+	- Envía cookies con `credentials: 'include'`
+	- Para `POST`, envía `X-CSRF-Token` (ver [05-api-contract.md](05-api-contract.md))
+
 ## Deployment (producción)
 
 En producción normalmente corres el backend con:
