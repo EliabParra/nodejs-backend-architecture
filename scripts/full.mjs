@@ -73,25 +73,35 @@ function startProcess(name, cmd, args, options) {
   return child;
 }
 
-function startNpmScript(name, scriptName, cwd) {
+function splitArgs(raw) {
+  const text = String(raw ?? '').trim();
+  if (!text) return [];
+  // Simple whitespace split. If you need complex quoting, prefer setting the script in package.json.
+  return text.split(/\s+/g).filter(Boolean);
+}
+
+function startNpmScript(name, scriptName, cwd, extraArgs = []) {
   const isWin = process.platform === 'win32';
+  const npmArgs = ['run', scriptName, ...(extraArgs.length > 0 ? ['--', ...extraArgs] : [])];
 
   if (isWin) {
     const comspec = process.env.ComSpec || 'cmd.exe';
     // Use cmd.exe explicitly so .cmd shims work, without Node's shell=true.
-    return startProcess(name, comspec, ['/d', '/s', '/c', 'npm', 'run', scriptName], {
+    return startProcess(name, comspec, ['/d', '/s', '/c', 'npm', ...npmArgs], {
       cwd,
       env: process.env,
     });
   }
 
-  return startProcess(name, 'npm', ['run', scriptName], { cwd, env: process.env });
+  return startProcess(name, 'npm', npmArgs, { cwd, env: process.env });
 }
 
 const backendDir = process.cwd();
 const frontendPath = await promptForFrontendPathIfMissing(backendDir);
 const frontendScript = String(process.env.FRONTEND_SCRIPT ?? 'start').trim() || 'start';
 const backendScript = String(process.env.BACKEND_SCRIPT ?? 'dev').trim() || 'dev';
+const frontendArgs = splitArgs(process.env.FRONTEND_ARGS);
+const backendArgs = splitArgs(process.env.BACKEND_ARGS);
 const keepAlive = isTruthy(process.env.FULL_KEEP_ALIVE);
 
 ensureFrontendPath(frontendPath);
@@ -99,8 +109,8 @@ ensureFrontendPath(frontendPath);
 console.log(`[full] backend: ${backendDir} (npm run ${backendScript})`);
 console.log(`[full] frontend: ${frontendPath} (npm run ${frontendScript})`);
 
-const backend = startNpmScript('backend', backendScript, backendDir);
-const frontend = startNpmScript('frontend', frontendScript, frontendPath);
+const backend = startNpmScript('backend', backendScript, backendDir, backendArgs);
+const frontend = startNpmScript('frontend', frontendScript, frontendPath, frontendArgs);
 
 let shuttingDown = false;
 let requestedShutdown = false;
