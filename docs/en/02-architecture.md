@@ -5,6 +5,7 @@
 - **Client (static)**: `public/` (HTML/CSS/JS)
 - **Pages router**: `src/router/` (serves HTML and protects routes)
 - **Dispatcher (API)**: `src/BSS/Dispatcher.js` (`/login`, `/logout`, `/toProccess`)
+- **HTTP/Express layer (plumbing)**: `src/express/` (middlewares, handlers, session wiring)
 - **BSS (cross-cutting services)**: `src/BSS/` (DB, session, security, validator, log)
 - **BO (business)**: `BO/` (example: `BO/Person/`)
 - **Config**: `src/config/` (runtime config, messages, SQL queries)
@@ -24,6 +25,8 @@
      - `globalThis.security` (Security)
 
 **Important**: the current architecture uses `globalThis` as a service locator. BO/BSS modules read `config`, `msgs`, `queries`, `db`, `v`, `log`, `security` from globals.
+
+Note: for consistency with the repository style, some `src/express/` modules also read globals (e.g. `log`, `msgs`, `config`).
 
 ## Request flow (transactional API)
 
@@ -58,6 +61,18 @@ Response { code, msg, data?, alerts? }
 ```
 
 Decoupling note: the backend can run in **API-only** mode (`APP_FRONTEND_MODE=none`). In that mode, page/SPA hosting is implemented via a **frontend adapter** loaded with a dynamic import only when the selected mode requires it, so the core does not import UI modules.
+
+Adapter entrypoint:
+
+- [src/frontend-adapters/index.js](../../src/frontend-adapters/index.js)
+
+## Express plumbing (where it lives now)
+
+- Middlewares (helmet, CORS, parsers, CSRF, rate limit, requestId/log): `src/express/middleware/`
+- Health/readiness handlers: `src/express/handlers/`
+- Session wiring (express-session + store): [src/express/session/apply-session-middleware.js](../../src/express/session/apply-session-middleware.js)
+
+`Dispatcher` is intentionally kept as the orchestrator: it registers routes, composes middlewares, and delegates Express configuration to small modules.
 
 ## Pages router
 

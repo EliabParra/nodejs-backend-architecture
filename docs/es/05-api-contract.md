@@ -28,6 +28,10 @@ Nota: si el cliente envía un `Content-Type: application/json` pero el body no e
 
 Nota: de forma general, cualquier error no controlado también se normaliza a JSON siguiendo el contrato (no se devuelven páginas HTML).
 
+Implementación del handler final de errores:
+
+- [src/express/middleware/final-error-handler.js](../../src/express/middleware/final-error-handler.js)
+
 Nota: si el body excede `config.app.bodyLimit`, el servidor puede responder:
 
 - `413 payloadTooLarge`
@@ -52,7 +56,10 @@ Estos endpoints sirven para monitoreo (health checks) y readiness (dependencias 
     - conectividad con DB (`SELECT 1`)
   - Si alguna dependencia no está lista, responde `503 serviceUnavailable`.
 
-Implementación: [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.js)
+Implementación:
+
+- [src/express/handlers/health.js](../../src/express/handlers/health.js)
+- [src/express/handlers/ready.js](../../src/express/handlers/ready.js)
 
 ## Logging de requests
 
@@ -71,6 +78,11 @@ Esto te permite:
 
 El output se controla con `config.log.activation`.
 
+Implementación:
+
+- requestId: [src/express/middleware/request-id.js](../../src/express/middleware/request-id.js)
+- completion logger: [src/express/middleware/request-logger.js](../../src/express/middleware/request-logger.js)
+
 Notas:
 
 - Requests `2xx/3xx` se loguean como `info`.
@@ -85,6 +97,8 @@ Además del logging a stdout, el backend puede registrar eventos en DB si existe
 - `/toProccess`: `tx_exec`, `tx_denied`, `tx_error`
 
 Esto se inserta de forma best-effort (si falla, no rompe el request). El `requestId` se persiste como `request_id`.
+
+Helper (best-effort): [src/BSS/helpers/audit-log.js](../../src/BSS/helpers/audit-log.js)
 
 ## CORS + sesión (frontend en otro puerto)
 
@@ -124,6 +138,10 @@ Si falta o es inválido, el servidor responde:
 
 Nota: `/toProccess` y `/logout` siguen respondiendo `401 login` si no existe sesión.
 
+Implementación:
+
+- [src/express/middleware/csrf.js](../../src/express/middleware/csrf.js)
+
 ## POST /login
 
 Archivo: [src/BSS/Session.js](../../src/BSS/Session.js)
@@ -145,6 +163,10 @@ Validación de esquema (shape):
 - `username` y `password` deben ser `string`.
 - Si falla: `400 invalidParameters` + `alerts`.
 
+Implementación de validación de esquema HTTP (reutilizable):
+
+- [src/BSS/helpers/http-validators.js](../../src/BSS/helpers/http-validators.js)
+
 Si el body llega como JSON inválido, también se responde `400 invalidParameters` + `alerts`.
 
 CSRF:
@@ -162,7 +184,7 @@ CSRF:
 
 ### Rate limiting (anti brute-force)
 
-El endpoint `/login` está protegido con rate limiting en [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.js). Cuando se excede el límite, devuelve:
+El endpoint `/login` está protegido con rate limiting. El limiter se define en [src/express/rate-limit/limiters.js](../../src/express/rate-limit/limiters.js) y se aplica desde [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.js). Cuando se excede el límite, devuelve:
 
 - HTTP `429`
 - Body: `msgs[lang].errors.client.tooManyRequests`
@@ -239,7 +261,7 @@ Además:
 
 ### Rate limiting (protección de carga)
 
-`/toProccess` tiene rate limiting en [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.js).
+`/toProccess` tiene rate limiting. El limiter se define en [src/express/rate-limit/limiters.js](../../src/express/rate-limit/limiters.js) y se aplica desde [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.js).
 
 - Límite: 120 requests por minuto.
 - Key:

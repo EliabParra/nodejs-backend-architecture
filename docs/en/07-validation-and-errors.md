@@ -24,6 +24,16 @@ On failure, `Validator` builds `alerts` using templates from [src/config/message
 - Labels per language: [BO/Person/errors/personAlerts.json](../../BO/Person/errors/personAlerts.json)
 - Usage: [BO/Person/PersonValidate.js](../../BO/Person/PersonValidate.js)
 
+## HTTP schema validation (Dispatcher/Session)
+
+In addition to the BO-level `Validator`, the server validates the **shape** of some HTTP requests (for example `/login`, `/logout`, `/toProccess`) before running business logic.
+
+Implementation:
+
+- [src/BSS/helpers/http-validators.js](../../src/BSS/helpers/http-validators.js)
+
+This produces labeled `alerts` (`body`, `username`, `password`, etc.) using the same `Validator` message templates.
+
 ## Domain-level errors (pattern)
 
 Example: `Person`.
@@ -65,6 +75,10 @@ try {
 
 - In `/toProccess`, unexpected exceptions return `msgs[lang].errors.client.unknown`.
 - Details are written to log (`log.show(TYPE_ERROR, ...)`).
+
+The final handler that normalizes unhandled errors lives in:
+
+- [src/express/middleware/final-error-handler.js](../../src/express/middleware/final-error-handler.js)
 
 ## Internal consistency guideline
 

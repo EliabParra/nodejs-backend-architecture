@@ -7,10 +7,15 @@ These docs describe the current architecture in this repository and the rules to
 - **Server entrypoint**: [src/index.js](../../src/index.js)
 - **Globals (service locator)**: [src/globals.js](../../src/globals.js)
 - **Dispatcher (Express + endpoints)**: [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.js)
+- **Express plumbing (middlewares/handlers/session wiring)**: `src/express/`
+	- Middlewares: [src/express/middleware/](../../src/express/middleware/)
+	- Handlers: [src/express/handlers/](../../src/express/handlers/)
+	- Session wiring: [src/express/session/apply-session-middleware.js](../../src/express/session/apply-session-middleware.js)
 - **Security (tx + permissions + dynamic BO)**: [src/BSS/Security.js](../../src/BSS/Security.js)
 - **Session (express-session)**: [src/BSS/Session.js](../../src/BSS/Session.js)
 - **DB**: [src/BSS/DBComponent.js](../../src/BSS/DBComponent.js)
 - **Validation (alerts)**: [src/BSS/Validator.js](../../src/BSS/Validator.js)
+- **Shared helpers (BSS)**: [src/BSS/helpers/](../../src/BSS/helpers/)
 - **Pages router**: [src/router/pages.js](../../src/router/pages.js)
 - **Example client**: [public/js/Sender.js](../../public/js/Sender.js)
 

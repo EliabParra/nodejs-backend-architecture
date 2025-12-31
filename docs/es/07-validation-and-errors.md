@@ -24,6 +24,16 @@ Si falla, `Validator` arma `alerts` usando plantillas de [src/config/messages.js
 - Labels por idioma en [BO/Person/errors/personAlerts.json](../../BO/Person/errors/personAlerts.json)
 - Uso en [BO/Person/PersonValidate.js](../../BO/Person/PersonValidate.js)
 
+## Validación de esquema HTTP (Dispatcher/Session)
+
+Además del `Validator` usado en BO, el servidor valida el **shape** de algunos requests HTTP (por ejemplo `/login`, `/logout`, `/toProccess`) antes de ejecutar lógica.
+
+Implementación:
+
+- [src/BSS/helpers/http-validators.js](../../src/BSS/helpers/http-validators.js)
+
+Esto produce `alerts` con labels (`body`, `username`, `password`, etc.) usando las plantillas del `Validator`.
+
 ## Errores por dominio (pattern)
 
 Ejemplo: `Person`.
@@ -65,6 +75,10 @@ try {
 
 - En `/toProccess`, ante exception responde `msgs[lang].errors.client.unknown`.
 - Los detalles quedan en log (`log.show(TYPE_ERROR, ...)`).
+
+El handler final que normaliza errores no controlados vive en:
+
+- [src/express/middleware/final-error-handler.js](../../src/express/middleware/final-error-handler.js)
 
 ## Recomendación de consistencia (regla interna)
 

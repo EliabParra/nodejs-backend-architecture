@@ -74,7 +74,12 @@ Config: [src/config/config.json](../../src/config/config.json) → `cors`
 - `cors.credentials`: permite cookies/sesión cross-origin (necesario si el frontend corre en otro origen).
 - `cors.origins`: allowlist de orígenes permitidos en dev (ej. Vite `http://localhost:5173`, Angular `http://localhost:4200`).
 
-Implementación: [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.js)
+Cableado: [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.js) compone el middleware.
+
+La implementación vive en módulos dedicados de Express:
+
+- CORS: [src/express/middleware/cors.js](../../src/express/middleware/cors.js)
+- CSRF: [src/express/middleware/csrf.js](../../src/express/middleware/csrf.js)
 
 Nota (CSRF): para requests `POST` debes enviar el header `X-CSRF-Token` (ver [docs/es/05-api-contract.md](05-api-contract.md)).
 
@@ -94,7 +99,11 @@ Nota (CSRF): para requests `POST` debes enviar el header `X-CSRF-Token` (ver [do
 
 El servidor aplica headers de seguridad estándar via `helmet` y deshabilita `X-Powered-By`.
 
-Implementación: [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.js)
+Cableado: [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.js) compone el middleware.
+
+La implementación vive en:
+
+- Helmet: [src/express/middleware/helmet.js](../../src/express/middleware/helmet.js)
 
 ## Modo de páginas (backend) vs SPA (frontend)
 

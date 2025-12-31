@@ -9,6 +9,11 @@ Las páginas viven en `public/pages/`:
 
 Express sirve `public/` como estático **solo si** `APP_FRONTEND_MODE=pages` (modo legacy) desde [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.js).
 
+El registro del hosting de frontend se hace vía adapter (para mantener el backend desacoplado):
+
+- Entry: [src/frontend-adapters/index.js](../../src/frontend-adapters/index.js)
+- Pages adapter: [src/frontend-adapters/pages.adapter.js](../../src/frontend-adapters/pages.adapter.js)
+
 `pagesPath` está definido en [src/router/routes.js](../../src/router/routes.js).
 
 ## Router de páginas
@@ -37,7 +42,9 @@ El modo `pages` existe solo como ejemplo/legacy para servir HTML desde este mism
 
 Implementación: [src/BSS/Session.js](../../src/BSS/Session.js)
 
-- Se inicializa con `app.use(session(config.session))` usando [src/config/config.json](../../src/config/config.json).
+- La clase `Session` orquesta login/logout y reglas de sesión.
+- El wiring de Express (express-session + store + schema/table) se aplica desde:
+  - [src/express/session/apply-session-middleware.js](../../src/express/session/apply-session-middleware.js)
 - Criterio de sesión activa: `req.session && req.session.user_id`.
 
 Recomendación:
