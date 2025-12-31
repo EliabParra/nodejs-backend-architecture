@@ -205,6 +205,7 @@ Guía rápida:
 - Define tus SQL en src/config/queries.json y ejecútalas con db.exe('<schema>', '<queryName>', params).
 - Nota: db.exe acepta params como Array u Object. Si pasas un Object, se convierte a un array por orden de propiedades; ese orden debe coincidir con $1..$n del query.
 - Recomendación: usa Array cuando el orden sea crítico.
+- Alternativa (recomendada si prefieres Object): usa db.exeNamed('<schema>', '<queryName>', paramsObj, ['k1','k2',...]) para forzar el orden y validar llaves.
 - No asumas un schema fijo: cambia 'enterprise' por el schema real de tu dominio.
 */
 

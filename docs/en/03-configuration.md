@@ -165,4 +165,9 @@ Params note:
 - `params` can be an Array (recommended), an Object, or a single value.
 - If you pass an Object, `db.exe` converts it into an array by iterating its properties; **the property order must match the `$1..$n` order** in your SQL query.
 
+Safer option (named params):
+
+- If you prefer objects, use `db.exeNamed(schema, queryName, paramsObj, orderKeys)` where `orderKeys` is an array like `['person_id','person_na','person_ln']`.
+- This forces a stable order and can fail fast if keys are missing/extra or if the SQL placeholder count does not match.
+
 In other projects you can add new schemas (e.g. `inventory`, `billing`) and put feature-specific SQL there.
