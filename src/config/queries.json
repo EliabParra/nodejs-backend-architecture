@@ -22,13 +22,5 @@
 
         "updateUserLastLogin": "update security.\"user\" set last_login_at = now(), updated_at = now() where user_id = $1",
         "insertAuditLog": "insert into security.audit_log (request_id, user_id, profile_id, action, object_na, method_na, tx_nu, meta) values ($1, $2, $3, $4, $5, $6, $7, $8::jsonb)"
-    },
-    "enterprise": {
-        "getPerson": "select p.person_na, p.person_ln from enterprise.person p where p.person_id = $1",
-        "getPersonByName": "select p.person_na, p.person_ln from enterprise.person p where p.person_na = $1",
-        "createPerson": "insert into enterprise.person (person_na, person_ln) values ($1, $2)",
-        "updatePerson": "update enterprise.person set person_na = $2, person_ln = $3 where person_id = $1",
-        "deletePerson": "delete from enterprise.person where person_id = $1",
-        "deletePersonByName": "delete from enterprise.person where person_na = $1"
     }
 }

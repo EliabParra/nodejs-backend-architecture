@@ -165,7 +165,13 @@ Shape:
 Current schemas:
 
 - `security`: **definitive** schema for auth/roles/tx/permissions.
-- `enterprise`: optional example schema used by the demo under `examples/`.
+- `enterprise`: optional example schema used by the demo under `examples/` (not loaded by default).
+
+Optional query extensions:
+
+- `DEMO_QUERIES=true`: loads the demo queries file shipped under `examples/bo-demo/config/queries.enterprise.json`.
+- `DEMO_QUERIES_PATH` (optional): override the demo queries file path.
+- `QUERIES_EXTRA_PATH` (optional): merge additional queries from a JSON file (absolute path or repo-relative).
 
 Queries are executed through:
 

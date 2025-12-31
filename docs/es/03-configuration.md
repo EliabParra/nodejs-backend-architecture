@@ -166,7 +166,13 @@ Estructura:
 Ejemplos actuales:
 
 - `security`: **schema definitivo** del modelo de auth/roles/tx/permisos.
-- `enterprise`: schema de ejemplo (opcional) usado por el demo bajo `examples/`.
+- `enterprise`: schema de ejemplo (opcional) usado por el demo bajo `examples/` (no se carga por defecto).
+
+Extensiones opcionales de queries:
+
+- `DEMO_QUERIES=true`: carga el archivo de queries demo incluido en `examples/bo-demo/config/queries.enterprise.json`.
+- `DEMO_QUERIES_PATH` (opcional): sobreescribe la ruta del archivo de queries demo.
+- `QUERIES_EXTRA_PATH` (opcional): hace merge de queries adicionales desde un JSON (ruta absoluta o relativa al repo).
 
 El acceso se hace con:
 

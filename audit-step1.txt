@@ -1,0 +1,192 @@
+--- person_order ---
+files: 18, matches: 74
+- 11 C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\src\config\queries.json
+- 9 C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\examples\bo-demo\BO\Person\PersonBO.js
+- 8 C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\examples\bo-demo\BO\Order\orderSuccessMsgs.json
+- 7 C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\examples\bo-demo\BO\Order\OrderBO.js
+- 5 C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\examples\bo-demo\BO\Person\personSuccessMsgs.json
+- 5 C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\en\09-bo-cli-and-permissions.md
+- 5 C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\examples\bo-demo\BO\Person\Person.js
+- 5 C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\es\09-bo-cli-and-permissions.md
+- 3 C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\en\06-dynamic-dispatch-and-bo.md
+- 3 C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\es\06-dynamic-dispatch-and-bo.md
+- 2 C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\examples\bo-demo\BO\Order\Order.js
+- 2 C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\es\04-database-security-model.md
+- 2 C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\es\00-index.md
+- 2 C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\en\03-configuration.md
+- 2 C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\en\00-index.md
+- 1 C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\examples\bo-demo\BO\Person\errors\personErrorMsgs.json
+- 1 C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\scripts\bo.mjs
+- 1 C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\src\BSS\DBComponent.js
+sample:
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\src\BSS\DBComponent.js:94: // you provide the explicit param order, so you can catch ordering/shape issues early.
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\src\config\queries.json:13: "listObjects": "select object_id, object_na from security.object order by object_na asc",
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\src\config\queries.json:14: "listProfiles": "select profile_id from security.profile order by profile_id asc",
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\src\config\queries.json:15: "listMethodsByObject": "select m.method_id, o.object_na, m.method_na, m.tx_nu from security.method m inner join security.object o on o.object_id = m.object_id where o.object_na = $1 order by m.tx_nu asc nulls last, m.method_na asc",
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\src\config\queries.json:16: "listMethods": "select m.method_id, o.object_na, m.method_na, m.tx_nu from security.method m inner join security.object o on o.object_id = m.object_id order by o.object_na asc, m.tx_nu asc nulls last, m.method_na asc",
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\src\config\queries.json:21: "listPermissionsByProfile": "select p.profile_id, o.object_na, m.method_na, m.tx_nu from security.permission_method pm inner join security.profile p on p.profile_id = pm.profile_id inner join security.method m on m.method_id = pm.method_id inner join security.object o on o.object_id = m.object_id where p.profile_id = $1 order by o.object_na asc, m.method_na asc",
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\src\config\queries.json:27: "getPerson": "select p.person_na, p.person_ln from enterprise.person p where p.person_id = $1",
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\src\config\queries.json:28: "getPersonByName": "select p.person_na, p.person_ln from enterprise.person p where p.person_na = $1",
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\src\config\queries.json:29: "createPerson": "insert into enterprise.person (person_na, person_ln) values ($1, $2)",
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\src\config\queries.json:30: "updatePerson": "update enterprise.person set person_na = $2, person_ln = $3 where person_id = $1",
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\src\config\queries.json:31: "deletePerson": "delete from enterprise.person where person_id = $1",
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\src\config\queries.json:32: "deletePersonByName": "delete from enterprise.person where person_na = $1"
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\en\00-index.md:41: - **object_na**: logical BO name (e.g. `Person`), used for file lookup and permissions.
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\en\00-index.md:42: - **method_na**: method name to invoke (e.g. `getPerson`, `createPerson`).
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\en\03-configuration.md:177: - If you pass an Object, `db.exe` converts it into an array by iterating its properties; **the property order must match the `$1..$n` order** in your SQL query.
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\en\03-configuration.md:182: - This forces a stable order and can fail fast if keys are missing/extra or if the SQL placeholder count does not match.
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\en\06-dynamic-dispatch-and-bo.md:77: - Create BO: `npm run bo -- new Order --methods getOrder,createOrder,updateOrder,deleteOrder`
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\en\06-dynamic-dispatch-and-bo.md:78: - Map to DB (tx): `npm run bo -- sync Order --txStart 200`
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\en\06-dynamic-dispatch-and-bo.md:79: - Grant permissions: `npm run bo -- perms --profile 2 --allow Order.getOrder,Order.createOrder`
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\en\09-bo-cli-and-permissions.md:61: - `npm run bo -- new Order --db`
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\en\09-bo-cli-and-permissions.md:67: 1. Ensures/creates `security.object` (`object_na = "Order"`).
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\en\09-bo-cli-and-permissions.md:129: - `npm run bo -- new Order --methods getOrder,createOrder,updateOrder,deleteOrder`
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\en\09-bo-cli-and-permissions.md:132: - `npm run bo -- sync Order --txStart 200`
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\en\09-bo-cli-and-permissions.md:134: - `npm run bo -- perms --profile 2 --allow Order.getOrder,Order.createOrder`
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\es\00-index.md:41: - **object_na**: nombre lógico del objeto BO (p.ej. `Person`). Se usa para ubicar archivos y para permisos.
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\es\00-index.md:42: - **method_na**: nombre del método a invocar (p.ej. `getPerson`, `createPerson`).
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\es\04-database-security-model.md:34: - `object_na` (nombre lógico del BO, ej. `Person`)
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\es\04-database-security-model.md:39: - `method_na` (nombre de método, ej. `getPerson`)
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\es\06-dynamic-dispatch-and-bo.md:77: - Crear BO: `npm run bo -- new Order --methods getOrder,createOrder,updateOrder,deleteOrder`
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\es\06-dynamic-dispatch-and-bo.md:78: - Mapear a DB (tx): `npm run bo -- sync Order --txStart 200`
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\es\06-dynamic-dispatch-and-bo.md:79: - Asignar permisos: `npm run bo -- perms --profile 2 --allow Order.getOrder,Order.createOrder`
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\es\09-bo-cli-and-permissions.md:61: - `npm run bo -- new Order --db`
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\es\09-bo-cli-and-permissions.md:67: 1. Asegura/crea `security.object` (`object_na = "Order"`).
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\es\09-bo-cli-and-permissions.md:129: - `npm run bo -- new Order --methods getOrder,createOrder,updateOrder,deleteOrder`
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\es\09-bo-cli-and-permissions.md:132: - `npm run bo -- sync Order --txStart 200`
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\es\09-bo-cli-and-permissions.md:134: - `npm run bo -- perms --profile 2 --allow Order.getOrder,Order.createOrder`
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\scripts\bo.mjs:71: throw new Error('ObjectName must be PascalCase (e.g. Person, OrderItem)')
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\examples\bo-demo\BO\Order\Order.js:1: export class Order {
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\examples\bo-demo\BO\Order\Order.js:11: return new Order(r.rows[0])
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\examples\bo-demo\BO\Order\OrderBO.js:6: import { OrderRepository } from './Order.js'
+
+--- enterprise ---
+files: 6, matches: 24
+- 8 C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\examples\bo-demo\BO\Facturacion\Facturacion.js
+- 7 C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\src\config\queries.json
+- 6 C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\examples\bo-demo\BO\Person\Person.js
+- 1 C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\en\03-configuration.md
+- 1 C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\es\03-configuration.md
+- 1 C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\examples\bo-demo\BO\Order\Order.js
+sample:
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\src\config\queries.json:26: "enterprise": {
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\src\config\queries.json:27: "getPerson": "select p.person_na, p.person_ln from enterprise.person p where p.person_id = $1",
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\src\config\queries.json:28: "getPersonByName": "select p.person_na, p.person_ln from enterprise.person p where p.person_na = $1",
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\src\config\queries.json:29: "createPerson": "insert into enterprise.person (person_na, person_ln) values ($1, $2)",
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\src\config\queries.json:30: "updatePerson": "update enterprise.person set person_na = $2, person_ln = $3 where person_id = $1",
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\src\config\queries.json:31: "deletePerson": "delete from enterprise.person where person_id = $1",
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\src\config\queries.json:32: "deletePersonByName": "delete from enterprise.person where person_na = $1"
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\en\03-configuration.md:168: - `enterprise`: optional example schema used by the demo under `examples/`.
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\es\03-configuration.md:169: - `enterprise`: schema de ejemplo (opcional) usado por el demo bajo `examples/`.
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\examples\bo-demo\BO\Facturacion\Facturacion.js:7: - No asumas un schema fijo: cambia 'enterprise' por el schema real de tu dominio.
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\examples\bo-demo\BO\Facturacion\Facturacion.js:17: // Reemplaza 'enterprise' y 'TODO_*' con tu schema/queries reales.
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\examples\bo-demo\BO\Facturacion\Facturacion.js:20: const r = await db.exe('enterprise', 'TODO_getById', [id])
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\examples\bo-demo\BO\Facturacion\Facturacion.js:26: const r = await db.exe('enterprise', 'TODO_getByName', [name])
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\examples\bo-demo\BO\Facturacion\Facturacion.js:32: // Ejemplo: await db.exe('enterprise', 'TODO_create', [..])
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\examples\bo-demo\BO\Facturacion\Facturacion.js:33: await db.exe('enterprise', 'TODO_create', [params])
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\examples\bo-demo\BO\Facturacion\Facturacion.js:38: await db.exe('enterprise', 'TODO_update', [params])
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\examples\bo-demo\BO\Facturacion\Facturacion.js:43: await db.exe('enterprise', 'TODO_delete', [params])
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\examples\bo-demo\BO\Order\Order.js:9: const r = await db.exe('enterprise', 'TODO_getById', [id])
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\examples\bo-demo\BO\Person\Person.js:11: const r = await db.exe('enterprise', 'getPerson', [person_id])
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\examples\bo-demo\BO\Person\Person.js:17: const r = await db.exe('enterprise', 'getPersonByName', [person_na])
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\examples\bo-demo\BO\Person\Person.js:23: await db.exeNamed('enterprise', 'createPerson', { person_na, person_ln }, ['person_na', 'person_ln'])
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\examples\bo-demo\BO\Person\Person.js:28: await db.exeNamed('enterprise', 'updatePerson', { person_id, person_na, person_ln }, ['person_id', 'person_na', 'person_ln'])
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\examples\bo-demo\BO\Person\Person.js:33: await db.exe('enterprise', 'deletePerson', [person_id])
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\examples\bo-demo\BO\Person\Person.js:38: await db.exe('enterprise', 'deletePersonByName', [person_na])
+
+--- bo_demo ---
+files: 10, matches: 10
+- 1 C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\BO\README.md
+- 1 C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\en\01-getting-started.md
+- 1 C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\en\02-architecture.md
+- 1 C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\en\06-dynamic-dispatch-and-bo.md
+- 1 C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\en\07-validation-and-errors.md
+- 1 C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\es\01-getting-started.md
+- 1 C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\es\02-architecture.md
+- 1 C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\es\06-dynamic-dispatch-and-bo.md
+- 1 C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\es\07-validation-and-errors.md
+- 1 C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\README.md
+sample:
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\README.md:39: - Ejemplos: `examples/bo-demo/` contiene BOs demo listos para revisar/usar.
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\en\01-getting-started.md:130: If you want a working end-to-end demo (BOs + sample SQL), use the example under [examples/bo-demo](../../examples/bo-demo).
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\en\02-architecture.md:11: - Full demo BOs live under `examples/bo-demo/BO/`.
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\en\06-dynamic-dispatch-and-bo.md:45: If you want a full working example, see: [examples/bo-demo/BO](../../examples/bo-demo/BO)
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\en\07-validation-and-errors.md:27: For a working example, see: [examples/bo-demo/BO](../../examples/bo-demo/BO)
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\es\01-getting-started.md:130: Si quieres un demo completo funcionando (BOs + SQL de ejemplo), usa el ejemplo bajo [examples/bo-demo](../../examples/bo-demo).
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\es\02-architecture.md:11: - BOs demo completos viven en `examples/bo-demo/BO/`.
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\es\06-dynamic-dispatch-and-bo.md:45: Si quieres ver un ejemplo completo, revisa: [examples/bo-demo/BO](../../examples/bo-demo/BO)
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\es\07-validation-and-errors.md:27: Si quieres ver un ejemplo completo, revisa: [examples/bo-demo/BO](../../examples/bo-demo/BO)
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\BO\README.md:8: Demo BOs (if you want to see examples) live under `examples/bo-demo/BO/`.
+
+--- repo_name ---
+files: 2, matches: 2
+- 1 C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\api\BSS_Dispatcher.js.html
+- 1 C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\scripts\full.mjs
+sample:
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\api\BSS_Dispatcher.js.html:99: this.app.get('/health', createHealthHandler({ name: 'nodejs-backend-architecture' }))
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\scripts\full.mjs:40: 'Example: FRONTEND_PATH=..\\frontend-angular-repo\n';
+
+--- toProccess ---
+files: 29, matches: 93
+- 10 C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\es\10-frontend-clients-and-requests.md
+- 9 C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\api\BSS_Dispatcher.js.html
+- 8 C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\src\BSS\Dispatcher.js
+- 7 C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\en\10-frontend-clients-and-requests.md
+- 5 C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\api\global.html
+- 5 C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\es\05-api-contract.md
+- 5 C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\en\02-architecture.md
+- 5 C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\en\05-api-contract.md
+- 4 C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\es\02-architecture.md
+- 4 C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\en\01-getting-started.md
+- 4 C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\es\01-getting-started.md
+- 3 C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\api\BSS_helpers_http-validators.js.html
+- 3 C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\api\jsdoc_types.js.html
+- 2 C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\src\BSS\helpers\http-validators.js
+- 2 C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\es\07-validation-and-errors.md
+- 2 C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\en\07-validation-and-errors.md
+- 2 C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\api\module.exports.html
+- 2 C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\src\jsdoc\types.js
+- 1 C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\en\11-db-init.md
+- 1 C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\en\04-database-security-model.md
+sample:
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\src\BSS\Dispatcher.js:12: import { createLoginRateLimiter, createToProccessRateLimiter } from "../express/rate-limit/limiters.js"
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\src\BSS\Dispatcher.js:20: validateToProccessSchema
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\src\BSS\Dispatcher.js:32: * - Register API routes: `/health`, `/ready`, `/csrf`, `/login`, `/logout`, `/toProccess`
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\src\BSS\Dispatcher.js:63: this.toProccessRateLimiter = createToProccessRateLimiter(this.clientErrors)
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\src\BSS\Dispatcher.js:74: this.app.post("/toProccess", this.toProccessRateLimiter, csrfProtection, this.toProccess.bind(this))
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\src\BSS\Dispatcher.js:87: async toProccess(req, res) {
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\src\BSS\Dispatcher.js:91: const schemaAlerts = validateToProccessSchema(req.body)
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\src\BSS\Dispatcher.js:153: msg: `${this.serverErrors.serverError.msg}, /toProccess: ${err.message}`,
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\src\BSS\helpers\http-validators.js:6: * Validates the request body shape for `POST /toProccess`.
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\src\BSS\helpers\http-validators.js:10: export function validateToProccessSchema(body) {
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\src\express\middleware\csrf.js:24: if ((req.path === '/toProccess' || req.path === '/logout') && !req.session?.user_id) {
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\src\express\rate-limit\limiters.js:15: export function createToProccessRateLimiter(clientErrors) {
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\src\jsdoc\types.js:80: * /toProccess request body.
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\src\jsdoc\types.js:81: * @typedef {Object} ToProccessBody
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\api\BSS_Dispatcher.js.html:40: import { createLoginRateLimiter, createToProccessRateLimiter } from "../express/rate-limit/limiters.js"
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\api\BSS_Dispatcher.js.html:48: validateToProccessSchema
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\api\BSS_Dispatcher.js.html:60: * - Register API routes: `/health`, `/ready`, `/csrf`, `/login`, `/logout`, `/toProccess`
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\api\BSS_Dispatcher.js.html:91: this.toProccessRateLimiter = createToProccessRateLimiter(this.clientErrors)
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\api\BSS_Dispatcher.js.html:102: this.app.post("/toProccess", this.toProccessRateLimiter, csrfProtection, this.toProccess.bind(this))
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\api\BSS_Dispatcher.js.html:115: async toProccess(req, res) {
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\api\BSS_Dispatcher.js.html:119: const schemaAlerts = validateToProccessSchema(req.body)
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\api\BSS_Dispatcher.js.html:181: msg: `${this.serverErrors.serverError.msg}, /toProccess: ${err.message}`,
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\api\BSS_Dispatcher.js.html:288: <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="module.exports.html">exports</a></li></ul><h3>Global</h3><ul><li><a href="global.html#auditBestEffort">auditBestEffort</a></li><li><a href="global.html#registerFrontendHosting">registerFrontendHosting</a></li><li><a href="global.html#sendInvalidParameters">sendInvalidParameters</a></li><li><a href="global.html#validateLoginSchema">validateLoginSchema</a></li><li><a href="global.html#validateLogoutSchema">validateLogoutSchema</a></li><li><a href="global.html#validateToProccessSchema">validateToProccessSchema</a></li></ul>
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\api\BSS_helpers_audit-log.js.html:79: <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="module.exports.html">exports</a></li></ul><h3>Global</h3><ul><li><a href="global.html#auditBestEffort">auditBestEffort</a></li><li><a href="global.html#registerFrontendHosting">registerFrontendHosting</a></li><li><a href="global.html#sendInvalidParameters">sendInvalidParameters</a></li><li><a href="global.html#validateLoginSchema">validateLoginSchema</a></li><li><a href="global.html#validateLogoutSchema">validateLogoutSchema</a></li><li><a href="global.html#validateToProccessSchema">validateToProccessSchema</a></li></ul>
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\api\BSS_helpers_http-responses.js.html:53: <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="module.exports.html">exports</a></li></ul><h3>Global</h3><ul><li><a href="global.html#auditBestEffort">auditBestEffort</a></li><li><a href="global.html#registerFrontendHosting">registerFrontendHosting</a></li><li><a href="global.html#sendInvalidParameters">sendInvalidParameters</a></li><li><a href="global.html#validateLoginSchema">validateLoginSchema</a></li><li><a href="global.html#validateLogoutSchema">validateLogoutSchema</a></li><li><a href="global.html#validateToProccessSchema">validateToProccessSchema</a></li></ul>
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\api\BSS_helpers_http-validators.js.html:34: * Validates the request body shape for `POST /toProccess`.
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\api\BSS_helpers_http-validators.js.html:38: export function validateToProccessSchema(body) {
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\api\BSS_helpers_http-validators.js.html:120: <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="module.exports.html">exports</a></li></ul><h3>Global</h3><ul><li><a href="global.html#auditBestEffort">auditBestEffort</a></li><li><a href="global.html#registerFrontendHosting">registerFrontendHosting</a></li><li><a href="global.html#sendInvalidParameters">sendInvalidParameters</a></li><li><a href="global.html#validateLoginSchema">validateLoginSchema</a></li><li><a href="global.html#validateLogoutSchema">validateLogoutSchema</a></li><li><a href="global.html#validateToProccessSchema">validateToProccessSchema</a></li></ul>
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\api\BSS_Session.js.html:130: <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="module.exports.html">exports</a></li></ul><h3>Global</h3><ul><li><a href="global.html#auditBestEffort">auditBestEffort</a></li><li><a href="global.html#registerFrontendHosting">registerFrontendHosting</a></li><li><a href="global.html#sendInvalidParameters">sendInvalidParameters</a></li><li><a href="global.html#validateLoginSchema">validateLoginSchema</a></li><li><a href="global.html#validateLogoutSchema">validateLogoutSchema</a></li><li><a href="global.html#validateToProccessSchema">validateToProccessSchema</a></li></ul>
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\api\frontend-adapters_index.js.html:68: <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="module.exports.html">exports</a></li></ul><h3>Global</h3><ul><li><a href="global.html#auditBestEffort">auditBestEffort</a></li><li><a href="global.html#registerFrontendHosting">registerFrontendHosting</a></li><li><a href="global.html#sendInvalidParameters">sendInvalidParameters</a></li><li><a href="global.html#validateLoginSchema">validateLoginSchema</a></li><li><a href="global.html#validateLogoutSchema">validateLogoutSchema</a></li><li><a href="global.html#validateToProccessSchema">validateToProccessSchema</a></li></ul>
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\api\global.html:1255: <h4 class="name" id="validateToProccessSchema"><span class="type-signature"></span>validateToProccessSchema<span class="signature">(body)</span><span class="type-signature"> &rarr; {Array.&lt;string>}</span></h4>
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\api\global.html:1263: Validates the request body shape for `POST /toProccess`.
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\api\global.html:2953: <h4 class="name" id="ToProccessBody">ToProccessBody</h4>
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\api\global.html:2959: /toProccess request body.
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\api\global.html:3128: <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="module.exports.html">exports</a></li></ul><h3>Global</h3><ul><li><a href="global.html#auditBestEffort">auditBestEffort</a></li><li><a href="global.html#registerFrontendHosting">registerFrontendHosting</a></li><li><a href="global.html#sendInvalidParameters">sendInvalidParameters</a></li><li><a href="global.html#validateLoginSchema">validateLoginSchema</a></li><li><a href="global.html#validateLogoutSchema">validateLogoutSchema</a></li><li><a href="global.html#validateToProccessSchema">validateToProccessSchema</a></li></ul>
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\api\index.html:53: <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="module.exports.html">exports</a></li></ul><h3>Global</h3><ul><li><a href="global.html#auditBestEffort">auditBestEffort</a></li><li><a href="global.html#registerFrontendHosting">registerFrontendHosting</a></li><li><a href="global.html#sendInvalidParameters">sendInvalidParameters</a></li><li><a href="global.html#validateLoginSchema">validateLoginSchema</a></li><li><a href="global.html#validateLogoutSchema">validateLogoutSchema</a></li><li><a href="global.html#validateToProccessSchema">validateToProccessSchema</a></li></ul>
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\api\jsdoc_types.js.html:108: * /toProccess request body.
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\api\jsdoc_types.js.html:109: * @typedef {Object} ToProccessBody
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\api\jsdoc_types.js.html:125: <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="module.exports.html">exports</a></li></ul><h3>Global</h3><ul><li><a href="global.html#auditBestEffort">auditBestEffort</a></li><li><a href="global.html#registerFrontendHosting">registerFrontendHosting</a></li><li><a href="global.html#sendInvalidParameters">sendInvalidParameters</a></li><li><a href="global.html#validateLoginSchema">validateLoginSchema</a></li><li><a href="global.html#validateLogoutSchema">validateLogoutSchema</a></li><li><a href="global.html#validateToProccessSchema">validateToProccessSchema</a></li></ul>
+C:\Users\Eliab Parra\Dev\nodejs-backend-architecture\docs\api\module.exports.html:37: - Register API routes: `/health`, `/ready`, `/csrf`, `/login`, `/logout`, `/toProccess`
+

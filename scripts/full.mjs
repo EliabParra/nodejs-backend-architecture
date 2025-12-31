@@ -37,7 +37,7 @@ async function promptForFrontendPathIfMissing(backendDir) {
   const help =
     'FRONTEND_PATH is required for `npm run full`.\n' +
     'Set it in .env to your frontend folder (must contain package.json).\n' +
-    'Example: FRONTEND_PATH=..\\frontend-angular-repo\n';
+    'Example: FRONTEND_PATH=..\\frontend\n';
 
   if (!interactive) {
     console.error(help);

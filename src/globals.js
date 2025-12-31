@@ -1,5 +1,7 @@
 import 'dotenv/config'
 import { createRequire } from 'node:module'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 globalThis.require = createRequire(import.meta.url)
 
@@ -102,8 +104,49 @@ function applyEnvOverrides(cfg) {
 	return cfg
 }
 
+function mergeQueries(base, extra) {
+	if (!extra || typeof extra !== 'object') return base
+	const out = { ...(base ?? {}) }
+	for (const [schema, schemaQueries] of Object.entries(extra)) {
+		if (!schemaQueries || typeof schemaQueries !== 'object') continue
+		out[schema] = { ...(out[schema] ?? {}), ...schemaQueries }
+	}
+	return out
+}
+
+function repoPath(...parts) {
+	const srcDir = path.dirname(fileURLToPath(import.meta.url))
+	const repoRoot = path.resolve(srcDir, '..')
+	return path.resolve(repoRoot, ...parts)
+}
+
+function resolveRepoRelative(p) {
+	const raw = String(p ?? '').trim()
+	if (!raw) return null
+	return path.isAbsolute(raw) ? raw : repoPath(raw)
+}
+
 globalThis.config = applyEnvOverrides(globalThis.require('./config/config.json'))
-globalThis.queries = globalThis.require('./config/queries.json')
+
+const baseQueries = globalThis.require('./config/queries.json')
+let queries = baseQueries
+
+// Optional: enable the demo queries under examples/ (keeps core template demo-agnostic).
+// - DEMO_QUERIES=true loads the default file under examples/bo-demo/
+// - DEMO_QUERIES_PATH can point to a different JSON file (absolute or repo-relative)
+if (envBool(process.env.DEMO_QUERIES)) {
+	const demoPath = resolveRepoRelative(process.env.DEMO_QUERIES_PATH) ?? repoPath('examples', 'bo-demo', 'config', 'queries.enterprise.json')
+	queries = mergeQueries(queries, globalThis.require(demoPath))
+}
+
+// Optional: merge additional queries (absolute path or repo-relative).
+// Example: QUERIES_EXTRA_PATH=examples/bo-demo/config/queries.enterprise.json
+if (process.env.QUERIES_EXTRA_PATH) {
+	const extraPath = resolveRepoRelative(process.env.QUERIES_EXTRA_PATH)
+	if (extraPath) queries = mergeQueries(queries, globalThis.require(extraPath))
+}
+
+globalThis.queries = queries
 globalThis.msgs = globalThis.require('./config/messages.json')
 const { default: Validator } = await import('./BSS/Validator.js')
 const { default: Log } = await import('./BSS/Log.js')
