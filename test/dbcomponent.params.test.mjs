@@ -13,6 +13,8 @@ test('sqlMaxParamIndex detects highest $n placeholder', () => {
 })
 
 test('buildParamsArray supports array/object/single value', () => {
+  assert.deepEqual(buildParamsArray(undefined), [])
+  assert.deepEqual(buildParamsArray(null), [])
   assert.deepEqual(buildParamsArray([1, 2]), [1, 2])
   assert.deepEqual(buildParamsArray({ a: 1, b: 2 }), [1, 2])
   assert.deepEqual(buildParamsArray(5), [5])

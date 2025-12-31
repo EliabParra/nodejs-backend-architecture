@@ -17,6 +17,7 @@ function isPlainObject(val) {
 }
 
 function buildParamsArray(params) {
+    if (params == null) return []
     const paramsArray = []
     if (Array.isArray(params)) paramsArray.push(...params)
     else if (isPlainObject(params)) for (let attr in params) paramsArray.push(params[attr])
