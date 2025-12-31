@@ -5,8 +5,7 @@ import {
   sqlSecuritySchemaBase,
   sqlSecurityOptionalEmail,
   sqlSecurityOperationalColumnsAndAudit,
-  sqlSessionTable,
-  sqlEnterpriseDemo
+  sqlSessionTable
 } from '../scripts/db-init.mjs'
 
 test('sqlSecuritySchemaBase includes required tables', () => {
@@ -52,8 +51,3 @@ test('sqlSessionTable supports custom schema', () => {
   assert.match(sql, /create table if not exists security\.session/)
 })
 
-test('sqlEnterpriseDemo creates enterprise.person', () => {
-  const sql = sqlEnterpriseDemo().join('\n')
-  assert.match(sql, /create schema if not exists enterprise;/)
-  assert.match(sql, /create table if not exists enterprise\.person/)
-})

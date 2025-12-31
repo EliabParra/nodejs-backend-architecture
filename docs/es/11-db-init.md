@@ -81,10 +81,6 @@ Campos opcionales:
 
 - `--includeEmail`: agrega `security.user.user_em` (nullable + unique)
 
-Demo enterprise (opcional):
-
-- `--createEnterprise`: crea `enterprise.person` (útil para el BO `Person`).
-
 Auto-registro BOs:
 
 - `--registerBo`: fuerza auto-registro (por defecto en TTY).

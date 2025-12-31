@@ -13,7 +13,6 @@ test('db-init --print generates expected SQL without touching DB', () => {
       '--print',
       '--yes',
       '--includeEmail',
-      '--createEnterprise',
       '--sessionSchema',
       'security',
       '--sessionTable',
@@ -32,7 +31,5 @@ test('db-init --print generates expected SQL without touching DB', () => {
   // Session table under security schema
   assert.match(out, /create table if not exists security\.session/)
 
-  // Enterprise demo
-  assert.match(out, /create schema if not exists enterprise;/)
-  assert.match(out, /create table if not exists enterprise\.person/)
+  // Note: db-init does not create project/domain schemas (only security + sessions)
 })
