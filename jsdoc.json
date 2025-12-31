@@ -1,8 +1,8 @@
 {
   "source": {
-    "include": ["src"],
+    "include": ["src", "scripts", "public/js"],
     "includePattern": ".+\\.js$",
-    "excludePattern": "(^|/|\\\\)_"
+    "excludePattern": "(^|/|\\\\)_|node_modules/|\\.tmp-starterpack/|docs/api/"
   },
   "opts": {
     "destination": "docs/api/",

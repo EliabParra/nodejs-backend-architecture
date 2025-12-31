@@ -2,6 +2,11 @@ export function isPlainObject(val) {
     return val !== null && typeof val === 'object' && !Array.isArray(val)
 }
 
+/**
+ * Validates the request body shape for `POST /toProccess`.
+ * @param {unknown} body
+ * @returns {string[]} alerts
+ */
 export function validateToProccessSchema(body) {
     const alerts = []
 
@@ -30,6 +35,14 @@ export function validateToProccessSchema(body) {
     return alerts
 }
 
+/**
+ * Validates the request body shape for `POST /login`.
+ *
+ * @param {unknown} body
+ * @param {Object} [options]
+ * @param {number} [options.minPasswordLen]
+ * @returns {string[]} alerts
+ */
 export function validateLoginSchema(body, { minPasswordLen } = {}) {
     const alerts = []
 
@@ -51,6 +64,11 @@ export function validateLoginSchema(body, { minPasswordLen } = {}) {
     return alerts
 }
 
+/**
+ * Validates the request body shape for `POST /logout`.
+ * @param {unknown} body
+ * @returns {string[]} alerts
+ */
 export function validateLogoutSchema(body) {
     const alerts = []
     if (body == null) return alerts
