@@ -1,0 +1,12 @@
+{
+  "source": {
+    "include": ["src"],
+    "includePattern": ".+\\.js$",
+    "excludePattern": "(^|/|\\\\)_"
+  },
+  "opts": {
+    "destination": "docs/api/",
+    "recurse": true,
+    "encoding": "utf8"
+  }
+}

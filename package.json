@@ -10,7 +10,9 @@
     "full": "node scripts/full.mjs",
     "db:init": "node scripts/db-init.mjs",
     "hashpw": "node scripts/hash-password.mjs",
-    "bo": "node scripts/bo.mjs"
+    "bo": "node scripts/bo.mjs",
+    "docs:jsdoc": "jsdoc -c jsdoc.json",
+    "export:starter": "node scripts/export-starter.mjs"
   },
   "type": "module",
   "dependencies": {
@@ -25,5 +27,8 @@
     "helmet": "^8.1.0",
     "nodemon": "^3.1.11",
     "pg": "^8.16.3"
+  },
+  "devDependencies": {
+    "jsdoc": "^4.0.4"
   }
 }

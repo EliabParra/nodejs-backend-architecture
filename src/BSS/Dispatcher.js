@@ -24,6 +24,15 @@ import { auditBestEffort } from "./helpers/audit-log.js"
 import { sendInvalidParameters } from "./helpers/http-responses.js"
 
 
+/**
+ * Express API orchestrator.
+ *
+ * Responsibilities:
+ * - Compose Express "plumbing" (middlewares/handlers in `src/express/*`)
+ * - Register API routes: `/health`, `/ready`, `/csrf`, `/login`, `/logout`, `/toProccess`
+ * - Delegate auth/session rules to `Session`
+ * - Delegate business execution to `Security` (tx -> BO dynamic dispatch)
+ */
 export default class Dispatcher {
     constructor() {
         this.app = express()

@@ -4,6 +4,12 @@ import { applySessionMiddleware } from "../express/session/apply-session-middlew
 import { auditBestEffort } from "./helpers/audit-log.js"
 import { validateLoginSchema } from "./helpers/http-validators.js"
 
+/**
+ * Session/auth orchestrator.
+ *
+ * Uses cookie-based sessions (`express-session`) wired by `applySessionMiddleware(app)`.
+ * Implements login/logout and the canonical "session exists" rule.
+ */
 export default class Session {
     constructor(app) {
         applySessionMiddleware(app)

@@ -18,3 +18,17 @@ Scripts del backend que puedes ejecutar desde la raíz del repo:
 	- Getting started: [ES](es/01-getting-started.md) / [EN](en/01-getting-started.md)
 - `npm run full`: helper opcional de dev para levantar backend + frontend usando `FRONTEND_PATH`
 	- Docs: [ES](es/10-frontend-clients-and-requests.md) / [EN](en/10-frontend-clients-and-requests.md)
+
+## JSDoc
+
+- Generar documentación API: `npm run docs:jsdoc`
+- Output: `docs/api/` (se genera localmente; está ignorado por git)
+
+## Starterpack (export limpio)
+
+Este repo puede contener BOs y páginas de ejemplo para desarrollo; si quieres un **template limpio** para iniciar proyectos desde cero, genera un export:
+
+- Export por defecto a `.tmp-starterpack/`: `npm run export:starter`
+- Export a una ruta específica: `npm run export:starter -- --out <ruta>`
+
+El export incluye `src/`, `scripts/`, `docs/`, `test/`, `public/`, `.env.example`, etc., y crea un `BO/` vacío (sin BOs del ejemplo).
