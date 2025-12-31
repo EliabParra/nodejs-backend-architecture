@@ -96,18 +96,22 @@ export default class Session {
             req.session.profile_id = user.profile_id
             return res.status(this.successMsgs.login.code).send(this.successMsgs.login)
         } catch (err) {
+            const status = this.clientErrors.unknown.code
             try { res.locals.__errorLogged = true } catch { }
             log.show({
                 type: log.TYPE_ERROR,
                 msg: `${this.serverErrors.serverError.msg}, Session.createSession: ${err.message}`,
                 ctx: {
                     requestId: req.requestId,
+                    method: req.method,
+                    path: req.originalUrl,
+                    status,
                     user_id: req.session?.user_id,
                     profile_id: req.session?.profile_id,
                     durationMs: typeof req.requestStartMs === 'number' ? (Date.now() - req.requestStartMs) : undefined
                 }
             })
-            res.status(this.clientErrors.unknown.code).send(this.clientErrors.unknown)
+            res.status(status).send(this.clientErrors.unknown)
         }
     }
 

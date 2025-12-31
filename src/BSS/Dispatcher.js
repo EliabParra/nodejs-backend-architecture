@@ -44,6 +44,8 @@ export default class Dispatcher {
 
                     const ctx = {
                         requestId: req.requestId,
+                        method: req.method,
+                        path: req.originalUrl,
                         status,
                         durationMs,
                         user_id: req.session?.user_id,
@@ -353,12 +355,16 @@ export default class Dispatcher {
             const response = await security.executeMethod(data)
             res.status(response.code).send(response)
         } catch (err) {
+            const status = this.clientErrors.unknown.code
             try { res.locals.__errorLogged = true } catch { }
             log.show({
                 type: log.TYPE_ERROR,
                 msg: `${this.serverErrors.serverError.msg}, /toProccess: ${err.message}`,
                 ctx: {
                     requestId: req.requestId,
+                    method: req.method,
+                    path: req.originalUrl,
+                    status,
                     tx: req.body?.tx,
                     object_na: req.body?.tx != null ? security.getDataTx(req.body.tx)?.object_na : undefined,
                     method_na: req.body?.tx != null ? security.getDataTx(req.body.tx)?.method_na : undefined,
@@ -367,7 +373,7 @@ export default class Dispatcher {
                     durationMs: typeof req.requestStartMs === 'number' ? (Date.now() - req.requestStartMs) : undefined
                 }
             })
-            res.status(this.clientErrors.unknown.code).send(this.clientErrors.unknown)
+            res.status(status).send(this.clientErrors.unknown)
         }
     }
 
@@ -383,13 +389,22 @@ export default class Dispatcher {
             }
             await this.session.createSession(req, res)
         } catch (err) {
+            const status = this.clientErrors.unknown.code
             try { res.locals.__errorLogged = true } catch { }
             log.show({
                 type: log.TYPE_ERROR,
                 msg: `${this.serverErrors.serverError.msg}, /login: ${err.message}`,
-                ctx: { requestId: req.requestId, durationMs: typeof req.requestStartMs === 'number' ? (Date.now() - req.requestStartMs) : undefined }
+                ctx: {
+                    requestId: req.requestId,
+                    method: req.method,
+                    path: req.originalUrl,
+                    status,
+                    durationMs: typeof req.requestStartMs === 'number' ? (Date.now() - req.requestStartMs) : undefined,
+                    user_id: req.session?.user_id,
+                    profile_id: req.session?.profile_id
+                }
             })
-            res.status(this.clientErrors.unknown.code).send(this.clientErrors.unknown)
+            res.status(status).send(this.clientErrors.unknown)
         }
     }
 
@@ -408,13 +423,22 @@ export default class Dispatcher {
                 return res.status(this.successMsgs.logout.code).send(this.successMsgs.logout)
             } else return res.status(this.clientErrors.login.code).send(this.clientErrors.login)
         } catch (err) {
+            const status = this.clientErrors.unknown.code
             try { res.locals.__errorLogged = true } catch { }
             log.show({
                 type: log.TYPE_ERROR,
                 msg: `${this.serverErrors.serverError.msg}, /logout: ${err.message}`,
-                ctx: { requestId: req.requestId, durationMs: typeof req.requestStartMs === 'number' ? (Date.now() - req.requestStartMs) : undefined }
+                ctx: {
+                    requestId: req.requestId,
+                    method: req.method,
+                    path: req.originalUrl,
+                    status,
+                    durationMs: typeof req.requestStartMs === 'number' ? (Date.now() - req.requestStartMs) : undefined,
+                    user_id: req.session?.user_id,
+                    profile_id: req.session?.profile_id
+                }
             })
-            res.status(this.clientErrors.unknown.code).send(this.clientErrors.unknown)
+            res.status(status).send(this.clientErrors.unknown)
         }
     }
 
