@@ -103,6 +103,11 @@ La carpeta `BO/` se mantiene **vacía por diseño**.
 - Scaffold rápido: `npm run bo -- new ObjectName`.
 - BOs demo (opcional): `examples/bo-demo/BO/`.
 
+<br/><br/>
+<div align="center">
+    -Mención al Profesor Jubert Pérez por enseñarme la base de esta arquitectura.-
+</div>
+
 ---
 
 ## English
@@ -204,3 +209,8 @@ The `BO/` folder is intentionally **empty by design**.
 - `scripts/`: CLI tools (BO CLI, db-init, export starterpack, etc.)
 - `docs/`: ES/EN documentation
 - `public/`: optional demo pages/scripts (only served when enabled)
+
+<br/><br/>
+<div align="center">
+    -Mention to Professor Jubert Perez for teaching me the basics of this architecture.-
+</div>
