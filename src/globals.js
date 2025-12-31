@@ -23,6 +23,7 @@ function applyEnvOverrides(cfg) {
 	cfg.session = cfg.session ?? {}
 	cfg.session.cookie = cfg.session.cookie ?? {}
 	cfg.cors = cfg.cors ?? {}
+	cfg.log = cfg.log ?? {}
 
 	const appPort = envInt(process.env.APP_PORT)
 	if (appPort != null) cfg.app.port = appPort
@@ -86,6 +87,10 @@ function applyEnvOverrides(cfg) {
 			.filter(Boolean)
 		if (origins.length > 0) cfg.cors.origins = origins
 	}
+
+	// Logging
+	// LOG_FORMAT=text|json (json = one-line JSON per event, better for log aggregation)
+	if (process.env.LOG_FORMAT) cfg.log.format = String(process.env.LOG_FORMAT).trim().toLowerCase()
 
 	return cfg
 }

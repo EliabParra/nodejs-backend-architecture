@@ -7,15 +7,70 @@ export default class Log {
         this.TYPE_DEBUG = 2
         this.TYPE_WARNING = 3
         this.activation = config.log.activation
+        this.format = (config?.log?.format ?? 'text')
     }
 
     show(params) {
+        const isJson = String(this.format).toLowerCase() === 'json'
+
+        const typeToLevel = (t) => {
+            switch (t) {
+                case this.TYPE_ERROR: return 'error'
+                case this.TYPE_WARNING: return 'warn'
+                case this.TYPE_DEBUG: return 'debug'
+                case this.TYPE_INFO:
+                default: return 'info'
+            }
+        }
+
+        const isActiveForType = (t) => {
+            switch (t) {
+                case this.TYPE_ERROR: return Boolean(this.activation?.[0])
+                case this.TYPE_INFO: return Boolean(this.activation?.[1])
+                case this.TYPE_DEBUG: return Boolean(this.activation?.[2])
+                case this.TYPE_WARNING: return Boolean(this.activation?.[3])
+                default: return true
+            }
+        }
+
+        const safeSerializeCtx = (ctx) => {
+            if (!ctx || typeof ctx !== 'object') return undefined
+            try {
+                // Ensure JSON-safe ctx (avoid throwing on circular refs)
+                JSON.stringify(ctx)
+                return ctx
+            } catch {
+                return '[unserializable]'
+            }
+        }
+
         switch(typeof params) {
             case 'string':
-                console.log(params)
+                if (isJson) {
+                    console.log(JSON.stringify({
+                        time: new Date().toISOString(),
+                        level: 'info',
+                        msg: params
+                    }))
+                } else {
+                    console.log(params)
+                }
                 break
             case 'object':
                 {
+                    const level = typeToLevel(params.type)
+                    if (!isActiveForType(params.type)) break
+
+                    if (isJson) {
+                        console.log(JSON.stringify({
+                            time: new Date().toISOString(),
+                            level,
+                            msg: params.msg,
+                            ctx: safeSerializeCtx(params.ctx)
+                        }))
+                        break
+                    }
+
                     const ctx = params.ctx
                     let ctxText = ''
                     if (ctx && typeof ctx === 'object') {
