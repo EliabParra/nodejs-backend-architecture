@@ -18,8 +18,8 @@
 Login no longer compares plaintext passwords. In `security.user.user_pw` you must store a **bcrypt hash**.
 
 - Generate a hash:
-	- `npm run hash:pw -- "MyStrongPassword123"`
-	- (optional) rounds: `npm run hash:pw -- "MyStrongPassword123" 10`
+	- `npm run hashpw -- "MyStrongPassword123"`
+	- (optional) rounds: `npm run hashpw -- "MyStrongPassword123" 10`
 
 Then store that hash as `user_pw` in the `security.user` table.
 
@@ -28,19 +28,37 @@ Then store that hash as `user_pw` in the `security.user` table.
 - Normal: `npm start` (runs [src/index.js](../../src/index.js))
 - Dev: `npm run dev` (nodemon)
 
-When running, the server exposes:
+### (Optional) start backend + frontend together
 
-- `GET /` serves [public/pages/index.html](../../public/pages/index.html)
-- `GET /content` (session-protected)
+If your team wants a single command to start both (without coupling the backend to any specific framework), use:
+
+- `npm run full`
+
+In backend `.env` set:
+
+- `FRONTEND_PATH=...` (path to the frontend repo containing `package.json`)
+- (optional) `FRONTEND_SCRIPT=start`
+- (optional) `BACKEND_SCRIPT=dev`
+
+To connect any frontend, see [10-frontend-clients-and-requests.md](10-frontend-clients-and-requests.md).
+
+When running, the server always exposes:
+
 - `POST /login`
 - `POST /logout`
 - `POST /toProccess` (transaction dispatcher)
 
-These endpoints are defined in [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.js); pages routing is in [src/router/pages.js](../../src/router/pages.js).
+Page routes (`/` and `/content`) depend on the mode:
+
+- `APP_FRONTEND_MODE=none` (default): serves **no** pages (API-only).
+- `APP_FRONTEND_MODE=pages`: serves [public/pages/index.html](../../public/pages/index.html) and the protected page.
+- `APP_FRONTEND_MODE=spa`: serves a SPA build from `SPA_DIST_PATH` and falls back to `index.html`.
+
+These endpoints are defined in [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.js). The pages router (pages mode) is in [src/router/pages.js](../../src/router/pages.js).
 
 ## Quick manual smoke-test
 
-1. Open `http://localhost:3000/`
+1. Open `http://localhost:3000/` (only if `APP_FRONTEND_MODE=pages` or `spa`)
 2. Login (button “Ingresar”).
 3. Try the Person CRUD demo (Get/Create/Update/Delete).
 

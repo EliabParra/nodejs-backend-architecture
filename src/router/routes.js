@@ -12,11 +12,5 @@ export const routes = [
         path: '/',
         view: 'index',
         validateIsAuth: false
-    },
-    {
-        name: 'content',
-        path: '/content',
-        view: 'content',
-        validateIsAuth: true
     }
 ]

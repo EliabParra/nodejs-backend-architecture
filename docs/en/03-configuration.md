@@ -22,6 +22,12 @@ In this repo, [src/config/config.json](../../src/config/config.json) keeps "plac
 Supported variables:
 
 - App: `APP_PORT`, `APP_HOST`, `APP_LANG`
+- Frontend hosting (optional):
+  - `APP_FRONTEND_MODE`: `pages` | `spa` | `none`
+    - `pages`: backend serves HTML from `public/pages` (legacy mode)
+    - `spa`: backend serves a SPA build and falls back to `index.html` (frontend owns routes)
+    - `none`: backend serves no pages (API-only) (**default**, to stay decoupled)
+  - `SPA_DIST_PATH` (spa mode only): path to frontend output (folder containing `index.html`)
 - Postgres: `DATABASE_URL` or `PGHOST`, `PGPORT`, `PGDATABASE`, `PGUSER`, `PGPASSWORD`, `PGSSL`
 - Session (rotation): `SESSION_SECRET` or `SESSION_SECRETS` (comma-separated)
   - Example: `SESSION_SECRETS=current_secret,previous_secret`
@@ -33,6 +39,7 @@ File: [src/config/config.json](../../src/config/config.json)
 
 - `app.port`, `app.host`: Express bind address
 - `app.lang`: active language (`"es"` or `"en"`)
+- `app.frontendMode`: `"pages"` | `"spa"` | `"none"` (see above)
 - `app.bodyLimit` (optional): request size limit for JSON/urlencoded bodies (e.g. `"100kb"`, `"1mb"`).
 - `db`: `pg.Pool` settings (used by [src/BSS/DBComponent.js](../../src/BSS/DBComponent.js))
 - `session`: `express-session` settings (used by [src/BSS/Session.js](../../src/BSS/Session.js))
@@ -56,6 +63,28 @@ Note (CSRF): for `POST` requests you must send the `X-CSRF-Token` header (see [d
 The server applies standard security headers via `helmet` and disables `X-Powered-By`.
 
 Implementation: [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.js)
+
+## Backend pages vs SPA frontend
+
+You can choose who “owns” routes:
+
+- `none` (default / recommended): API-only (serves no pages).
+- `pages`: Express serves pages from `public/pages` (routes in `src/router/routes.js`).
+- `spa`: Express serves a SPA build (React/Angular/Vue/etc.) and falls back to `index.html` for non-API routes.
+
+Main scripts in `package.json`:
+
+- `npm start`: production (uses `.env`/env vars)
+- `npm run dev`: development (nodemon)
+- `npm run full`: optional dev helper (starts backend + frontend via `FRONTEND_PATH`)
+
+For `spa`, the backend deliberately has NO default dist folder (to stay decoupled). You must set `SPA_DIST_PATH` or `config.app.spaDistPath`. If missing, the backend prompts on startup (interactive terminals only).
+
+### Extra variables for `npm run full` (optional)
+
+- `FRONTEND_PATH`: path to the frontend repo (must contain `package.json`).
+- `FRONTEND_SCRIPT` (default `start`): which npm script to run in the frontend.
+- `BACKEND_SCRIPT` (default `dev`): which npm script to run in the backend.
 
 ## messages.json
 

@@ -7,7 +7,7 @@ Las páginas viven en `public/pages/`:
 - Login + ejemplo CRUD: [public/pages/index.html](../../public/pages/index.html)
 - Página protegida: [public/pages/content.html](../../public/pages/content.html)
 
-Express sirve `public/` como estático desde [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.js) usando `express.static(pagesPath)`.
+Express sirve `public/` como estático **solo si** `APP_FRONTEND_MODE=pages` (modo legacy) desde [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.js).
 
 `pagesPath` está definido en [src/router/routes.js](../../src/router/routes.js).
 
@@ -26,6 +26,12 @@ Router y middleware: [src/router/pages.js](../../src/router/pages.js)
 - Si no hay sesión, redirige a `/?returnTo=<ruta>`.
 
 > Nota: el código hace `res.redirect(...).status(...).send(...)`; en práctica, `redirect` ya inicia la respuesta. La intención del diseño es: redirigir y, además, dejar un status/mensaje.
+
+## Nota sobre desacople
+
+En proyectos reales, lo recomendado es `APP_FRONTEND_MODE=none` (API-only) y que el frontend (React/Angular/Vue/etc.) se deploye separado.
+
+El modo `pages` existe solo como ejemplo/legacy para servir HTML desde este mismo backend.
 
 ## Sesión (express-session)
 

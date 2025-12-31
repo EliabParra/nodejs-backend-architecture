@@ -5,6 +5,7 @@ import rateLimit from "express-rate-limit"
 import { randomUUID, randomBytes } from "node:crypto"
 import cors from "cors"
 import helmet from "helmet"
+import path from "node:path"
 
 export default class Dispatcher {
     constructor() {
@@ -44,7 +45,6 @@ export default class Dispatcher {
         const bodyLimit = config?.app?.bodyLimit ?? '100kb'
         this.app.use(express.json({ limit: bodyLimit }))
         this.app.use(express.urlencoded({ extended: false, limit: bodyLimit }))
-        this.app.use(express.static(pagesPath))
         this.session = new Session(this.app)
         this.serverErrors = msgs[config.app.lang].errors.server
         this.clientErrors = msgs[config.app.lang].errors.client
@@ -78,6 +78,48 @@ export default class Dispatcher {
         })
 
         this.init()
+    }
+
+    getFrontendMode() {
+        const raw = String(config?.app?.frontendMode ?? 'pages').trim().toLowerCase()
+        if (raw === 'pages' || raw === 'spa' || raw === 'none') return raw
+        return 'pages'
+    }
+
+    resolveSpaDistPath() {
+        const fromEnv = process.env.SPA_DIST_PATH
+        if (fromEnv && String(fromEnv).trim().length > 0) return path.resolve(String(fromEnv))
+
+        const fromConfig = config?.app?.spaDistPath
+        if (fromConfig && String(fromConfig).trim().length > 0) return path.resolve(String(fromConfig))
+
+        // Deliberately no default: keep backend decoupled from any specific frontend repo/framework.
+        return null
+    }
+
+    serveSpa() {
+        const distPath = this.resolveSpaDistPath()
+        if (!distPath) {
+            throw new Error(
+                'SPA mode enabled but no dist path configured. Set SPA_DIST_PATH (env) or config.app.spaDistPath to a folder containing index.html.'
+            )
+        }
+
+        // Serve Angular assets
+        this.app.use(express.static(distPath))
+
+        // SPA fallback: any unmatched GET that accepts HTML returns index.html
+        // (Express 5 uses path-to-regexp v6; '*' is not a valid string pattern)
+        this.app.get(/.*/, (req, res, next) => {
+            if (req.method !== 'GET') return next()
+
+            const accept = String(req.headers?.accept ?? '')
+            if (!accept.includes('text/html')) return next()
+
+            return res.status(200).sendFile(path.join(distPath, 'index.html'), (err) => {
+                if (err) return next(err)
+            })
+        })
     }
 
     ensureCsrfToken(req) {
@@ -133,11 +175,24 @@ export default class Dispatcher {
     }
 
     init() {
-        this.app.use(buildPagesRouter({ session: this.session }))
+        const mode = this.getFrontendMode()
+
+        // Backend-rendered pages and assets (legacy)
+        if (mode === 'pages') {
+            this.app.use(express.static(pagesPath))
+            this.app.use(buildPagesRouter({ session: this.session }))
+        }
+
+        // API routes (always)
         this.app.get("/csrf", this.csrfToken.bind(this))
         this.app.post("/toProccess", this.toProccessRateLimiter, this.csrfProtection.bind(this), this.toProccess.bind(this))
         this.app.post("/login", this.loginRateLimiter, this.csrfProtection.bind(this), this.login.bind(this))
-        this.app.post("/logout", this.csrfProtection.bind(this), this.logout.bind(this))        
+        this.app.post("/logout", this.csrfProtection.bind(this), this.logout.bind(this))
+
+        // Angular SPA hosting (optional)
+        if (mode === 'spa') {
+            this.serveSpa()
+        }
 
         // Final error handler: keep API contract stable (no default HTML errors)
         this.app.use(this.finalErrorHandler.bind(this))

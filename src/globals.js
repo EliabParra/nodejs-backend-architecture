@@ -27,6 +27,7 @@ function applyEnvOverrides(cfg) {
 	if (appPort != null) cfg.app.port = appPort
 	if (process.env.APP_HOST) cfg.app.host = process.env.APP_HOST
 	if (process.env.APP_LANG) cfg.app.lang = process.env.APP_LANG
+	if (process.env.APP_FRONTEND_MODE) cfg.app.frontendMode = String(process.env.APP_FRONTEND_MODE)
 
 	// Postgres / pg
 	// Supports standard PG* vars and DATABASE_URL.

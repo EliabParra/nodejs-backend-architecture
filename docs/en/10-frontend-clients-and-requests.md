@@ -2,6 +2,21 @@
 
 This backend already exposes a stable contract (see [05-api-contract.md](05-api-contract.md)) and security constraints (cookies + CSRF). This doc shows how to call it from different frontend stacks.
 
+## 0) Decoupled backend: page modes
+
+By default this backend is meant to be **API-only** (decoupled from any frontend). The developer chooses the mode via `APP_FRONTEND_MODE`:
+
+- `none` (recommended): API-only. Any frontend (React/Angular/Vue/etc.) runs and deploys independently.
+- `pages` (legacy): backend serves HTML from `public/pages` (course/demo mode).
+- `spa` (optional): backend serves a **built SPA** (any framework) from `SPA_DIST_PATH` and falls back to `index.html`.
+
+Variables:
+
+- `APP_FRONTEND_MODE=none|pages|spa`
+- `SPA_DIST_PATH` (spa mode): folder containing `index.html` (build output)
+
+Optional dev helper: `npm run full` starts backend + frontend based on `FRONTEND_PATH` in `.env`.
+
 ## 1) What every frontend must respect
 
 ### Typical endpoints
@@ -52,7 +67,7 @@ async function ensureCsrf(baseUrl) {
   if (csrfToken) return csrfToken;
   const res = await fetch(`${baseUrl}/csrf`, { credentials: 'include' });
   const data = await res.json();
-  csrfToken = data?.token;
+  csrfToken = data?.csrfToken ?? data?.token;
   return csrfToken;
 }
 
@@ -97,7 +112,7 @@ export function createApiClient(baseUrl) {
     if (csrfToken) return csrfToken;
     const res = await fetch(`${baseUrl}/csrf`, { credentials: 'include' });
     const data = await res.json();
-    csrfToken = data?.token;
+    csrfToken = data?.csrfToken ?? data?.token;
     return csrfToken;
   }
 
@@ -125,7 +140,7 @@ export function createApiClient(baseUrl) {
   }
 
   return {
-    login: (user, pass) => post('/login', { user, pass }),
+    login: (username, password) => post('/login', { username, password }),
     logout: () => post('/logout', {}),
     toProccess: (tx, params) => post('/toProccess', { tx, params }),
   };
@@ -177,7 +192,7 @@ export class ApiService {
       .get('/csrf', { withCredentials: true })
       .toPromise();
 
-    this.csrfToken = data?.token;
+    this.csrfToken = data?.csrfToken ?? data?.token;
     return this.csrfToken as string;
   }
 }
@@ -191,3 +206,26 @@ export class ApiService {
   - the client is missing `credentials/include` / `withCredentials`.
   - your CORS allowlist does not include the frontend origin.
 - If you get `413`: request body is too large.
+
+## 7) How to connect “any frontend” (recommended)
+
+### Development (no repo coupling)
+
+1) Backend (API-only): set `APP_FRONTEND_MODE=none` in backend `.env` and run `npm run dev`.
+2) Frontend: run your framework dev server (React/Vite/Angular/etc.).
+3) Avoid CORS by using a dev proxy:
+  - Vite: `server.proxy`
+  - Angular: `proxy.conf.json`
+
+### Production
+
+- If frontend is deployed separately (recommended), configure CORS (`cors.origins`) and cookie flags (`sameSite/secure`) for your domain.
+- If you want the backend to serve a SPA build, use `APP_FRONTEND_MODE=spa` and set `SPA_DIST_PATH` (folder containing `index.html`).
+
+## 8) (Optional) `npm run full` for DX
+
+`npm run full` is an optional dev helper. In backend `.env` set:
+
+- `FRONTEND_PATH=PATH_TO_FRONTEND_REPO` (must contain `package.json`)
+- `FRONTEND_SCRIPT=start` (optional)
+- `BACKEND_SCRIPT=dev` (optional)

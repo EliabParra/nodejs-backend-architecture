@@ -2,7 +2,8 @@
     "app": {
         "port": 3000,
         "host": "localhost",
-        "lang": "es"
+        "lang": "es",
+        "frontendMode": "none"
     },
     "db": {
         "database": "curso-node",

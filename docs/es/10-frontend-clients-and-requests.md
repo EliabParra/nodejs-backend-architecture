@@ -2,6 +2,21 @@
 
 Este backend ya define un contrato estable (ver [05-api-contract.md](05-api-contract.md)) y medidas de seguridad (cookies + CSRF). Este documento muestra cómo consumirlo desde distintos frontends.
 
+## 0) Backend desacoplado: modos de páginas
+
+Por defecto, el backend está pensado para ser **API-only** (desacoplado del frontend). El desarrollador elige el modo con `APP_FRONTEND_MODE`:
+
+- `none` (recomendado): el backend **solo sirve API**. El frontend (React/Angular/Vue/etc.) corre y se deploya donde quieras.
+- `pages` (legacy): el backend sirve HTML desde `public/pages` (ejemplo del curso).
+- `spa` (opcional): el backend sirve **un build SPA** (cualquier framework) desde `SPA_DIST_PATH` y hace fallback a `index.html`.
+
+Variables:
+
+- `APP_FRONTEND_MODE=none|pages|spa`
+- `SPA_DIST_PATH` (solo `spa`): carpeta que contiene `index.html` (output de build)
+
+Atajo opcional de desarrollo (no obligatorio): `npm run full` en el backend levanta backend + frontend leyendo `FRONTEND_PATH` desde `.env`.
+
 ## 1) Lo que todo frontend debe respetar
 
 ### Endpoints típicos
@@ -52,7 +67,7 @@ async function ensureCsrf(baseUrl) {
   if (csrfToken) return csrfToken;
   const res = await fetch(`${baseUrl}/csrf`, { credentials: 'include' });
   const data = await res.json();
-  csrfToken = data?.token;
+  csrfToken = data?.csrfToken ?? data?.token;
   return csrfToken;
 }
 
@@ -112,7 +127,7 @@ export function createApiClient(baseUrl) {
     if (csrfToken) return csrfToken;
     const res = await fetch(`${baseUrl}/csrf`, { credentials: 'include' });
     const data = await res.json();
-    csrfToken = data?.token;
+    csrfToken = data?.csrfToken ?? data?.token;
     return csrfToken;
   }
 
@@ -140,7 +155,7 @@ export function createApiClient(baseUrl) {
   }
 
   return {
-    login: (user, pass) => post('/login', { user, pass }),
+    login: (username, password) => post('/login', { username, password }),
     logout: () => post('/logout', {}),
     toProccess: (tx, params) => post('/toProccess', { tx, params }),
   };
@@ -223,7 +238,7 @@ export class ApiService {
       .get('/csrf', { withCredentials: true })
       .toPromise();
 
-    this.csrfToken = data?.token;
+    this.csrfToken = data?.csrfToken ?? data?.token;
     return this.csrfToken as string;
   }
 }
@@ -244,3 +259,26 @@ Nota: el detalle exacto del interceptor depende de tu versión de Angular/RxJS, 
   - tu cliente no está usando `credentials/include` / `withCredentials`.
   - tu CORS allowlist no incluye el origen del frontend.
 - Si recibes `413`: estás enviando un body demasiado grande.
+
+## 7) Cómo conectar “cualquier frontend” (recomendado)
+
+### Desarrollo (sin acoplar repos)
+
+1) Backend (API-only): en `.env` del backend usa `APP_FRONTEND_MODE=none` y corre `npm run dev`.
+2) Frontend: usa el dev server de tu framework (React/Vite/Angular/etc.).
+3) Evita CORS con proxy:
+   - Vite: `server.proxy`
+   - Angular: `proxy.conf.json`
+
+### Producción
+
+- Si el frontend se deploya separado (recomendado), configura CORS (`cors.origins`) y cookies (`sameSite/secure`) según tu dominio.
+- Si quieres que el backend sirva una SPA, usa `APP_FRONTEND_MODE=spa` y define `SPA_DIST_PATH` (carpeta con `index.html`).
+
+## 8) (Opcional) `npm run full` para DX
+
+`npm run full` es solo un helper de dev. Requiere en `.env` del backend:
+
+- `FRONTEND_PATH=RUTA_AL_REPO_FRONT` (debe contener `package.json`)
+- `FRONTEND_SCRIPT=start` (opcional)
+- `BACKEND_SCRIPT=dev` (opcional)
