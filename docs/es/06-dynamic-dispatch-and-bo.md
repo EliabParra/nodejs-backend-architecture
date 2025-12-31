@@ -70,7 +70,7 @@ Ejemplo:
 
 Para evitar trabajo manual en DB y mantener el estándar de archivos, usa el CLI:
 
-- Guía: [docs/es/09-bo-cli-and-permissions.md](09-bo-cli-and-permissions.md)
+- Guía: [docs/es/09-bo-cli.md](09-bo-cli.md)
 
 Ejemplos rápidos:
 
@@ -80,7 +80,7 @@ Ejemplos rápidos:
 
 Si quieres ver un ejemplo completo funcionando (BOs demo + estructura), ver:
 
-- [docs/es/11-examples.md](11-examples.md)
+- [docs/es/12-examples.md](12-examples.md)
 
 ## Nota sobre `config.bo.path`
 

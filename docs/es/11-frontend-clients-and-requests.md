@@ -1,4 +1,4 @@
-# Tutorial Frontend (Vanilla / React / Vite / Angular)
+# 11 — Frontend clients y requests (Vanilla / React / Vite / Angular)
 
 Este backend ya define un contrato estable (ver [05-api-contract.md](05-api-contract.md)) y medidas de seguridad (cookies + CSRF). Este documento muestra cómo consumirlo desde distintos frontends.
 
@@ -56,7 +56,7 @@ Crea un módulo que:
 
 Si quieres ver el cliente ejemplo incluido en este repo, ver la sección **Ejemplos incluidos** al final.
 
-Si quieres ver los ejemplos/demo incluidos en este repo, ver: [docs/es/11-examples.md](11-examples.md).
+Si quieres ver los ejemplos/demo incluidos en este repo, ver: [docs/es/12-examples.md](12-examples.md).
 
 ## 3) Vanilla JS (fetch)
 

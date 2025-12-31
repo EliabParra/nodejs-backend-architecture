@@ -6,7 +6,7 @@ Las páginas (modo `pages`) viven en `public/pages/`.
 
 Los archivos HTML concretos incluidos en este repo son **ejemplos** (no parte del core). Ver:
 
-- [docs/es/11-examples.md](11-examples.md)
+- [docs/es/12-examples.md](12-examples.md)
 
 Express sirve `public/` como estático **solo si** `APP_FRONTEND_MODE=pages` (modo legacy) desde [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.js).
 
@@ -106,4 +106,4 @@ Notas:
 
 El flujo recomendado para consumir el backend (cookies + CSRF + `/toProccess`) está explicado en:
 
-- [docs/es/10-frontend-clients-and-requests.md](10-frontend-clients-and-requests.md)
+- [11-frontend-clients-and-requests.md](11-frontend-clients-and-requests.md)

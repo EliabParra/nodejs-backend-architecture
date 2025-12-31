@@ -8,7 +8,7 @@
 ## Install
 
 1. `npm install`
-2. Set up the DB and create the `security` schema (recommended: `npm run db:init`, see [docs/en/11-db-init.md](11-db-init.md)).
+2. Set up the DB and create the `security` schema (recommended: `npm run db:init`, see [docs/en/10-db-init-cli.md](10-db-init-cli.md)).
 3. Copy [\.env.example](../../.env.example) to `.env` and set `PG*` or `DATABASE_URL`.
 
 > Note: [src/config/config.json](../../src/config/config.json) keeps `CHANGE_ME` placeholders so real secrets are not committed.
@@ -105,7 +105,7 @@ In backend `.env` set:
 - (optional) `BACKEND_ARGS=...`
 - (optional) `FULL_KEEP_ALIVE=true`
 
-To connect any frontend, see [10-frontend-clients-and-requests.md](10-frontend-clients-and-requests.md).
+To connect any frontend, see [11-frontend-clients-and-requests.md](11-frontend-clients-and-requests.md).
 
 When running, the server always exposes:
 
@@ -116,7 +116,7 @@ When running, the server always exposes:
 Page routes (`/` and `/content`) depend on the mode:
 
 - `APP_FRONTEND_MODE=none` (default): serves **no** pages (API-only).
-- `APP_FRONTEND_MODE=pages`: serves static pages from `public/pages/` (see examples in [docs/en/11-examples.md](11-examples.md)).
+- `APP_FRONTEND_MODE=pages`: serves static pages from `public/pages/` (see examples in [docs/en/12-examples.md](12-examples.md)).
 - `APP_FRONTEND_MODE=spa`: serves a SPA build from `SPA_DIST_PATH` and falls back to `index.html`.
 
 These endpoints are defined in [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.js). The pages router (pages mode) is in [src/router/pages.js](../../src/router/pages.js).
@@ -130,4 +130,4 @@ These endpoints are defined in [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.
 If you want a working end-to-end demo (BOs + sample SQL), use the example under [examples/bo-demo](../../examples/bo-demo).
 
 The built-in pages (when `APP_FRONTEND_MODE=pages`) use `fetch` against `/login`, `/logout`, and `/toProccess`.
-To inspect the included demo client/pages, see [docs/en/11-examples.md](11-examples.md).
+To inspect the included demo client/pages, see [docs/en/12-examples.md](12-examples.md).

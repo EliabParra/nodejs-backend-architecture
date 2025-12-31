@@ -1,4 +1,4 @@
-# Included examples (optional)
+# 12 — Included examples (optional)
 
 This repository is meant to be a **template**. Anything that is **demo/reference** is intentionally isolated under `examples/` and/or `public/`.
 

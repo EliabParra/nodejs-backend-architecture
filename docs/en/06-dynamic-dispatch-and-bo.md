@@ -70,7 +70,7 @@ Example:
 
 To avoid manual DB work and keep the file structure consistent, use the CLI:
 
-- Guide: [docs/en/09-bo-cli-and-permissions.md](09-bo-cli-and-permissions.md)
+- Guide: [docs/en/09-bo-cli.md](09-bo-cli.md)
 
 Quick examples:
 

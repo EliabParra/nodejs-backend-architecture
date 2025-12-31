@@ -21,8 +21,8 @@ Most responses follow this shape (not all fields are always present):
 - `alerts`: optional validation messages (when `Validator` fails).
 
 A typical client shows `alerts` if present; otherwise it shows `msg`.
-For implementation recommendations, see [docs/en/10-frontend-clients-and-requests.md](10-frontend-clients-and-requests.md).
-For the included demo client/pages, see [docs/en/11-examples.md](11-examples.md).
+For implementation recommendations, see [11-frontend-clients-and-requests.md](11-frontend-clients-and-requests.md).
+For the included demo client/pages, see [12-examples.md](12-examples.md).
 
 Note: if the client sends `Content-Type: application/json` but the body is not valid JSON, the server normalizes the response to:
 

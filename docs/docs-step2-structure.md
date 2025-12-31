@@ -13,7 +13,7 @@ Alcance de este paso:
 
 ## 2.1 Estructura final (EN y ES en paralelo)
 
-Se mantiene numeración 00–11 para consistencia y enlaces previsibles.
+Se mantiene numeración 00–12 para consistencia y enlaces previsibles.
 
 00 — Qué es / audiencia / principios
 - Objetivo: explicar qué problema resuelve, límites, y filosofía “API-first, demo opcional”.
@@ -42,14 +42,17 @@ Se mantiene numeración 00–11 para consistencia y enlaces previsibles.
 08 — Frontend adapters (pages/spa/none)
 - Objetivo: explicar los 3 modos como feature, sin vender demo; links a ejemplos van en 10.
 
-09 — CLI
+09 — CLI (BO/tx/permisos)
 - Objetivo: `bo`, `db-init`, permisos, sync tx, workflows.
 
-10 — Ejemplos (opcional)
-- Objetivo: todo lo demo: BO demo (`examples/bo-demo`), demo pages (`public/pages`), tx concretos, cliente ejemplo.
-
-11 — DB init
+10 — DB init CLI
 - Objetivo: CLI y SQL idempotente, seed opcional, y “auto-register BOs”.
+
+11 — Frontend clients
+- Objetivo: guía para consumir el backend (cookies, CSRF, `/toProccess`) desde cualquier stack.
+
+12 — Ejemplos (opcional)
+- Objetivo: todo lo demo: BO demo (`examples/bo-demo`), demo pages (`public/pages`), tx concretos, cliente ejemplo.
 
 ---
 
@@ -95,9 +98,9 @@ La repo ya está cerca del orden objetivo; los cambios principales son:
 - `docs/en/06-dynamic-dispatch-and-bo.md` → mantener como 06, cambiar `Order`/`txStart 200` por placeholders, ejemplo concreto a 10.
 - `docs/en/07-validation-and-errors.md` → mantener como 07.
 - `docs/en/08-pages-and-session.md` → **renombrar conceptualmente** a “Frontend adapters” o reescribir para que sea 08 (pages/spa/none) y mover links a HTML demo a 10.
-- `docs/en/09-bo-cli-and-permissions.md` → mantener como 09, reemplazar `Order` por placeholders.
-- `docs/en/10-frontend-clients-and-requests.md` → parte core (cómo consumir API) se queda, pero referencias a cliente ejemplo (`public/js/Sender.js`) se mueven a 10.
-- `docs/en/11-db-init.md` → mantener como 11.
+- `docs/en/09-bo-cli.md` → mantener como 09, reemplazar `Order` por placeholders.
+- `docs/en/11-frontend-clients-and-requests.md` → guía para consumir API; referencias demo van a 12.
+- `docs/en/10-db-init-cli.md` → DB init CLI (slot 10).
 
 ### ES
 - Mismo mapeo que EN con los archivos equivalentes en `docs/es/**`.
@@ -106,7 +109,7 @@ La repo ya está cerca del orden objetivo; los cambios principales son:
 
 ## 2.4 Checklist de ejecución (para Pasos 3 y 4)
 
-1) Crear/reescribir `docs/*/10-examples.md` (nuevo) y mover allí:
+1) Crear/reescribir `docs/*/12-examples.md` (nuevo) y mover allí:
 - tx concretos del demo
 - referencias a `public/pages/*.html`
 - referencias a `public/js/Sender.js` / `public/js/scripts.js`

@@ -1,4 +1,4 @@
-# 11 — DB init (schema `security`) + tabla de sesión
+# 10 — DB init (schema `security`) + tabla de sesión
 
 En esta arquitectura, el backend **depende** del schema `security` (tx + permisos). Este repo incluye un mini-CLI para crear el esquema mínimo (idempotente) y opcionalmente sembrar un usuario admin.
 
@@ -98,7 +98,7 @@ Implementación: [src/BSS/Session.js](../../src/BSS/Session.js) (usa `connect-pg
 ## Notas operativas
 
 - `Security` cachea permisos y tx-map al inicio; después de cambios en DB, reinicia el server.
-- Si cambias `security.method`/permisos y no se reflejan, revisa [docs/es/04-database-security-model.md](04-database-security-model.md) y [docs/es/09-bo-cli-and-permissions.md](09-bo-cli-and-permissions.md).
+- Si cambias `security.method`/permisos y no se reflejan, revisa [docs/es/04-database-security-model.md](04-database-security-model.md) y [docs/es/09-bo-cli.md](09-bo-cli.md).
 
 ## Auditoría (runtime)
 

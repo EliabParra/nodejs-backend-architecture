@@ -21,8 +21,8 @@ La mayoría de las respuestas siguen este shape (no siempre vienen todos los cam
 - `alerts`: lista opcional de mensajes de validación (cuando falla `Validator`).
 
 Un cliente típico muestra `alerts` si existen; si no, muestra `msg`.
-Para ver recomendaciones de implementación: [docs/es/10-frontend-clients-and-requests.md](10-frontend-clients-and-requests.md).
-Para ver el cliente demo incluido: [docs/es/11-examples.md](11-examples.md).
+Para ver recomendaciones de implementación: [docs/es/11-frontend-clients-and-requests.md](11-frontend-clients-and-requests.md).
+Para ver el cliente demo incluido: [docs/es/12-examples.md](12-examples.md).
 
 Nota: si el cliente envía un `Content-Type: application/json` pero el body no es JSON válido, el servidor normaliza la respuesta a:
 
@@ -277,4 +277,5 @@ Los valores concretos de `tx` dependen de tu proyecto (lo que exista en `securit
 
 Si quieres ver ejemplos completos (incluyendo UI/cliente de ejemplo y tx de demo), ver:
 
-- [docs/es/10-frontend-clients-and-requests.md](10-frontend-clients-and-requests.md)
+- [docs/es/11-frontend-clients-and-requests.md](11-frontend-clients-and-requests.md)
+- [docs/es/12-examples.md](12-examples.md)

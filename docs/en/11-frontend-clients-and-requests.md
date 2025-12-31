@@ -1,4 +1,4 @@
-# Frontend tutorial (Vanilla / React / Vite / Angular)
+# 11 — Frontend clients and requests (Vanilla / React / Vite / Angular)
 
 This backend already exposes a stable contract (see [05-api-contract.md](05-api-contract.md)) and security constraints (cookies + CSRF). This doc shows how to call it from different frontend stacks.
 
@@ -58,7 +58,7 @@ You can use the existing example client as reference: [public/js/Sender.js](../.
 
 To keep this tutorial template-first, the demo client/pages live under the Examples chapter:
 
-- [docs/en/11-examples.md](11-examples.md)
+- [12-examples.md](12-examples.md)
 
 ## 3) Vanilla JS (fetch)
 

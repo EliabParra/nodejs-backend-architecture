@@ -1,6 +1,28 @@
 # Documentation (EN)
 
-These docs describe the current architecture in this repository and the rules to build new features following the same pattern.
+These docs describe a **backend template (Node.js + Express)** intended for teaching and real projects: an API-first base with `tx` + permissions, plus **optional** examples kept isolated.
+
+## What this is
+
+A reference backend that demonstrates the architecture pattern (transaction dispatcher + BOs) and provides a practical starter (config, DB init, health/ready, DB-safe tests).
+
+## Goals
+
+- Be reusable as a clean starting point (not coupled to a specific demo domain).
+- Teach the full flow: request → security → BO → validation → response.
+- Integrate with any frontend (separate SPA, `pages`, or `spa` serving a build).
+
+## Audience
+
+- Students: learn how to extend the backend (create BOs, map `tx`, assign permissions).
+- Instructors/TAs: consistent template repo for labs and grading.
+- Teams: a starting point for a real backend.
+
+## Principles
+
+- **API-only by default** (`APP_FRONTEND_MODE=none`).
+- **Demos isolated** under `examples/` and `public/` (see the Examples chapter).
+- Consistent JSON contract + normalized errors.
 
 ## Quick map
 
@@ -17,7 +39,7 @@ These docs describe the current architecture in this repository and the rules to
 - **Validation (alerts)**: [src/BSS/Validator.js](../../src/BSS/Validator.js)
 - **Shared helpers (BSS)**: [src/BSS/helpers/](../../src/BSS/helpers/)
 - **Pages router**: [src/router/pages.js](../../src/router/pages.js)
-- **Included examples (client/pages/demo BO)**: see [docs/en/11-examples.md](11-examples.md)
+- **Included examples (client/pages/demo BO)**: see [docs/en/12-examples.md](12-examples.md)
 
 ## Index
 
@@ -29,10 +51,10 @@ These docs describe the current architecture in this repository and the rules to
 6. [How to create a BO (dynamic dispatch)](06-dynamic-dispatch-and-bo.md)
 7. [Validation and error handling](07-validation-and-errors.md)
 8. [Pages and session](08-pages-and-session.md)
-9. [BO CLI + tx + permissions](09-bo-cli-and-permissions.md)
-10. [Frontend tutorial (clients and requests)](10-frontend-clients-and-requests.md)
-11. [Included examples (optional)](11-examples.md)
-12. [DB init (`security` schema)](11-db-init.md)
+9. [BO CLI + tx + permissions](09-bo-cli.md)
+10. [DB init CLI (`security` schema)](10-db-init-cli.md)
+11. [Frontend clients and requests](11-frontend-clients-and-requests.md)
+12. [Included examples (optional)](12-examples.md)
 
 ## Glossary
 

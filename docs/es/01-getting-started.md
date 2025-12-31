@@ -8,7 +8,7 @@
 ## Instalación
 
 1. `npm install`
-2. Configura la DB y crea el schema `security` (recomendado: `npm run db:init`, ver [docs/es/11-db-init.md](11-db-init.md)).
+2. Configura la DB y crea el schema `security` (recomendado: `npm run db:init`, ver [docs/es/10-db-init-cli.md](10-db-init-cli.md)).
 3. Copia [\.env.example](../../.env.example) a `.env` y configura `PG*` o `DATABASE_URL`.
 
 > Nota: [src/config/config.json](../../src/config/config.json) deja valores `CHANGE_ME` para no commitear secretos.
@@ -105,7 +105,7 @@ Requiere configurar en el `.env` del backend:
 - (opcional) `BACKEND_ARGS=...`
 - (opcional) `FULL_KEEP_ALIVE=true`
 
-Para conectar cualquier frontend, ver [10-frontend-clients-and-requests.md](10-frontend-clients-and-requests.md).
+Para conectar cualquier frontend, ver [11-frontend-clients-and-requests.md](11-frontend-clients-and-requests.md).
 
 Al levantar, el servidor expone siempre:
 
@@ -116,7 +116,7 @@ Al levantar, el servidor expone siempre:
 Rutas de páginas (`/` y `/content`) dependen del modo:
 
 - `APP_FRONTEND_MODE=none` (default): **no** sirve páginas (API-only).
-- `APP_FRONTEND_MODE=pages`: sirve páginas estáticas desde `public/pages/` (ver ejemplos en [docs/es/11-examples.md](11-examples.md)).
+- `APP_FRONTEND_MODE=pages`: sirve páginas estáticas desde `public/pages/` (ver ejemplos en [docs/es/12-examples.md](12-examples.md)).
 - `APP_FRONTEND_MODE=spa`: sirve un build SPA desde `SPA_DIST_PATH` y hace fallback a `index.html`.
 
 Estos endpoints se definen en [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.js). El router de páginas (modo `pages`) está en [src/router/pages.js](../../src/router/pages.js).
@@ -130,4 +130,4 @@ Estos endpoints se definen en [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.j
 Si quieres un demo completo funcionando (BOs + SQL de ejemplo), usa el ejemplo bajo [examples/bo-demo](../../examples/bo-demo).
 
 Las páginas internas (cuando `APP_FRONTEND_MODE=pages`) usan `fetch` hacia `/login`, `/logout` y `/toProccess`.
-Si quieres ver el cliente demo incluido, ver [docs/es/11-examples.md](11-examples.md).
+Si quieres ver el cliente demo incluido, ver [docs/es/12-examples.md](12-examples.md).

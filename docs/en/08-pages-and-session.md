@@ -6,7 +6,7 @@ Pages live under `public/pages/`.
 
 The concrete HTML files included in this repo are **examples** (not part of the core template). See:
 
-- [docs/en/11-examples.md](11-examples.md)
+- [12-examples.md](12-examples.md)
 
 Express serves `public/` statically **only when** `APP_FRONTEND_MODE=pages` (legacy mode) from [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.js).
 
@@ -106,8 +106,8 @@ Notes:
 
 The recommended client flow (cookies + CSRF + `/toProccess`) is described in:
 
-- [docs/en/10-frontend-clients-and-requests.md](10-frontend-clients-and-requests.md)
+- [11-frontend-clients-and-requests.md](11-frontend-clients-and-requests.md)
 
 If you want to inspect the included demo pages/scripts/client, see:
 
-- [docs/en/11-examples.md](11-examples.md)
+- [12-examples.md](12-examples.md)
