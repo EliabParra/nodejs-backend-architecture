@@ -84,7 +84,9 @@ Opciones:
 
 Notas:
 
-- El parser de métodos es simple (regex). Recomendación: evita declarar funciones auxiliares públicas dentro del BO si no quieres que aparezcan como “métodos de negocio”. Si necesitas helpers, usa prefijo `_`.
+- La detección de métodos es estricta: solo se consideran “métodos de negocio” los declarados como `async <nombre>(...)`.
+- En `sync`, se ignoran los métodos que empiezan con `_` (recomendado para helpers internos como `_mapRow`, `_normalize`).
+- Evita declarar helpers `async` públicos dentro del BO si no quieres que queden mapeados a `tx` y permisos.
 
 ### 3) Listar mapping en DB: `list`
 

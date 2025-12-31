@@ -4,8 +4,15 @@ import '../src/globals.js'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import readline from 'node:readline/promises'
+import { pathToFileURL } from 'node:url'
 
 const repoRoot = process.cwd()
+
+function isMainModule() {
+  const entry = process.argv?.[1]
+  if (!entry) return false
+  return import.meta.url === pathToFileURL(path.resolve(entry)).href
+}
 
 function printHelp() {
   console.log(`
@@ -149,17 +156,41 @@ function templateValidate(objectName) {
 const require = createRequire(import.meta.url)
 const labels = require('./errors/${objectName.toLowerCase()}Alerts.json')[config.app.lang].labels
 
+/*
+${objectName}Validate
+
+Guía rápida:
+- Mantén la validación aquí (no en el BO) para que sea reutilizable.
+- Usa el validator global [0m(v)[0m y retorna boolean. Si retorna false, el BO puede responder invalidParameters con v.getAlerts().
+ - Usa el validator global (v) y retorna boolean. Si retorna false, el BO puede responder invalidParameters con v.getAlerts().
+- Prefiere normalizar (trim/casteos) antes de persistir.
+*/
+
 export class ${objectName}Validate {
-  static normalizeId(value) { return typeof value === 'string' ? Number(value) : value }
-  static normalizeName(value) { return typeof value === 'string' ? value.trim() : value }
+  static normalizeId(value) {
+    return typeof value === 'string' ? Number(value) : value
+  }
 
-  static getLookupMode(value) {
+  static normalizeText(value) {
+    return typeof value === 'string' ? value.trim() : value
+  }
+
+  static validateId(value) {
     const num = this.normalizeId(value)
-    if (v.validateInt({ value: num, label: labels.id })) return 'id'
+    return v.validateInt({ value: num, label: labels.id })
+  }
 
-    const name = this.normalizeName(value)
-    if (typeof name === 'string' && v.validateLength({ value: name, label: labels.name }, 1, 200)) return 'name'
+  static validateName(value, { min = 1, max = 200 } = {}) {
+    const name = this.normalizeText(value)
+    if (typeof name !== 'string') return v.validateString({ value: name, label: labels.name })
+    return v.validateLength({ value: name, label: labels.name }, min, max)
+  }
 
+  // Ejemplo de patrón genérico: un lookup puede ser por id o por nombre.
+  // Ajusta esto según tu entidad.
+  static getLookupMode(value) {
+    if (this.validateId(value)) return 'id'
+    if (this.validateName(value)) return 'name'
     return null
   }
 }
@@ -167,17 +198,50 @@ export class ${objectName}Validate {
 }
 
 function templateRepo(objectName) {
-  return `export class ${objectName} {
+  return `/*
+${objectName}Repository
+
+Guía rápida:
+- Este módulo contiene acceso a datos (DB), aislado del BO.
+- Define tus SQL en src/config/queries.json y ejecútalas con db.exe('<schema>', '<queryName>', params).
+- No asumas un schema fijo: cambia 'enterprise' por el schema real de tu dominio.
+*/
+
+export class ${objectName} {
   constructor(params) {
     Object.assign(this, params)
   }
 }
 
 export class ${objectName}Repository {
+  // Reemplaza 'enterprise' y 'TODO_*' con tu schema/queries reales.
+
   static async getById(id) {
     const r = await db.exe('enterprise', 'TODO_getById', [id])
     if (!r?.rows || r.rows.length === 0) return null
     return new ${objectName}(r.rows[0])
+  }
+
+  static async getByName(name) {
+    const r = await db.exe('enterprise', 'TODO_getByName', [name])
+    if (!r?.rows || r.rows.length === 0) return null
+    return new ${objectName}(r.rows[0])
+  }
+
+  static async create(params) {
+    // Ejemplo: await db.exe('enterprise', 'TODO_create', [..])
+    await db.exe('enterprise', 'TODO_create', [params])
+    return true
+  }
+
+  static async update(params) {
+    await db.exe('enterprise', 'TODO_update', [params])
+    return true
+  }
+
+  static async delete(params) {
+    await db.exe('enterprise', 'TODO_delete', [params])
+    return true
   }
 }
 `
@@ -187,6 +251,17 @@ function templateBO(objectName, methods) {
   const methodBodies = methods.map(m => {
     return `  async ${m}(params) {
     try {
+      // Patrón recomendado:
+      // 1) validar + normalizar (en Validate)
+      // 2) ejecutar repositorio (DB) en Repository
+      // 3) retornar { code, msg, data, alerts? } siguiendo el contrato
+
+      // TODO: implementa validación según tu caso
+      // if (!${objectName}Validate.validateX(params)) return ${objectName}ErrorHandler.invalidParameters(v.getAlerts())
+
+      // TODO: implementa tu operación real (DB/servicios/etc.)
+      // const result = await ${objectName}Repository.someOperation(params)
+
       return { code: 200, msg: successMsgs.${m} ?? '${escapeTemplateBraces(`${objectName} ${m} OK`)}', data: params ?? null }
     } catch (err) {
       log.show({ type: log.TYPE_ERROR, msg: \`${msgs[config.app.lang].errors.server.serverError.msg}, ${objectName}BO.${m}: \${err?.message || err}\` })
@@ -204,6 +279,15 @@ import { ${objectName}Repository } from './${objectName}.js'
 
 const successMsgs = require('./${objectName.toLowerCase()}SuccessMsgs.json')[config.app.lang]
 
+/*
+${objectName}BO
+
+Reglas del framework:
+- Solo métodos async del BO se registran como "métodos de negocio" (tx + permisos).
+- Si necesitas helpers internos, pueden iniciar con "_" (ej. _mapRow, _normalize). En sync se ignoran y no se registran en DB.
+- Mantén el BO delgado: valida en Validate y usa Repository para DB.
+*/
+
 export class ${objectName}BO {
 ${methodBodies}
 }
@@ -212,10 +296,12 @@ ${methodBodies}
 
 function parseMethodsFromBO(fileContent) {
   const methods = new Set()
-  const re = /\basync\s+([A-Za-z_][A-Za-z0-9_]*)\s*\(|\n\s*([A-Za-z_][A-Za-z0-9_]*)\s*\(/g
+  // Only register methods declared as: async <name>(...)
+  // This avoids accidentally picking up helper calls or nested functions.
+  const re = /\basync\s+([A-Za-z_][A-Za-z0-9_]*)\s*\(/g
   let m
   while ((m = re.exec(fileContent)) != null) {
-    const name = (m[1] || m[2])
+    const name = m[1]
     if (!name) continue
     if (['constructor'].includes(name)) continue
     if (name.startsWith('#')) continue
@@ -468,4 +554,21 @@ async function main() {
   }
 }
 
-await main()
+export {
+  parseArgs,
+  validateObjectName,
+  parseCsv,
+  crudMethods,
+  templateSuccessMsgs,
+  templateErrorMsgs,
+  templateAlertsLabels,
+  templateErrorHandler,
+  templateValidate,
+  templateRepo,
+  templateBO,
+  parseMethodsFromBO
+}
+
+if (isMainModule()) {
+  await main()
+}

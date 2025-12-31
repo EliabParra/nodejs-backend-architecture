@@ -84,7 +84,9 @@ Options:
 
 Notes:
 
-- Method extraction uses a simple regex. Recommendation: avoid defining extra public helper functions inside the BO if you don’t want them treated as “business methods”. Use `_` prefix for helpers.
+- Method extraction is intentionally strict: only methods declared as `async <name>(...)` are considered business methods.
+- During `sync`, methods starting with `_` are ignored (recommended for internal helpers like `_mapRow`, `_normalize`).
+- Avoid defining extra public `async` helpers inside the BO unless you want them mapped to `tx` and permissions.
 
 ### 3) List DB mapping: `list`
 
