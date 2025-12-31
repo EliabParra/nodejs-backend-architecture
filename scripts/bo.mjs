@@ -156,14 +156,7 @@ function templateValidate(objectName) {
 const require = createRequire(import.meta.url)
 const labels = require('./errors/${objectName.toLowerCase()}Alerts.json')[config.app.lang].labels
 
-/*
-${objectName}Validate
-
-Guía rápida:
-- Mantén la validación aquí (no en el BO) para que sea reutilizable.
-- Usa el validator global (v) y retorna boolean. Si retorna false, el BO puede responder invalidParameters con v.getAlerts().
-- Prefiere normalizar (trim/casteos) antes de persistir.
-*/
+/* ${objectName}Validate: validación/normalización reutilizable */
 
 export class ${objectName}Validate {
   static normalizeId(value) {
@@ -200,13 +193,8 @@ function templateRepo(objectName) {
   return `/*
 ${objectName}Repository
 
-Guía rápida:
-- Este módulo contiene acceso a datos (DB), aislado del BO.
-- Define tus SQL en src/config/queries.json y ejecútalas con db.exe('<schema>', '<queryName>', params).
-- Nota: db.exe acepta params como Array u Object. Si pasas un Object, se convierte a un array por orden de propiedades; ese orden debe coincidir con $1..$n del query.
-- Recomendación: usa Array cuando el orden sea crítico.
-- Alternativa (recomendada si prefieres Object): usa db.exeNamed('<schema>', '<queryName>', paramsObj, ['k1','k2',...]) para forzar el orden y validar llaves.
-- No asumas un schema fijo: cambia 'enterprise' por el schema real de tu dominio.
+- Acceso a datos (DB) aislado del BO.
+- Reemplaza 'domain' y TODO_* por tu schema/queries reales.
 */
 
 export class ${objectName} {
@@ -216,33 +204,32 @@ export class ${objectName} {
 }
 
 export class ${objectName}Repository {
-  // Reemplaza 'enterprise' y 'TODO_*' con tu schema/queries reales.
+  // Reemplaza 'domain' y 'TODO_*' con tu schema/queries reales.
 
   static async getById(id) {
-    const r = await db.exe('enterprise', 'TODO_getById', [id])
+    const r = await db.exe('domain', 'TODO_getById', [id])
     if (!r?.rows || r.rows.length === 0) return null
     return new ${objectName}(r.rows[0])
   }
 
   static async getByName(name) {
-    const r = await db.exe('enterprise', 'TODO_getByName', [name])
+    const r = await db.exe('domain', 'TODO_getByName', [name])
     if (!r?.rows || r.rows.length === 0) return null
     return new ${objectName}(r.rows[0])
   }
 
   static async create(params) {
-    // Ejemplo: await db.exe('enterprise', 'TODO_create', [..])
-    await db.exe('enterprise', 'TODO_create', [params])
+    await db.exe('domain', 'TODO_create', [params])
     return true
   }
 
   static async update(params) {
-    await db.exe('enterprise', 'TODO_update', [params])
+    await db.exe('domain', 'TODO_update', [params])
     return true
   }
 
   static async delete(params) {
-    await db.exe('enterprise', 'TODO_delete', [params])
+    await db.exe('domain', 'TODO_delete', [params])
     return true
   }
 }
@@ -250,18 +237,17 @@ export class ${objectName}Repository {
 }
 
 function templateBO(objectName, methods) {
-  const methodBodies = methods.map(m => {
+  const methodBodies = methods.map((m, idx) => {
+    const patternComment = idx === 0
+      ? `      // Patrón recomendado (aplica a todos los métodos):\n      // 1) validar/normalizar (Validate)\n      // 2) ejecutar operación (Repository/servicios)\n      // 3) retornar { code, msg, data?, alerts? }\n\n`
+      : ''
+
     return `  async ${m}(params) {
     try {
-      // Patrón recomendado:
-      // 1) validar + normalizar (en Validate)
-      // 2) ejecutar repositorio (DB) en Repository
-      // 3) retornar { code, msg, data?, alerts? } siguiendo el contrato
-
-      // TODO: implementa validación según tu caso
+${patternComment}      // TODO: valida/normaliza según tu caso
       // if (!${objectName}Validate.validateX(params)) return ${objectName}ErrorHandler.invalidParameters(v.getAlerts())
 
-      // TODO: implementa tu operación real (DB/servicios/etc.)
+      // TODO: implementa tu operación real
       // const result = await ${objectName}Repository.someOperation(params)
 
       return { code: 200, msg: successMsgs.${m} ?? '${escapeTemplateBraces(`${objectName} ${m} OK`)}', data: params ?? null }
@@ -281,14 +267,7 @@ import { ${objectName}Repository } from './${objectName}.js'
 
 const successMsgs = require('./${objectName.toLowerCase()}SuccessMsgs.json')[config.app.lang]
 
-/*
-${objectName}BO
-
-Reglas del framework:
-- Solo métodos async del BO se registran como "métodos de negocio" (tx + permisos).
-- Si necesitas helpers internos, pueden iniciar con "_" (ej. _mapRow, _normalize). En sync se ignoran y no se registran en DB.
-- Mantén el BO delgado: valida en Validate y usa Repository para DB.
-*/
+/* ${objectName}BO: métodos async se registran; helpers internos pueden iniciar con "_". En sync se ignoran y no se registran en DB. */
 
 export class ${objectName}BO {
 ${methodBodies}

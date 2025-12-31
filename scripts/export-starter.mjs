@@ -109,7 +109,7 @@ async function main() {
       '',
       'This folder is intentionally empty in the starter template.',
       '',
-      '- Add your domain BOs here (e.g. `BO/Person/PersonBO.js`).',
+      '- Add your domain BOs here (e.g. `BO/ObjectName/ObjectNameBO.js`).',
       '- The dispatcher resolves `tx -> (object_na, method_na)` and `Security` dynamically imports BO modules.',
       '',
       'Tip: use the BO CLI (`npm run bo -- new ...`) to scaffold a BO.',

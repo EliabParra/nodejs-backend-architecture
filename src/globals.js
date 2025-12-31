@@ -28,6 +28,7 @@ function applyEnvOverrides(cfg) {
 	const appPort = envInt(process.env.APP_PORT)
 	if (appPort != null) cfg.app.port = appPort
 	if (process.env.APP_HOST) cfg.app.host = process.env.APP_HOST
+	if (process.env.APP_NAME) cfg.app.name = String(process.env.APP_NAME)
 	if (process.env.APP_LANG) cfg.app.lang = process.env.APP_LANG
 	if (process.env.APP_FRONTEND_MODE) cfg.app.frontendMode = String(process.env.APP_FRONTEND_MODE)
 

@@ -68,7 +68,7 @@ export default class Dispatcher {
         await registerFrontendHosting(this.app, { session: this.session, stage: 'preApi' })
 
         // API routes (always)
-        this.app.get('/health', createHealthHandler({ name: 'nodejs-backend-architecture' }))
+        this.app.get('/health', createHealthHandler({ name: config?.app?.name ?? 'app' }))
         this.app.get('/ready', createReadyHandler({ clientErrors: this.clientErrors }))
         this.app.get("/csrf", csrfTokenHandler)
         this.app.post("/toProccess", this.toProccessRateLimiter, csrfProtection, this.toProccess.bind(this))

@@ -1,5 +1,6 @@
 {
     "app": {
+        "name": "app",
         "port": 3000,
         "host": "localhost",
         "lang": "es",
