@@ -92,7 +92,7 @@ Cuando agregas una feature nueva, estos son los pasos **mínimos** para que el d
   - nombre exportado de clase `export class <object_na>BO { ... }`
   (ver [docs/es/06-dynamic-dispatch-and-bo.md](06-dynamic-dispatch-and-bo.md))
 
-- `method_na` debe existir como método en la clase BO (ej. `getPerson(params)` en [BO/Person/PersonBO.js](../../BO/Person/PersonBO.js)).
+- `method_na` debe existir como método en la clase BO (ej. `<method_na>(params)` en `BO/<object_na>/<object_na>BO.js`).
 
 ## Nota operativa
 

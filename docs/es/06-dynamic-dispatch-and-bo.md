@@ -31,15 +31,18 @@ Para que el import dinámico funcione:
 
 ## Estructura recomendada de un BO
 
-Ejemplo real: `BO/Person/`
+Estructura típica (placeholders):
 
-- BO (orquestación + mensajes): [BO/Person/PersonBO.js](../../BO/Person/PersonBO.js)
-- Modelo/entidad (DB + validación): [BO/Person/Person.js](../../BO/Person/Person.js)
-- Reglas de validación: [BO/Person/PersonValidate.js](../../BO/Person/PersonValidate.js)
-- Errores del dominio (mensaje + code + alerts):
-  - Handler: [BO/Person/errors/PersonErrorHandler.js](../../BO/Person/errors/PersonErrorHandler.js)
-  - Mensajes: [BO/Person/errors/personErrorMsgs.json](../../BO/Person/errors/personErrorMsgs.json)
-  - Labels para alerts: [BO/Person/errors/personAlerts.json](../../BO/Person/errors/personAlerts.json)
+- BO (orquestación + mensajes): `BO/<ObjectName>/<ObjectName>BO.js`
+- Repositorio / modelo (DB): `BO/<ObjectName>/<ObjectName>.js`
+- Validación: `BO/<ObjectName>/<ObjectName>Validate.js`
+- Mensajes de éxito: `BO/<ObjectName>/<objectName>SuccessMsgs.json`
+- Errores del dominio:
+  - Handler: `BO/<ObjectName>/errors/<ObjectName>ErrorHandler.js`
+  - Mensajes: `BO/<ObjectName>/errors/<objectName>ErrorMsgs.json`
+  - Labels: `BO/<ObjectName>/errors/<objectName>Alerts.json`
+
+Si quieres ver un ejemplo completo, revisa: [examples/bo-demo/BO](../../examples/bo-demo/BO)
 
 ## Firma y contrato del método BO
 
@@ -51,7 +54,7 @@ Un método BO recibe `params` (lo que venga en el request) y retorna un objeto c
 
 Ejemplo:
 
-- `PersonBO.getPerson(value)` llama `Person.get(value)` y si ok retorna `{ data: result, msg: ..., code: 200 }`.
+- `<ObjectName>BO.<method>(params)` ejecuta la operación y retorna `{ data, msg, code }`.
 
 ## Checklist para agregar una nueva feature
 

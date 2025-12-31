@@ -19,10 +19,12 @@ You can pass plain values or objects with metadata:
 
 On failure, `Validator` builds `alerts` using templates from [src/config/messages.json](../../src/config/messages.json) (`msgs[lang].alerts`).
 
-### Real example (Person)
+### Example structure (generic)
 
-- Labels per language: [BO/Person/errors/personAlerts.json](../../BO/Person/errors/personAlerts.json)
-- Usage: [BO/Person/PersonValidate.js](../../BO/Person/PersonValidate.js)
+- Labels per language: `BO/<ObjectName>/errors/<objectName>Alerts.json`
+- Usage: `BO/<ObjectName>/<ObjectName>Validate.js`
+
+For a working example, see: [examples/bo-demo/BO](../../examples/bo-demo/BO)
 
 ## HTTP schema validation (Dispatcher/Session)
 
@@ -36,10 +38,10 @@ This produces labeled `alerts` (`body`, `username`, `password`, etc.) using the 
 
 ## Domain-level errors (pattern)
 
-Example: `Person`.
+Example: `<ObjectName>`.
 
-- Domain messages in JSON: [BO/Person/errors/personErrorMsgs.json](../../BO/Person/errors/personErrorMsgs.json)
-- Normalizer/handler: [BO/Person/errors/PersonErrorHandler.js](../../BO/Person/errors/PersonErrorHandler.js)
+- Domain messages in JSON: `BO/<ObjectName>/errors/<objectName>ErrorMsgs.json`
+- Normalizer/handler: `BO/<ObjectName>/errors/<ObjectName>ErrorHandler.js`
 
 Convention:
 

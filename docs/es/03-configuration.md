@@ -21,7 +21,8 @@ En el repo, [src/config/config.json](../../src/config/config.json) deja valores 
 
 Variables soportadas:
 
-- App: `APP_PORT`, `APP_HOST`, `APP_LANG`
+- App: `APP_NAME`, `APP_PORT`, `APP_HOST`, `APP_LANG`
+  - `APP_NAME`: nombre lógico del servicio (aparece en `/health`).
 - Frontend hosting (opcional):
   - `APP_FRONTEND_MODE`: `pages` | `spa` | `none`
     - `pages`: el backend sirve HTML desde `public/pages` (modo legacy, como el curso original)
@@ -55,6 +56,7 @@ Logging (opcional):
 Archivo: [src/config/config.json](../../src/config/config.json)
 
 - `app.port`, `app.host`: dónde levanta Express
+- `app.name`: nombre lógico del servicio (usado por `/health`).
 - `app.lang`: idioma activo (`"es"` o `"en"`). Afecta `msgs[...]` y alerts.
 - `app.frontendMode`: `"pages"` | `"spa"` | `"none"` (ver arriba)
 - `app.bodyLimit` (opcional): límite de tamaño para requests JSON/urlencoded (ej. `"100kb"`, `"1mb"`).
@@ -164,7 +166,7 @@ Estructura:
 Ejemplos actuales:
 
 - `security`: **schema definitivo** del modelo de auth/roles/tx/permisos.
-- `enterprise`: schema de ejemplo para la entidad `Person`.
+- `enterprise`: schema de ejemplo (opcional) usado por el demo bajo `examples/`.
 
 El acceso se hace con:
 
@@ -178,6 +180,7 @@ Nota sobre params:
 Opción más segura (named params):
 
 - Si prefieres objects, usa `db.exeNamed(schema, queryName, paramsObj, orderKeys)` donde `orderKeys` es un array como `['person_id','person_na','person_ln']`.
+- Si prefieres objects, usa `db.exeNamed(schema, queryName, paramsObj, orderKeys)` donde `orderKeys` es un array como `['id','name','lastName']`.
 - Esto fuerza un orden estable y puede fallar rápido si faltan/sobran llaves o si el conteo de placeholders del SQL no coincide.
 
 Para otros proyectos puedes crear otros schemas (por ejemplo `inventory`, `billing`, etc.) y agregar allí sus queries.

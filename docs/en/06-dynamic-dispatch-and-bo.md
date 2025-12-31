@@ -31,15 +31,18 @@ For dynamic import to work:
 
 ## Recommended BO structure
 
-Real example: `BO/Person/`
+Typical structure (placeholders):
 
-- BO (orchestration + messages): [BO/Person/PersonBO.js](../../BO/Person/PersonBO.js)
-- Domain model/entity (DB + validation): [BO/Person/Person.js](../../BO/Person/Person.js)
-- Validation rules: [BO/Person/PersonValidate.js](../../BO/Person/PersonValidate.js)
+- BO (orchestration + messages): `BO/<ObjectName>/<ObjectName>BO.js`
+- Repository / model (DB): `BO/<ObjectName>/<ObjectName>.js`
+- Validation: `BO/<ObjectName>/<ObjectName>Validate.js`
+- Success messages: `BO/<ObjectName>/<objectName>SuccessMsgs.json`
 - Domain errors:
-  - Handler: [BO/Person/errors/PersonErrorHandler.js](../../BO/Person/errors/PersonErrorHandler.js)
-  - Messages: [BO/Person/errors/personErrorMsgs.json](../../BO/Person/errors/personErrorMsgs.json)
-  - Labels for alerts: [BO/Person/errors/personAlerts.json](../../BO/Person/errors/personAlerts.json)
+  - Handler: `BO/<ObjectName>/errors/<ObjectName>ErrorHandler.js`
+  - Messages: `BO/<ObjectName>/errors/<objectName>ErrorMsgs.json`
+  - Labels: `BO/<ObjectName>/errors/<objectName>Alerts.json`
+
+If you want a full working example, see: [examples/bo-demo/BO](../../examples/bo-demo/BO)
 
 ## BO method contract
 
@@ -51,7 +54,7 @@ A BO method receives `params` (whatever is sent in the request) and returns an o
 
 Example:
 
-- `PersonBO.getPerson(value)` calls `Person.get(value)` and on success returns `{ data: result, msg: ..., code: 200 }`.
+- `<ObjectName>BO.<method>(params)` runs the operation and returns `{ data, msg, code }`.
 
 ## Checklist to add a new feature
 

@@ -26,9 +26,14 @@ Scripts del backend que puedes ejecutar desde la raíz del repo:
 
 ## Starterpack (export limpio)
 
-Este repo puede contener BOs y páginas de ejemplo para desarrollo; si quieres un **template limpio** para iniciar proyectos desde cero, genera un export:
+Este repo puede contener ejemplos bajo `examples/` (por ejemplo BOs demo). Si quieres un **template limpio** para iniciar proyectos desde cero, genera un export:
 
 - Export por defecto a `.tmp-starterpack/`: `npm run export:starter`
 - Export a una ruta específica: `npm run export:starter -- --out <ruta>`
 
 El export incluye `src/`, `scripts/`, `docs/`, `test/`, `public/`, `.env.example`, etc., y crea un `BO/` vacío (sin BOs del ejemplo).
+
+## Notas
+
+- `APP_NAME` (opcional) define el nombre lógico del servicio (aparece en `/health`).
+- Ejemplos: `examples/bo-demo/` contiene BOs demo listos para revisar/usar.

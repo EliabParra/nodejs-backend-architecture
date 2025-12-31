@@ -35,21 +35,21 @@ Crea la estructura estándar de un BO con mensajes por BO.
 
 Ejemplo (CRUD por defecto):
 
-- `npm run bo -- new Order`
+- `npm run bo -- new ObjectName`
 
 Esto crea:
 
-- `BO/Order/OrderBO.js`
-- `BO/Order/Order.js` (entidad + `OrderRepository`)
-- `BO/Order/OrderValidate.js`
-- `BO/Order/orderSuccessMsgs.json`
-- `BO/Order/errors/OrderErrorHandler.js`
-- `BO/Order/errors/orderErrorMsgs.json`
-- `BO/Order/errors/orderAlerts.json`
+- `BO/ObjectName/ObjectNameBO.js`
+- `BO/ObjectName/ObjectName.js` (entidad + `ObjectNameRepository`)
+- `BO/ObjectName/ObjectNameValidate.js`
+- `BO/ObjectName/objectNameSuccessMsgs.json`
+- `BO/ObjectName/errors/ObjectNameErrorHandler.js`
+- `BO/ObjectName/errors/objectNameErrorMsgs.json`
+- `BO/ObjectName/errors/objectNameAlerts.json`
 
 Ejemplo (métodos personalizados):
 
-- `npm run bo -- new Order --methods getOrder,createOrder,shipOrder,cancelOrder`
+- `npm run bo -- new ObjectName --methods getObject,createObject,updateObject,deleteObject`
 
 Opciones útiles:
 
@@ -59,6 +59,8 @@ Opciones útiles:
 #### Crear y mapear en DB en una sola corrida (`--db`)
 
 - `npm run bo -- new Order --db`
+
+- `npm run bo -- new ObjectName --db`
 
 El CLI:
 
@@ -75,7 +77,7 @@ Control de tx:
 
 Lee `BO/<Object>/<Object>BO.js`, detecta los métodos y los registra/actualiza en `security.method`.
 
-- `npm run bo -- sync Order`
+- `npm run bo -- sync ObjectName`
 
 Opciones:
 
@@ -96,8 +98,7 @@ Muestra todas las combinaciones registradas:
 
 Salida típica:
 
-- `Person.getPerson  tx=53`
-- `Order.createOrder tx=201`
+- `ObjectName.getObject tx=201`
 
 ### 4) Permisos: `perms`
 
@@ -110,11 +111,11 @@ Notas:
 
 Concede permisos:
 
-- `npm run bo -- perms --profile 1 --allow Person.getPerson,Person.createPerson`
+- `npm run bo -- perms --profile 1 --allow ObjectName.getObject,ObjectName.createObject`
 
 Revoca permisos:
 
-- `npm run bo -- perms --profile 1 --deny Person.deletePerson`
+- `npm run bo -- perms --profile 1 --deny ObjectName.deleteObject`
 
 #### Modo interactivo
 

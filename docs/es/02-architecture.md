@@ -7,7 +7,8 @@
 - **Dispatcher (API)**: `src/BSS/Dispatcher.js` (endpoints `/login`, `/logout`, `/toProccess`)
 - **Capa HTTP/Express (plumbing)**: `src/express/` (middlewares, handlers, session wiring)
 - **BSS (servicios transversales)**: `src/BSS/` (DB, session, security, validator, log)
-- **BO (negocio)**: `BO/` (ejemplo `BO/Person/`)
+- **BO (negocio)**: `BO/` (ej. `BO/ObjectName/`).
+   - BOs demo completos viven en `examples/bo-demo/BO/`.
 - **Config**: `src/config/` (config runtime, mensajes, queries SQL)
 
 ## Bootstrap (arranque)
@@ -83,10 +84,11 @@ El `Dispatcher` queda principalmente como orquestador: registra rutas, conecta m
 
 - Declaración de rutas en [src/router/routes.js](../../src/router/routes.js)
 - Router y middleware `requireAuth` en [src/router/pages.js](../../src/router/pages.js)
-- `/content` requiere sesión; si no existe, redirige a `/?returnTo=...`
+- Se pueden proteger rutas por configuración de ruta (ej. `validateIsAuth=true`).
+- Cuando se requiere auth y no hay sesión, redirige a `/?returnTo=...`.
 
 ## Contratos entre capas (regla práctica)
 
 - **BSS** debe ser reusable y sin lógica de dominio.
 - **BO** orquesta el dominio: valida, llama DB, arma mensajes y shape final de respuesta.
-- **Modelo/entidad** (ejemplo `Person`) puede encapsular queries y reglas; el BO decide el mensaje de negocio.
+- **Modelo/entidad** (opcional) puede encapsular queries y reglas; el BO decide el mensaje de negocio.

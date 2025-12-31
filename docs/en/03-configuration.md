@@ -21,7 +21,8 @@ In this repo, [src/config/config.json](../../src/config/config.json) keeps "plac
 
 Supported variables:
 
-- App: `APP_PORT`, `APP_HOST`, `APP_LANG`
+- App: `APP_NAME`, `APP_PORT`, `APP_HOST`, `APP_LANG`
+  - `APP_NAME`: logical service name (shown in `/health`).
 - Frontend hosting (optional):
   - `APP_FRONTEND_MODE`: `pages` | `spa` | `none`
     - `pages`: backend serves HTML from `public/pages` (legacy mode)
@@ -55,6 +56,7 @@ Logging (optional):
 File: [src/config/config.json](../../src/config/config.json)
 
 - `app.port`, `app.host`: Express bind address
+- `app.name`: logical service name (used by `/health`).
 - `app.lang`: active language (`"es"` or `"en"`)
 - `app.frontendMode`: `"pages"` | `"spa"` | `"none"` (see above)
 - `app.bodyLimit` (optional): request size limit for JSON/urlencoded bodies (e.g. `"100kb"`, `"1mb"`).
@@ -163,7 +165,7 @@ Shape:
 Current schemas:
 
 - `security`: **definitive** schema for auth/roles/tx/permissions.
-- `enterprise`: example schema for the `Person` demo.
+- `enterprise`: optional example schema used by the demo under `examples/`.
 
 Queries are executed through:
 
@@ -176,7 +178,7 @@ Params note:
 
 Safer option (named params):
 
-- If you prefer objects, use `db.exeNamed(schema, queryName, paramsObj, orderKeys)` where `orderKeys` is an array like `['person_id','person_na','person_ln']`.
+- If you prefer objects, use `db.exeNamed(schema, queryName, paramsObj, orderKeys)` where `orderKeys` is an array like `['id','name','lastName']`.
 - This forces a stable order and can fail fast if keys are missing/extra or if the SQL placeholder count does not match.
 
 In other projects you can add new schemas (e.g. `inventory`, `billing`) and put feature-specific SQL there.

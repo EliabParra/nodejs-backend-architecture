@@ -19,10 +19,12 @@ Puedes pasar valores simples o objetos con metadata:
 
 Si falla, `Validator` arma `alerts` usando plantillas de [src/config/messages.json](../../src/config/messages.json) (`msgs[lang].alerts`).
 
-### Ejemplo real (Person)
+### Estructura de ejemplo (genérica)
 
-- Labels por idioma en [BO/Person/errors/personAlerts.json](../../BO/Person/errors/personAlerts.json)
-- Uso en [BO/Person/PersonValidate.js](../../BO/Person/PersonValidate.js)
+- Labels por idioma: `BO/<ObjectName>/errors/<objectName>Alerts.json`
+- Uso: `BO/<ObjectName>/<ObjectName>Validate.js`
+
+Si quieres ver un ejemplo completo, revisa: [examples/bo-demo/BO](../../examples/bo-demo/BO)
 
 ## Validación de esquema HTTP (Dispatcher/Session)
 
@@ -36,10 +38,10 @@ Esto produce `alerts` con labels (`body`, `username`, `password`, etc.) usando l
 
 ## Errores por dominio (pattern)
 
-Ejemplo: `Person`.
+Ejemplo: `<ObjectName>`.
 
-- Mensajes del dominio en JSON: [BO/Person/errors/personErrorMsgs.json](../../BO/Person/errors/personErrorMsgs.json)
-- Handler que normaliza: [BO/Person/errors/PersonErrorHandler.js](../../BO/Person/errors/PersonErrorHandler.js)
+- Mensajes del dominio en JSON: `BO/<ObjectName>/errors/<objectName>ErrorMsgs.json`
+- Handler que normaliza: `BO/<ObjectName>/errors/<ObjectName>ErrorHandler.js`
 
 Convención:
 

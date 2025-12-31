@@ -7,7 +7,8 @@
 - **Dispatcher (API)**: `src/BSS/Dispatcher.js` (`/login`, `/logout`, `/toProccess`)
 - **HTTP/Express layer (plumbing)**: `src/express/` (middlewares, handlers, session wiring)
 - **BSS (cross-cutting services)**: `src/BSS/` (DB, session, security, validator, log)
-- **BO (business)**: `BO/` (example: `BO/Person/`)
+- **BO (business)**: `BO/` (e.g. `BO/ObjectName/`).
+  - Full demo BOs live under `examples/bo-demo/BO/`.
 - **Config**: `src/config/` (runtime config, messages, SQL queries)
 
 ## Bootstrap
@@ -78,10 +79,11 @@ Adapter entrypoint:
 
 - Route declarations: [src/router/routes.js](../../src/router/routes.js)
 - Router + `requireAuth` middleware: [src/router/pages.js](../../src/router/pages.js)
-- `/content` requires a session; otherwise it redirects to `/?returnTo=...`
+- Routes can be protected per route config (e.g. `validateIsAuth=true`).
+- When auth is required and no session exists, the router redirects to `/?returnTo=...`.
 
 ## Contract between layers (practical rule)
 
 - **BSS** should be reusable and domain-agnostic.
 - **BO** orchestrates domain: validation, DB calls, and shaping the final response.
-- **Domain model/entity** (example: `Person`) can encapsulate queries and low-level rules; the BO defines the business message.
+- **Domain model/entity** (optional) can encapsulate queries and low-level rules; the BO defines the business message.

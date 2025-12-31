@@ -123,8 +123,10 @@ These endpoints are defined in [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.
 
 ## Quick manual smoke-test
 
-1. Open `http://localhost:3000/` (only if `APP_FRONTEND_MODE=pages` or `spa`)
-2. Login (button “Ingresar”).
-3. Try the Person CRUD demo (Get/Create/Update/Delete).
+1. Open `http://localhost:3000/` (only if `APP_FRONTEND_MODE=pages` or `spa`).
+2. Login.
+3. Call your own BO methods via `POST /toProccess` using a `tx` mapped in the `security` schema.
 
-The example frontend uses `fetch` against `/login`, `/logout`, and `/toProccess` (see [public/js/Sender.js](../../public/js/Sender.js) and [public/js/scripts.js](../../public/js/scripts.js)).
+If you want a working end-to-end demo (BOs + sample SQL), use the example under [examples/bo-demo](../../examples/bo-demo).
+
+The built-in pages (when `APP_FRONTEND_MODE=pages`) use `fetch` against `/login`, `/logout`, and `/toProccess` (see [public/js/Sender.js](../../public/js/Sender.js)).

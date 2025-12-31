@@ -123,8 +123,10 @@ Estos endpoints se definen en [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.j
 
 ## Primer smoke-test (manual)
 
-1. Abrir `http://localhost:3000/` (solo si `APP_FRONTEND_MODE=pages` o `spa`)
-2. Iniciar sesión (botón “Ingresar”).
-3. Probar CRUD persona (botones Obtener/Crear/Actualizar/Eliminar).
+1. Abrir `http://localhost:3000/` (solo si `APP_FRONTEND_MODE=pages` o `spa`).
+2. Iniciar sesión.
+3. Ejecutar tus propios métodos BO vía `POST /toProccess` usando un `tx` mapeado en el schema `security`.
 
-El frontend de ejemplo usa `fetch` hacia `/login`, `/logout` y `/toProccess` (ver [public/js/Sender.js](../../public/js/Sender.js) y [public/js/scripts.js](../../public/js/scripts.js)).
+Si quieres un demo completo funcionando (BOs + SQL de ejemplo), usa el ejemplo bajo [examples/bo-demo](../../examples/bo-demo).
+
+Las páginas internas (cuando `APP_FRONTEND_MODE=pages`) usan `fetch` hacia `/login`, `/logout` y `/toProccess` (ver [public/js/Sender.js](../../public/js/Sender.js)).
