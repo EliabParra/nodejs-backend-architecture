@@ -77,7 +77,6 @@ async function main() {
     '.env.example',
     '.gitignore',
     'package.json',
-    'postgres.session.sql',
     'jsdoc.json'
   ]
 

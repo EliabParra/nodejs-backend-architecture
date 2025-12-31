@@ -70,7 +70,7 @@ Config: [src/config/config.json](../../src/config/config.json) → `session.stor
 - `ttlSeconds`: DB TTL for sessions (seconds). If not provided, it is derived from `cookie.maxAge`.
 - `pruneIntervalSeconds`: how often the store prunes expired sessions.
 
-You must create the table once by running: [postgres.session.sql](../../postgres.session.sql)
+Note: the session table is created by `npm run db:init` (recommended). If you already manage schema migrations elsewhere, ensure the session table exists in the configured schema/table.
 
 ### Cookies (security)
 
