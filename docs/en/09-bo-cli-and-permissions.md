@@ -6,7 +6,7 @@ This repo includes a CLI that lets you:
 - Register `object_na`, `method_na`, and `tx_nu` in Postgres (transaction mapping).
 - Grant/revoke permissions to profiles (`security.permission_method`).
 
-The CLI lives in [scripts/bo.js](../../scripts/bo.js) and runs via `npm run bo`.
+The CLI lives in [scripts/bo.mjs](../../scripts/bo.mjs) and runs via `npm run bo`.
 
 ## Requirements
 

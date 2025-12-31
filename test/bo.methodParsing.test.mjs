@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 
-import { parseMethodsFromBO } from '../scripts/bo.js'
+import { parseMethodsFromBO } from '../scripts/bo.mjs'
 
 test('bo.parseMethodsFromBO extracts async method names', () => {
   const content = `

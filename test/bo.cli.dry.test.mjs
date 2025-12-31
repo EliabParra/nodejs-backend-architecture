@@ -24,7 +24,7 @@ test('bo CLI new --dry does not write files', async () => {
 
   assert.equal(await pathExists(targetDir), false)
 
-  const r = spawnSync(process.execPath, ['scripts/bo.js', 'new', objectName, '--dry'], {
+  const r = spawnSync(process.execPath, ['scripts/bo.mjs', 'new', objectName, '--dry'], {
     cwd: repoRoot,
     encoding: 'utf8'
   })
@@ -36,7 +36,7 @@ test('bo CLI new --dry does not write files', async () => {
 })
 
 test('bo CLI sync --dry --txStart does not touch DB', () => {
-  const r = spawnSync(process.execPath, ['scripts/bo.js', 'sync', 'Person', '--dry', '--txStart', '9000'], {
+  const r = spawnSync(process.execPath, ['scripts/bo.mjs', 'sync', 'Person', '--dry', '--txStart', '9000'], {
     cwd: repoRoot,
     encoding: 'utf8'
   })

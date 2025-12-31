@@ -1,8 +1,8 @@
 import bcrypt from 'bcryptjs'
 
 function usage() {
-  console.log('Usage: node scripts/hash-password.js <plainPassword> [saltRounds]')
-  console.log('Example: node scripts/hash-password.js "MyPassword123" 10')
+  console.log('Usage: node scripts/hash-password.mjs <plainPassword> [saltRounds]')
+  console.log('Example: node scripts/hash-password.mjs "MyPassword123" 10')
 }
 
 const plainPassword = process.argv[2]

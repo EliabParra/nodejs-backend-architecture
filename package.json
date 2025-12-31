@@ -1,15 +1,16 @@
 {
-  "name": "nodejs-exercise-03",
-  "main": "index.js",
+  "name": "nodejs-backend-architecture",
+  "version": "0.0.1",
+  "description": "Una arquitectura de backend desacoplada para Node.js",
+  "main": "src/index.js",
   "scripts": {
-    "test": "node -e \"console.log('No default tests. Run: npm run test:cli')\"",
-    "test:cli": "node --test",
+    "test": "node --test",
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
     "full": "node scripts/full.mjs",
     "db:init": "node scripts/db-init.mjs",
-    "hashpw": "node scripts/hash-password.js",
-    "bo": "node scripts/bo.js"
+    "hashpw": "node scripts/hash-password.mjs",
+    "bo": "node scripts/bo.mjs"
   },
   "type": "module",
   "dependencies": {
