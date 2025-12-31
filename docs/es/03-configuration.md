@@ -161,4 +161,9 @@ El acceso se hace con:
 
 - `db.exe(schema, queryName, params)` en [src/BSS/DBComponent.js](../../src/BSS/DBComponent.js)
 
+Nota sobre params:
+
+- `params` puede ser un Array (recomendado), un Object o un solo valor.
+- Si pasas un Object, `db.exe` lo convierte a array iterando sus propiedades; **el orden de las propiedades debe coincidir con el orden `$1..$n`** de tu query SQL.
+
 Para otros proyectos puedes crear otros schemas (por ejemplo `inventory`, `billing`, etc.) y agregar allí sus queries.

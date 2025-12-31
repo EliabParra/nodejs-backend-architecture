@@ -161,8 +161,7 @@ ${objectName}Validate
 
 Guía rápida:
 - Mantén la validación aquí (no en el BO) para que sea reutilizable.
-- Usa el validator global [0m(v)[0m y retorna boolean. Si retorna false, el BO puede responder invalidParameters con v.getAlerts().
- - Usa el validator global (v) y retorna boolean. Si retorna false, el BO puede responder invalidParameters con v.getAlerts().
+- Usa el validator global (v) y retorna boolean. Si retorna false, el BO puede responder invalidParameters con v.getAlerts().
 - Prefiere normalizar (trim/casteos) antes de persistir.
 */
 
@@ -204,6 +203,8 @@ ${objectName}Repository
 Guía rápida:
 - Este módulo contiene acceso a datos (DB), aislado del BO.
 - Define tus SQL en src/config/queries.json y ejecútalas con db.exe('<schema>', '<queryName>', params).
+- Nota: db.exe acepta params como Array u Object. Si pasas un Object, se convierte a un array por orden de propiedades; ese orden debe coincidir con $1..$n del query.
+- Recomendación: usa Array cuando el orden sea crítico.
 - No asumas un schema fijo: cambia 'enterprise' por el schema real de tu dominio.
 */
 

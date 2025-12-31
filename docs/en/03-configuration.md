@@ -160,4 +160,9 @@ Queries are executed through:
 
 - `db.exe(schema, queryName, params)` ([src/BSS/DBComponent.js](../../src/BSS/DBComponent.js))
 
+Params note:
+
+- `params` can be an Array (recommended), an Object, or a single value.
+- If you pass an Object, `db.exe` converts it into an array by iterating its properties; **the property order must match the `$1..$n` order** in your SQL query.
+
 In other projects you can add new schemas (e.g. `inventory`, `billing`) and put feature-specific SQL there.
