@@ -46,6 +46,8 @@ Archivo: [src/config/config.json](../../src/config/config.json)
 - `bo.path`: ruta relativa usada por `Security` para importar BO dinámicamente (ver [src/BSS/Security.js](../../src/BSS/Security.js))
 - `log.activation`: flags por nivel (error/info/debug/warn) usados por [src/BSS/Log.js](../../src/BSS/Log.js)
 
+Nota: con `info` activo, el servidor loguea también requests exitosos (2xx/3xx) con `requestId` y `durationMs` (ver [docs/es/05-api-contract.md](05-api-contract.md)).
+
 ### CORS (compatibilidad con frontends en otro puerto)
 
 Config: [src/config/config.json](../../src/config/config.json) → `cors`

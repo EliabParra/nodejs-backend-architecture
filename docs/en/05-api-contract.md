@@ -40,6 +40,35 @@ Every request gets a unique identifier and the server returns the header:
 
 Use it for debugging/support: when you see an error on the client, report that `requestId` and you can find the matching log entry.
 
+## Health and readiness
+
+These endpoints are meant for monitoring (health checks) and readiness (dependencies ready):
+
+- `GET /health`: always returns `200` if the process is alive.
+  - Example body: `{ ok: true, name, uptimeSec, time, requestId }`
+- `GET /ready`: returns `200` only when the backend is ready to serve traffic.
+  - Current checks:
+    - `security.isReady` (security model loaded)
+    - DB connectivity (`SELECT 1`)
+  - If any dependency is not ready, it returns `503 serviceUnavailable`.
+
+Implementation: [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.js)
+
+## Successful request logging
+
+In addition to error logs, the server logs each **successful** request (status `2xx/3xx`) when the response finishes:
+
+- Message: `METHOD /path STATUS` (e.g. `GET /health 200`)
+- Context (`ctx`): `requestId`, `durationMs` (and `user_id`/`profile_id` when present)
+
+This helps you:
+
+- measure latency without an APM
+- correlate logs using the `X-Request-Id` header
+- get basic traffic visibility in dev
+
+Output is controlled by `config.log.activation` (the `info` level).
+
 ## CORS + session (frontend on another port)
 
 If you run React/Vite/Angular on a different port (e.g. `http://localhost:5173`) and keep cookie-based sessions (as in this architecture), you need:

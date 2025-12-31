@@ -10,6 +10,7 @@ import path from "node:path"
 export default class Dispatcher {
     constructor() {
         this.app = express()
+        this.server = null
 
         this.app.disable('x-powered-by')
 
@@ -23,6 +24,34 @@ export default class Dispatcher {
             req.requestId = requestId
             req.requestStartMs = Date.now()
             res.setHeader('X-Request-Id', requestId)
+            next()
+        })
+
+        // Log successful responses (2xx/3xx) with duration and requestId.
+        // Errors are already logged by finalErrorHandler and/or route-level catch blocks.
+        this.app.use((req, res, next) => {
+            res.once('finish', () => {
+                try {
+                    const status = res.statusCode
+                    if (status >= 400) return
+
+                    const durationMs = typeof req.requestStartMs === 'number'
+                        ? (Date.now() - req.requestStartMs)
+                        : undefined
+
+                    log.show({
+                        type: log.TYPE_INFO,
+                        msg: `${req.method} ${req.originalUrl} ${status}`,
+                        ctx: {
+                            requestId: req.requestId,
+                            status,
+                            durationMs,
+                            user_id: req.session?.user_id,
+                            profile_id: req.session?.profile_id
+                        }
+                    })
+                } catch { }
+            })
             next()
         })
 
@@ -184,6 +213,8 @@ export default class Dispatcher {
         }
 
         // API routes (always)
+        this.app.get('/health', this.health.bind(this))
+        this.app.get('/ready', this.ready.bind(this))
         this.app.get("/csrf", this.csrfToken.bind(this))
         this.app.post("/toProccess", this.toProccessRateLimiter, this.csrfProtection.bind(this), this.toProccess.bind(this))
         this.app.post("/login", this.loginRateLimiter, this.csrfProtection.bind(this), this.login.bind(this))
@@ -196,6 +227,31 @@ export default class Dispatcher {
 
         // Final error handler: keep API contract stable (no default HTML errors)
         this.app.use(this.finalErrorHandler.bind(this))
+    }
+
+    health(req, res) {
+        return res.status(200).send({
+            ok: true,
+            name: 'nodejs-backend-architecture',
+            uptimeSec: Math.round(process.uptime()),
+            time: new Date().toISOString(),
+            requestId: req.requestId
+        })
+    }
+
+    async ready(req, res) {
+        // Readiness: Security loaded + DB reachable.
+        if (!security?.isReady) {
+            return res.status(this.clientErrors.serviceUnavailable.code).send(this.clientErrors.serviceUnavailable)
+        }
+
+        try {
+            // Minimal DB check.
+            await db.pool.query('SELECT 1')
+            return res.status(200).send({ ok: true })
+        } catch {
+            return res.status(this.clientErrors.serviceUnavailable.code).send(this.clientErrors.serviceUnavailable)
+        }
     }
 
     finalErrorHandler(err, req, res, next) {
@@ -385,6 +441,20 @@ export default class Dispatcher {
     }
 
     serverOn() {
-        this.app.listen(config.app.port, () => log.show({ type: log.TYPE_INFO, msg: `Server running on http://${config.app.host}:${config.app.port}` }))
+        this.server = this.app.listen(config.app.port, () =>
+            log.show({ type: log.TYPE_INFO, msg: `Server running on http://${config.app.host}:${config.app.port}` })
+        )
+        return this.server
+    }
+
+    async shutdown() {
+        try {
+            await new Promise((resolve, reject) => {
+                if (!this.server) return resolve()
+                this.server.close((err) => (err ? reject(err) : resolve()))
+            })
+        } finally {
+            try { await db?.pool?.end?.() } catch { }
+        }
     }
 }
