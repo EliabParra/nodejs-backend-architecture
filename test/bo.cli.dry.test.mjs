@@ -35,15 +35,37 @@ test('bo CLI new --dry does not write files', async () => {
   assert.equal(await pathExists(targetDir), false)
 })
 
-test('bo CLI sync --dry --txStart does not touch DB', () => {
-  const r = spawnSync(process.execPath, ['scripts/bo.mjs', 'sync', 'Person', '--dry', '--txStart', '9000'], {
-    cwd: repoRoot,
-    encoding: 'utf8'
-  })
+test('bo CLI sync --dry --txStart does not touch DB', async () => {
+  const objectName = `ZzBoSyncDry${Date.now()}`
+  const baseDir = path.join(repoRoot, 'BO', objectName)
+  const boFile = path.join(baseDir, `${objectName}BO.js`)
 
-  assert.equal(r.status, 0)
-  assert.match(r.stdout, /DRY RUN: would upsert methods/i)
+  try {
+    await fs.mkdir(baseDir, { recursive: true })
+    await fs.writeFile(
+      boFile,
+      [
+        `export class ${objectName}BO {`,
+        `  async get${objectName}(params) { return params }`,
+        `  async create${objectName}(params) { return params }`,
+        `  async _helper() { return true }`,
+        `}`,
+        ``
+      ].join('\n'),
+      'utf8'
+    )
 
-  const combined = `${r.stdout}\n${r.stderr}`
-  assert.doesNotMatch(combined, /Error al consultar la base de datos/i)
+    const r = spawnSync(process.execPath, ['scripts/bo.mjs', 'sync', objectName, '--dry', '--txStart', '9000'], {
+      cwd: repoRoot,
+      encoding: 'utf8'
+    })
+
+    assert.equal(r.status, 0)
+    assert.match(r.stdout, /DRY RUN: would upsert methods/i)
+
+    const combined = `${r.stdout}\n${r.stderr}`
+    assert.doesNotMatch(combined, /Error al consultar la base de datos/i)
+  } finally {
+    await fs.rm(baseDir, { recursive: true, force: true })
+  }
 })
