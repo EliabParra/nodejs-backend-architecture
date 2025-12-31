@@ -17,7 +17,7 @@ Esta documentación describe la arquitectura actual del repo y las reglas para p
 - **Validación (alerts)**: [src/BSS/Validator.js](../../src/BSS/Validator.js)
 - **Helpers compartidos (BSS)**: [src/BSS/helpers/](../../src/BSS/helpers/)
 - **Router de páginas**: [src/router/pages.js](../../src/router/pages.js)
-- **Cliente ejemplo**: [public/js/Sender.js](../../public/js/Sender.js)
+- **Ejemplos incluidos (cliente/pages/demo BO)**: ver [docs/es/11-examples.md](11-examples.md)
 
 ## Índice
 
@@ -31,13 +31,14 @@ Esta documentación describe la arquitectura actual del repo y las reglas para p
 8. [Páginas y sesión](08-pages-and-session.md)
 9. [CLI para BO + tx + permisos](09-bo-cli-and-permissions.md)
 10. [Tutorial frontend (clientes y requests)](10-frontend-clients-and-requests.md)
-11. [DB init (schema `security`)](11-db-init.md)
+11. [Ejemplos incluidos (opcional)](11-examples.md)
+12. [DB init (schema `security`)](11-db-init.md)
 
 ## Glosario
 
 - **BSS** (*Basic Subsystem*): servicios transversales en `src/BSS/` (DB, seguridad, sesión, logging, validación, dispatcher).
 - **BO** (*Business Object*): módulos de negocio en `BO/` (por entidad/feature). Se cargan dinámicamente desde `Security`.
 - **tx**: número de transacción enviado por el cliente (`body.tx`) para resolver qué método ejecutar.
-- **object_na**: nombre lógico del objeto BO (p.ej. `Person`). Se usa para ubicar archivos y para permisos.
-- **method_na**: nombre del método a invocar (p.ej. `getPerson`, `createPerson`).
+- **object_na**: nombre lógico del objeto BO (p.ej. `<ObjectName>`). Se usa para ubicar archivos y para permisos.
+- **method_na**: nombre del método a invocar (p.ej. `<methodName>`).
 - **alerts**: lista de mensajes de validación generados por `Validator` (vía `v.getAlerts()`).

@@ -20,7 +20,9 @@ La mayoría de las respuestas siguen este shape (no siempre vienen todos los cam
 - `data`: payload opcional (depende del BO).
 - `alerts`: lista opcional de mensajes de validación (cuando falla `Validator`).
 
-El cliente ejemplo muestra `alerts` si existen; si no, muestra `msg` (ver [public/js/Sender.js](../../public/js/Sender.js)).
+Un cliente típico muestra `alerts` si existen; si no, muestra `msg`.
+Para ver recomendaciones de implementación: [docs/es/10-frontend-clients-and-requests.md](10-frontend-clients-and-requests.md).
+Para ver el cliente demo incluido: [docs/es/11-examples.md](11-examples.md).
 
 Nota: si el cliente envía un `Content-Type: application/json` pero el body no es JSON válido, el servidor normaliza la respuesta a:
 
@@ -269,13 +271,10 @@ Además:
   - si no existe sesión: por IP
 - Cuando se excede: HTTP `429` con `msgs[lang].errors.client.tooManyRequests`.
 
-## Ejemplo (frontend)
+## Ejemplos
 
-El frontend usa estos tx (ver [public/js/scripts.js](../../public/js/scripts.js)):
+Los valores concretos de `tx` dependen de tu proyecto (lo que exista en `security.method.tx_nu`).
 
-- `53`: get (params = id o nombre)
-- `63`: create (params = `{ person_na, person_ln }`)
-- `73`: update (params = `{ person_id, person_na, person_ln }`)
-- `83`: delete (params = id o nombre)
+Si quieres ver ejemplos completos (incluyendo UI/cliente de ejemplo y tx de demo), ver:
 
-> Nota: esos números existen solo si están cargados en `security.method.tx_nu`.
+- [docs/es/10-frontend-clients-and-requests.md](10-frontend-clients-and-requests.md)

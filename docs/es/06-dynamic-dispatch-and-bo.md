@@ -74,9 +74,13 @@ Para evitar trabajo manual en DB y mantener el estándar de archivos, usa el CLI
 
 Ejemplos rápidos:
 
-- Crear BO: `npm run bo -- new Order --methods getOrder,createOrder,updateOrder,deleteOrder`
-- Mapear a DB (tx): `npm run bo -- sync Order --txStart 200`
-- Asignar permisos: `npm run bo -- perms --profile 2 --allow Order.getOrder,Order.createOrder`
+- Crear BO: `npm run bo -- new ObjectName --methods getObject,createObject,updateObject,deleteObject`
+- Mapear a DB (tx): `npm run bo -- sync ObjectName --txStart <n>`
+- Asignar permisos: `npm run bo -- perms --profile <profileId> --allow ObjectName.getObject,ObjectName.createObject`
+
+Si quieres ver un ejemplo completo funcionando (BOs demo + estructura), ver:
+
+- [docs/es/11-examples.md](11-examples.md)
 
 ## Nota sobre `config.bo.path`
 

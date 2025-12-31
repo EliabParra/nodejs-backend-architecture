@@ -116,7 +116,7 @@ Al levantar, el servidor expone siempre:
 Rutas de páginas (`/` y `/content`) dependen del modo:
 
 - `APP_FRONTEND_MODE=none` (default): **no** sirve páginas (API-only).
-- `APP_FRONTEND_MODE=pages`: sirve [public/pages/index.html](../../public/pages/index.html) y la página protegida.
+- `APP_FRONTEND_MODE=pages`: sirve páginas estáticas desde `public/pages/` (ver ejemplos en [docs/es/11-examples.md](11-examples.md)).
 - `APP_FRONTEND_MODE=spa`: sirve un build SPA desde `SPA_DIST_PATH` y hace fallback a `index.html`.
 
 Estos endpoints se definen en [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.js). El router de páginas (modo `pages`) está en [src/router/pages.js](../../src/router/pages.js).
@@ -129,4 +129,5 @@ Estos endpoints se definen en [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.j
 
 Si quieres un demo completo funcionando (BOs + SQL de ejemplo), usa el ejemplo bajo [examples/bo-demo](../../examples/bo-demo).
 
-Las páginas internas (cuando `APP_FRONTEND_MODE=pages`) usan `fetch` hacia `/login`, `/logout` y `/toProccess` (ver [public/js/Sender.js](../../public/js/Sender.js)).
+Las páginas internas (cuando `APP_FRONTEND_MODE=pages`) usan `fetch` hacia `/login`, `/logout` y `/toProccess`.
+Si quieres ver el cliente demo incluido, ver [docs/es/11-examples.md](11-examples.md).

@@ -58,13 +58,11 @@ Opciones útiles:
 
 #### Crear y mapear en DB en una sola corrida (`--db`)
 
-- `npm run bo -- new Order --db`
-
 - `npm run bo -- new ObjectName --db`
 
 El CLI:
 
-1. Asegura/crea `security.object` (`object_na = "Order"`).
+1. Asegura/crea `security.object` (`object_na = "ObjectName"`).
 2. Inserta/actualiza filas en `security.method` para cada método.
 3. Asigna `tx_nu` automáticamente desde `max(tx_nu)+1`.
 
@@ -126,12 +124,12 @@ Te lista `profile_id`, `object_na`, métodos disponibles y te deja elegir.
 ## Flujo recomendado (proyecto real)
 
 1. Crear BO (y su estructura):
-   - `npm run bo -- new Order --methods getOrder,createOrder,updateOrder,deleteOrder`
+   - `npm run bo -- new ObjectName --methods getObject,createObject,updateObject,deleteObject`
 2. Implementar DB queries reales del repositorio (reemplazar los `TODO_*` en el repo).
 3. Mapear métodos a DB (tx):
-   - `npm run bo -- sync Order --txStart 200`
+   - `npm run bo -- sync ObjectName --txStart <n>`
 4. Asignar permisos por perfil:
-   - `npm run bo -- perms --profile 2 --allow Order.getOrder,Order.createOrder`
+   - `npm run bo -- perms --profile <profileId> --allow ObjectName.getObject,ObjectName.createObject`
 5. Reiniciar el server para recargar cache de `Security`.
 
 ## Consideraciones importantes

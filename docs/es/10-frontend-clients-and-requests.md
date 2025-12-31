@@ -7,7 +7,7 @@ Este backend ya define un contrato estable (ver [05-api-contract.md](05-api-cont
 Por defecto, el backend está pensado para ser **API-only** (desacoplado del frontend). El desarrollador elige el modo con `APP_FRONTEND_MODE`:
 
 - `none` (recomendado): el backend **solo sirve API**. El frontend (React/Angular/Vue/etc.) corre y se deploya donde quieras.
-- `pages` (legacy): el backend sirve HTML desde `public/pages` (ejemplo del curso).
+- `pages` (legacy): el backend sirve HTML desde `public/pages` (útil para cursos/demos o apps muy simples).
 - `spa` (opcional): el backend sirve **un build SPA** (cualquier framework) desde `SPA_DIST_PATH` y hace fallback a `index.html`.
 
 Variables:
@@ -54,7 +54,9 @@ Crea un módulo que:
 2) Envíe siempre `credentials/include`.
 3) Normalice errores (siempre intenta `res.json()` y devuelve `{ ok, data, error }`).
 
-Puedes tomar como referencia el cliente ejemplo ya incluido: [public/js/Sender.js](../../public/js/Sender.js).
+Si quieres ver el cliente ejemplo incluido en este repo, ver la sección **Ejemplos incluidos** al final.
+
+Si quieres ver los ejemplos/demo incluidos en este repo, ver: [docs/es/11-examples.md](11-examples.md).
 
 ## 3) Vanilla JS (fetch)
 
@@ -104,7 +106,7 @@ Uso:
 import { toProccess } from './apiClient.js';
 
 const baseUrl = 'http://localhost:3000';
-const result = await toProccess(baseUrl, 101, { person_id: 1 });
+const result = await toProccess(baseUrl, 123, { id: 1 });
 
 if (!result.ok) {
   console.error(result.error);
@@ -176,7 +178,7 @@ export function Example() {
   async function run() {
     setError(null);
     try {
-      const data = await api.toProccess(101, { person_id: 1 });
+      const data = await api.toProccess(123, { id: 1 });
       setResult(data);
     } catch (e) {
       setError(e);

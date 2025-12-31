@@ -20,7 +20,9 @@ Most responses follow this shape (not all fields are always present):
 - `data`: optional payload (BO-dependent).
 - `alerts`: optional validation messages (when `Validator` fails).
 
-The example client shows `alerts` if present; otherwise it shows `msg` (see [public/js/Sender.js](../../public/js/Sender.js)).
+A typical client shows `alerts` if present; otherwise it shows `msg`.
+For implementation recommendations, see [docs/en/10-frontend-clients-and-requests.md](10-frontend-clients-and-requests.md).
+For the included demo client/pages, see [docs/en/11-examples.md](11-examples.md).
 
 Note: if the client sends `Content-Type: application/json` but the body is not valid JSON, the server normalizes the response to:
 
@@ -220,7 +222,7 @@ Implementation: [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.js)
 ### Request
 
 ```json
-{ "tx": 53, "params": {} }
+{ "tx": 123, "params": {} }
 ```
 
 - `tx`: transaction number resolved to `(object_na, method_na)` from `security.method` (see [docs/en/04-database-security-model.md](04-database-security-model.md)).

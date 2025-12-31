@@ -2,10 +2,11 @@
 
 ## Static pages
 
-Pages live under `public/pages/`:
+Pages live under `public/pages/`.
 
-- Login + demo CRUD: [public/pages/index.html](../../public/pages/index.html)
-- Protected page: [public/pages/content.html](../../public/pages/content.html)
+The concrete HTML files included in this repo are **examples** (not part of the core template). See:
+
+- [docs/en/11-examples.md](11-examples.md)
 
 Express serves `public/` statically **only when** `APP_FRONTEND_MODE=pages` (legacy mode) from [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.js).
 
@@ -103,7 +104,10 @@ Notes:
 
 ## How the frontend uses it
 
-- Login: [public/js/scripts.js](../../public/js/scripts.js) calls `sender.send(..., '/login')`.
-- Logout: calls `sender.send(..., '/logout')`.
+The recommended client flow (cookies + CSRF + `/toProccess`) is described in:
 
-The fetch wrapper is [public/js/Sender.js](../../public/js/Sender.js) and it always uses JSON (`Content-Type: application/json`).
+- [docs/en/10-frontend-clients-and-requests.md](10-frontend-clients-and-requests.md)
+
+If you want to inspect the included demo pages/scripts/client, see:
+
+- [docs/en/11-examples.md](11-examples.md)

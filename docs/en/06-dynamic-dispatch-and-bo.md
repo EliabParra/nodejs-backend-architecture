@@ -74,9 +74,9 @@ To avoid manual DB work and keep the file structure consistent, use the CLI:
 
 Quick examples:
 
-- Create BO: `npm run bo -- new Order --methods getOrder,createOrder,updateOrder,deleteOrder`
-- Map to DB (tx): `npm run bo -- sync Order --txStart 200`
-- Grant permissions: `npm run bo -- perms --profile 2 --allow Order.getOrder,Order.createOrder`
+- Create BO: `npm run bo -- new ObjectName --methods getObject,createObject,updateObject,deleteObject`
+- Map to DB (tx): `npm run bo -- sync ObjectName --txStart <n>`
+- Grant permissions: `npm run bo -- perms --profile <profileId> --allow ObjectName.getObject,ObjectName.createObject`
 
 ## Note about `config.bo.path`
 

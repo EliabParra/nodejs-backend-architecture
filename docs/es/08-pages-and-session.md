@@ -2,10 +2,11 @@
 
 ## Páginas estáticas
 
-Las páginas viven en `public/pages/`:
+Las páginas (modo `pages`) viven en `public/pages/`.
 
-- Login + ejemplo CRUD: [public/pages/index.html](../../public/pages/index.html)
-- Página protegida: [public/pages/content.html](../../public/pages/content.html)
+Los archivos HTML concretos incluidos en este repo son **ejemplos** (no parte del core). Ver:
+
+- [docs/es/11-examples.md](11-examples.md)
 
 Express sirve `public/` como estático **solo si** `APP_FRONTEND_MODE=pages` (modo legacy) desde [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.js).
 
@@ -103,7 +104,6 @@ Notas:
 
 ## Cómo se usa desde el frontend
 
-- Login: [public/js/scripts.js](../../public/js/scripts.js) llama a `sender.send(..., '/login')`.
-- Logout: llama a `sender.send(..., '/logout')`.
+El flujo recomendado para consumir el backend (cookies + CSRF + `/toProccess`) está explicado en:
 
-El `Sender` está en [public/js/Sender.js](../../public/js/Sender.js) y siempre usa `fetch` con `Content-Type: application/json`.
+- [docs/es/10-frontend-clients-and-requests.md](10-frontend-clients-and-requests.md)

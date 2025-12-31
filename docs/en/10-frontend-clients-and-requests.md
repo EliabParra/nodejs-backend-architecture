@@ -56,6 +56,10 @@ Create a small module that:
 
 You can use the existing example client as reference: [public/js/Sender.js](../../public/js/Sender.js).
 
+To keep this tutorial template-first, the demo client/pages live under the Examples chapter:
+
+- [docs/en/11-examples.md](11-examples.md)
+
 ## 3) Vanilla JS (fetch)
 
 Suggested file: `public/js/apiClient.js` (or in your frontend repo).
