@@ -101,6 +101,11 @@ Typical output:
 
 ### 4) Permissions: `perms`
 
+Notes:
+
+- `--dry` is DB-safe: it does **not** connect to Postgres.
+- In `--dry` mode, the CLI does **not** validate that `Object.method` exists in DB; it only validates the `Object.method` format and prints the plan.
+
 #### Quick mode (non-interactive)
 
 Grant permissions:

@@ -254,7 +254,7 @@ function templateBO(objectName, methods) {
       // Patrón recomendado:
       // 1) validar + normalizar (en Validate)
       // 2) ejecutar repositorio (DB) en Repository
-      // 3) retornar { code, msg, data, alerts? } siguiendo el contrato
+      // 3) retornar { code, msg, data?, alerts? } siguiendo el contrato
 
       // TODO: implementa validación según tu caso
       // if (!${objectName}Validate.validateX(params)) return ${objectName}ErrorHandler.invalidParameters(v.getAlerts())
@@ -448,13 +448,14 @@ async function applyPerm(profileId, fqMethods, mode, opts) {
     const [objectName, methodName] = String(fq).split('.')
     if (!objectName || !methodName) throw new Error(`Invalid method format: ${fq} (use Object.method)`) 
 
-    const resolved = await resolveMethodId(objectName, methodName)
-    if (!resolved) throw new Error(`Method not found in DB: ${objectName}.${methodName}`)
-
     if (opts.dry) {
-      results.push({ action: mode, profile, objectName, methodName, methodId: resolved.methodId })
+      // DRY RUN must be DB-safe: do not resolve ids, do not touch DB.
+      results.push({ action: mode, profile, objectName, methodName })
       continue
     }
+
+    const resolved = await resolveMethodId(objectName, methodName)
+    if (!resolved) throw new Error(`Method not found in DB: ${objectName}.${methodName}`)
 
     if (mode === 'allow') await db.exe('security', 'grantPermission', [profile, resolved.methodId])
     else await db.exe('security', 'revokePermission', [profile, resolved.methodId])
