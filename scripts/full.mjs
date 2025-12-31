@@ -103,9 +103,11 @@ const backend = startNpmScript('backend', backendScript, backendDir);
 const frontend = startNpmScript('frontend', frontendScript, frontendPath);
 
 let shuttingDown = false;
+let requestedShutdown = false;
 function shutdown(code = 0) {
   if (shuttingDown) return;
   shuttingDown = true;
+  requestedShutdown = true;
 
   try {
     backend.kill('SIGTERM');
@@ -120,10 +122,18 @@ function shutdown(code = 0) {
 
 backend.on('exit', (code) => {
   if (keepAlive) return;
+
+  // If we are shutting down intentionally (Ctrl+C / SIGTERM), don't propagate child exit codes.
+  if (requestedShutdown) return;
+
   shutdown(typeof code === 'number' ? code : 0);
 });
 frontend.on('exit', (code) => {
   if (keepAlive) return;
+
+  // If we are shutting down intentionally (Ctrl+C / SIGTERM), don't propagate child exit codes.
+  if (requestedShutdown) return;
+
   shutdown(typeof code === 'number' ? code : 0);
 });
 

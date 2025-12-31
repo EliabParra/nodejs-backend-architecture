@@ -207,6 +207,21 @@ export class ApiService {
   - your CORS allowlist does not include the frontend origin.
 - If you get `413`: request body is too large.
 
+## 9) Production: cross-domain cookies (common failure mode)
+
+If frontend and backend are on different domains and you want **cookie-based sessions**:
+
+- Frontend: all session-dependent calls must use `credentials: 'include'` / `withCredentials: true`.
+- Backend:
+  - `cors.credentials=true`
+  - `cors.origins` must include the real frontend origin (e.g. `https://myapp.example`).
+- Cookie:
+  - `SESSION_COOKIE_SECURE=true` (HTTPS only)
+  - `SESSION_COOKIE_SAMESITE=none` (cross-site)
+- If you run behind a proxy/LB terminating TLS: set `APP_TRUST_PROXY=1`.
+
+See variables in [03-configuration.md](03-configuration.md).
+
 ## 7) How to connect “any frontend” (recommended)
 
 ### Development (no repo coupling)

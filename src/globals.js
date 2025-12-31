@@ -22,12 +22,24 @@ function applyEnvOverrides(cfg) {
 	cfg.db = cfg.db ?? {}
 	cfg.session = cfg.session ?? {}
 	cfg.session.cookie = cfg.session.cookie ?? {}
+	cfg.cors = cfg.cors ?? {}
 
 	const appPort = envInt(process.env.APP_PORT)
 	if (appPort != null) cfg.app.port = appPort
 	if (process.env.APP_HOST) cfg.app.host = process.env.APP_HOST
 	if (process.env.APP_LANG) cfg.app.lang = process.env.APP_LANG
 	if (process.env.APP_FRONTEND_MODE) cfg.app.frontendMode = String(process.env.APP_FRONTEND_MODE)
+
+	// Reverse proxy / load balancer
+	// Express "trust proxy" setting: boolean | number | string.
+	if (process.env.APP_TRUST_PROXY != null) {
+		const raw = String(process.env.APP_TRUST_PROXY).trim()
+		const asInt = envInt(raw)
+		const asBool = envBool(raw)
+		if (asInt != null) cfg.app.trustProxy = asInt
+		else if (asBool != null) cfg.app.trustProxy = asBool
+		else if (raw.length > 0) cfg.app.trustProxy = raw
+	}
 
 	// Postgres / pg
 	// Supports standard PG* vars and DATABASE_URL.
@@ -61,6 +73,19 @@ function applyEnvOverrides(cfg) {
 	if (process.env.SESSION_COOKIE_SAMESITE) cfg.session.cookie.sameSite = process.env.SESSION_COOKIE_SAMESITE
 	const cookieMaxAge = envInt(process.env.SESSION_COOKIE_MAXAGE_MS)
 	if (cookieMaxAge != null) cfg.session.cookie.maxAge = cookieMaxAge
+
+	// CORS overrides (useful for production without editing config.json)
+	const corsEnabled = envBool(process.env.CORS_ENABLED)
+	if (corsEnabled != null) cfg.cors.enabled = corsEnabled
+	const corsCredentials = envBool(process.env.CORS_CREDENTIALS)
+	if (corsCredentials != null) cfg.cors.credentials = corsCredentials
+	if (process.env.CORS_ORIGINS) {
+		const origins = String(process.env.CORS_ORIGINS)
+			.split(',')
+			.map(s => s.trim())
+			.filter(Boolean)
+		if (origins.length > 0) cfg.cors.origins = origins
+	}
 
 	return cfg
 }

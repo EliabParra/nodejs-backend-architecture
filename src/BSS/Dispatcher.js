@@ -14,6 +14,10 @@ export default class Dispatcher {
 
         this.app.disable('x-powered-by')
 
+        if (config?.app?.trustProxy != null) {
+            this.app.set('trust proxy', config.app.trustProxy)
+        }
+
         // Security headers (kept conservative; CSP disabled to avoid breaking inline scripts in public/pages)
         this.app.use(helmet({
             contentSecurityPolicy: false
@@ -27,28 +31,39 @@ export default class Dispatcher {
             next()
         })
 
-        // Log successful responses (2xx/3xx) with duration and requestId.
-        // Errors are already logged by finalErrorHandler and/or route-level catch blocks.
+        // Log completed responses with duration and requestId.
+        // For status >= 400 we log only if it wasn't already logged (to avoid duplication).
         this.app.use((req, res, next) => {
             res.once('finish', () => {
                 try {
                     const status = res.statusCode
-                    if (status >= 400) return
 
                     const durationMs = typeof req.requestStartMs === 'number'
                         ? (Date.now() - req.requestStartMs)
                         : undefined
 
+                    const ctx = {
+                        requestId: req.requestId,
+                        status,
+                        durationMs,
+                        user_id: req.session?.user_id,
+                        profile_id: req.session?.profile_id
+                    }
+
+                    if (status >= 400) {
+                        if (res?.locals?.__errorLogged) return
+                        log.show({
+                            type: log.TYPE_WARNING,
+                            msg: `${req.method} ${req.originalUrl} ${status}`,
+                            ctx
+                        })
+                        return
+                    }
+
                     log.show({
                         type: log.TYPE_INFO,
                         msg: `${req.method} ${req.originalUrl} ${status}`,
-                        ctx: {
-                            requestId: req.requestId,
-                            status,
-                            durationMs,
-                            user_id: req.session?.user_id,
-                            profile_id: req.session?.profile_id
-                        }
+                        ctx
                     })
                 } catch { }
             })
@@ -224,6 +239,7 @@ export default class Dispatcher {
         else if (status === 404) response = this.serverErrors.notFound
         else if (status === 503) response = this.clientErrors.serviceUnavailable
 
+        try { res.locals.__errorLogged = true } catch { }
         log.show({
             type: log.TYPE_ERROR,
             msg: `${this.serverErrors.serverError.msg}, unhandled: ${err?.message ?? 'unknown'}`,
@@ -337,6 +353,7 @@ export default class Dispatcher {
             const response = await security.executeMethod(data)
             res.status(response.code).send(response)
         } catch (err) {
+            try { res.locals.__errorLogged = true } catch { }
             log.show({
                 type: log.TYPE_ERROR,
                 msg: `${this.serverErrors.serverError.msg}, /toProccess: ${err.message}`,
@@ -366,7 +383,12 @@ export default class Dispatcher {
             }
             await this.session.createSession(req, res)
         } catch (err) {
-            log.show({ type: log.TYPE_ERROR, msg: `${this.serverErrors.serverError.msg}, /login: ${err.message}` })
+            try { res.locals.__errorLogged = true } catch { }
+            log.show({
+                type: log.TYPE_ERROR,
+                msg: `${this.serverErrors.serverError.msg}, /login: ${err.message}`,
+                ctx: { requestId: req.requestId, durationMs: typeof req.requestStartMs === 'number' ? (Date.now() - req.requestStartMs) : undefined }
+            })
             res.status(this.clientErrors.unknown.code).send(this.clientErrors.unknown)
         }
     }
@@ -386,7 +408,12 @@ export default class Dispatcher {
                 return res.status(this.successMsgs.logout.code).send(this.successMsgs.logout)
             } else return res.status(this.clientErrors.login.code).send(this.clientErrors.login)
         } catch (err) {
-            log.show({ type: log.TYPE_ERROR, msg: `${this.serverErrors.serverError.msg}, /logout: ${err.message}` })
+            try { res.locals.__errorLogged = true } catch { }
+            log.show({
+                type: log.TYPE_ERROR,
+                msg: `${this.serverErrors.serverError.msg}, /logout: ${err.message}`,
+                ctx: { requestId: req.requestId, durationMs: typeof req.requestStartMs === 'number' ? (Date.now() - req.requestStartMs) : undefined }
+            })
             res.status(this.clientErrors.unknown.code).send(this.clientErrors.unknown)
         }
     }

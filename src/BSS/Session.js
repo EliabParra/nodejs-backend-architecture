@@ -29,7 +29,11 @@ export default class Session {
         }
 
         if (sessionConfig.cookie.secure === true) {
-            app.set('trust proxy', 1)
+            // When running behind a proxy/LB that terminates TLS, secure cookies require trust proxy.
+            // Don't override an explicit app-level trust proxy setting.
+            if (app.get('trust proxy') == null) {
+                app.set('trust proxy', 1)
+            }
             sessionConfig.proxy = true
         }
 

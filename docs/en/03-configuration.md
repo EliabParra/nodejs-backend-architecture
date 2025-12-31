@@ -33,6 +33,15 @@ Supported variables:
   - Example: `SESSION_SECRETS=current_secret,previous_secret`
 - Cookies (optional): `SESSION_COOKIE_SECURE`, `SESSION_COOKIE_SAMESITE`, `SESSION_COOKIE_MAXAGE_MS`
 
+Extra variables (production / reverse proxy):
+
+- `APP_TRUST_PROXY`: configures Express `app.set('trust proxy', ...)` (useful behind a proxy/LB).
+  - Common values: `1` (one proxy), `true` (trust all; use with care).
+- CORS via env (optional):
+  - `CORS_ENABLED=true|false`
+  - `CORS_CREDENTIALS=true|false`
+  - `CORS_ORIGINS=https://my-frontend.example,https://admin.my-frontend.example`
+
 ## config.json
 
 File: [src/config/config.json](../../src/config/config.json)
@@ -59,6 +68,18 @@ Config: [src/config/config.json](../../src/config/config.json) → `cors`
 Implementation: [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.js)
 
 Note (CSRF): for `POST` requests you must send the `X-CSRF-Token` header (see [docs/en/05-api-contract.md](05-api-contract.md)).
+
+### Cookies + CORS in production (quick guide)
+
+- If frontend and backend are on **different domains** and you use cookie-based sessions:
+  - frontend: `credentials: 'include'` / `withCredentials: true`
+  - backend: `cors.credentials=true` and `cors.origins` must allowlist the real frontend domain(s)
+  - cookie:
+    - `SESSION_COOKIE_SECURE=true` (HTTPS)
+    - `SESSION_COOKIE_SAMESITE=none` (cross-site)
+  - behind a proxy/LB: set `APP_TRUST_PROXY=1` (or appropriate value) so Express can detect HTTPS and support `secure` cookies.
+
+- If frontend and backend share the **same domain** (same “site”), `SESSION_COOKIE_SAMESITE=lax` is usually enough.
 
 ### Security headers (helmet)
 

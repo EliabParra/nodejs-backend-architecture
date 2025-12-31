@@ -258,6 +258,21 @@ Nota: el detalle exacto del interceptor depende de tu versión de Angular/RxJS, 
 - Si las cookies no viajan:
   - tu cliente no está usando `credentials/include` / `withCredentials`.
   - tu CORS allowlist no incluye el origen del frontend.
+
+## 7) Producción: cookies cross-domain (lo típico que falla)
+
+Si el frontend y backend están en dominios distintos y quieres **sesión por cookie**:
+
+- Frontend: todas las llamadas que dependan de sesión deben usar `credentials: 'include'` / `withCredentials: true`.
+- Backend:
+  - `cors.credentials=true`
+  - `cors.origins` debe contener el origen real del frontend (ej. `https://miapp.com`).
+- Cookie:
+  - `SESSION_COOKIE_SECURE=true` (solo HTTPS)
+  - `SESSION_COOKIE_SAMESITE=none` (cross-site)
+- Si hay proxy/LB terminando TLS: configura `APP_TRUST_PROXY=1`.
+
+Ver variables en [03-configuration.md](03-configuration.md).
 - Si recibes `413`: estás enviando un body demasiado grande.
 
 ## 7) Cómo conectar “cualquier frontend” (recomendado)
