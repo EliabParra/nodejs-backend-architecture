@@ -77,6 +77,15 @@ Notes:
 - `4xx/5xx` requests are logged as `warning` only if they were not already logged as an error (to avoid duplicates).
 - For production log aggregation, you can emit JSON logs by setting `LOG_FORMAT=json` (see [docs/en/03-configuration.md](03-configuration.md)).
 
+## Audit (DB)
+
+In addition to stdout logs, the backend can persist audit events to the DB when `security.audit_log` exists:
+
+- `login` / `logout`
+- `/toProccess`: `tx_exec`, `tx_denied`, `tx_error`
+
+These inserts are best-effort (if it fails, it won’t break the request). The `requestId` is stored as `request_id`.
+
 ## CORS + session (frontend on another port)
 
 If you run React/Vite/Angular on a different port (e.g. `http://localhost:5173`) and keep cookie-based sessions (as in this architecture), you need:

@@ -77,6 +77,15 @@ Notas:
 - Requests `4xx/5xx` se loguean como `warning` **solo si** no fueron logueados previamente como error (para evitar duplicados).
 - Puedes emitir logs como JSON (para producción) con `LOG_FORMAT=json` (ver [docs/es/03-configuration.md](03-configuration.md)).
 
+## Auditoría (DB)
+
+Además del logging a stdout, el backend puede registrar eventos en DB si existe `security.audit_log`:
+
+- `login` / `logout`
+- `/toProccess`: `tx_exec`, `tx_denied`, `tx_error`
+
+Esto se inserta de forma best-effort (si falla, no rompe el request). El `requestId` se persiste como `request_id`.
+
 ## CORS + sesión (frontend en otro puerto)
 
 Si usas React/Vite/Angular en otro puerto (ej. `http://localhost:5173`) y mantienes sesión por cookie (como en esta arquitectura), necesitas:

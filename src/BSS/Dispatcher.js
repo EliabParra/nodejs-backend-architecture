@@ -358,12 +358,61 @@ export default class Dispatcher {
                 params: req.body.params
             }
 
-            if (!security.getPermissions(data)) return res.status(this.clientErrors.permissionDenied.code).send(this.clientErrors.permissionDenied)
+            if (!security.getPermissions(data)) {
+                // Best-effort audit (do not block response)
+                try {
+                    await db.exe('security', 'insertAuditLog', [
+                        req.requestId,
+                        req.session?.user_id,
+                        req.session?.profile_id,
+                        'tx_denied',
+                        data.object_na,
+                        data.method_na,
+                        req.body?.tx,
+                        JSON.stringify({ reason: 'permissionDenied' })
+                    ])
+                } catch { }
+
+                return res.status(this.clientErrors.permissionDenied.code).send(this.clientErrors.permissionDenied)
+            }
+
             const response = await security.executeMethod(data)
+
+            // Best-effort audit (do not block response)
+            try {
+                await db.exe('security', 'insertAuditLog', [
+                    req.requestId,
+                    req.session?.user_id,
+                    req.session?.profile_id,
+                    'tx_exec',
+                    data.object_na,
+                    data.method_na,
+                    req.body?.tx,
+                    JSON.stringify({ responseCode: response?.code })
+                ])
+            } catch { }
+
             res.status(response.code).send(response)
         } catch (err) {
             const status = this.clientErrors.unknown.code
             try { res.locals.__errorLogged = true } catch { }
+
+			// Best-effort audit (do not block error response)
+			try {
+				const tx = req.body?.tx
+				const txData = tx != null ? security.getDataTx(tx) : null
+				await db.exe('security', 'insertAuditLog', [
+					req.requestId,
+					req.session?.user_id,
+					req.session?.profile_id,
+					'tx_error',
+					txData?.object_na,
+					txData?.method_na,
+					tx,
+					JSON.stringify({ error: String(err?.message || err) })
+				])
+			} catch { }
+
             log.show({
                 type: log.TYPE_ERROR,
                 msg: `${this.serverErrors.serverError.msg}, /toProccess: ${err.message}`,
@@ -415,7 +464,7 @@ export default class Dispatcher {
         }
     }
 
-    logout(req, res) {
+    async logout(req, res) {
         try {
             const schemaAlerts = this.validateLogoutSchema(req.body)
             if (schemaAlerts.length > 0) {
@@ -426,6 +475,20 @@ export default class Dispatcher {
                 })
             }
             if (this.session.sessionExists(req)) {
+				// Best-effort audit (do not block logout)
+				try {
+					await db.exe('security', 'insertAuditLog', [
+						req.requestId,
+						req.session?.user_id,
+						req.session?.profile_id,
+						'logout',
+						null,
+						null,
+						null,
+						JSON.stringify({})
+					])
+				} catch { }
+
                 this.session.destroySession(req)
                 return res.status(this.successMsgs.logout.code).send(this.successMsgs.logout)
             } else return res.status(this.clientErrors.login.code).send(this.clientErrors.login)

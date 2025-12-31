@@ -26,6 +26,7 @@ Esta documentación describe la arquitectura actual del repo y las reglas para p
 8. [Páginas y sesión](08-pages-and-session.md)
 9. [CLI para BO + tx + permisos](09-bo-cli-and-permissions.md)
 10. [Tutorial frontend (clientes y requests)](10-frontend-clients-and-requests.md)
+11. [DB init (schema `security`)](11-db-init.md)
 
 ## Glosario
 

@@ -26,6 +26,7 @@ These docs describe the current architecture in this repository and the rules to
 8. [Pages and session](08-pages-and-session.md)
 9. [BO CLI + tx + permissions](09-bo-cli-and-permissions.md)
 10. [Frontend tutorial (clients and requests)](10-frontend-clients-and-requests.md)
+11. [DB init (`security` schema)](11-db-init.md)
 
 ## Glossary
 

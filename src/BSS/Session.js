@@ -39,6 +39,7 @@ export default class Session {
 
         if (sessionConfig.store?.type === 'pg') {
             const tableName = sessionConfig.store?.tableName || 'session'
+            const schemaName = sessionConfig.store?.schemaName
             const ttlSecondsFromCookie = typeof sessionConfig.cookie?.maxAge === 'number'
                 ? Math.ceil(sessionConfig.cookie.maxAge / 1000)
                 : undefined
@@ -47,6 +48,7 @@ export default class Session {
             sessionConfig.store = new PgSession({
                 pool: db.pool,
                 tableName,
+                ...(schemaName ? { schemaName } : {}),
                 ...(ttlSeconds != null ? { ttl: ttlSeconds } : {}),
                 ...(pruneIntervalSeconds != null ? { pruneSessionInterval: pruneIntervalSeconds } : {})
             })
@@ -94,6 +96,24 @@ export default class Session {
             req.session.user_id = user.user_id
             req.session.user_na = user.user_na
             req.session.profile_id = user.profile_id
+
+            // Best-effort audit/logging fields (do not fail login if this fails)
+            try {
+                await db.exe('security', 'updateUserLastLogin', [user.user_id])
+            } catch { }
+            try {
+                await db.exe('security', 'insertAuditLog', [
+                    req.requestId,
+                    user.user_id,
+                    user.profile_id,
+                    'login',
+                    null,
+                    null,
+                    null,
+                    JSON.stringify({ user_na: user.user_na })
+                ])
+            } catch { }
+
             return res.status(this.successMsgs.login.code).send(this.successMsgs.login)
         } catch (err) {
             const status = this.clientErrors.unknown.code

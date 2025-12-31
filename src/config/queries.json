@@ -18,7 +18,10 @@
 
         "grantPermission": "insert into security.permission_method (profile_id, method_id) select $1, $2 where not exists (select 1 from security.permission_method where profile_id = $1 and method_id = $2)",
         "revokePermission": "delete from security.permission_method where profile_id = $1 and method_id = $2",
-        "listPermissionsByProfile": "select p.profile_id, o.object_na, m.method_na, m.tx_nu from security.permission_method pm inner join security.profile p on p.profile_id = pm.profile_id inner join security.method m on m.method_id = pm.method_id inner join security.object o on o.object_id = m.object_id where p.profile_id = $1 order by o.object_na asc, m.method_na asc"
+        "listPermissionsByProfile": "select p.profile_id, o.object_na, m.method_na, m.tx_nu from security.permission_method pm inner join security.profile p on p.profile_id = pm.profile_id inner join security.method m on m.method_id = pm.method_id inner join security.object o on o.object_id = m.object_id where p.profile_id = $1 order by o.object_na asc, m.method_na asc",
+
+        "updateUserLastLogin": "update security.\"user\" set last_login_at = now(), updated_at = now() where user_id = $1",
+        "insertAuditLog": "insert into security.audit_log (request_id, user_id, profile_id, action, object_na, method_na, tx_nu, meta) values ($1, $2, $3, $4, $5, $6, $7, $8::jsonb)"
     },
     "enterprise": {
         "getPerson": "select p.person_na, p.person_ln from enterprise.person p where p.person_id = $1",

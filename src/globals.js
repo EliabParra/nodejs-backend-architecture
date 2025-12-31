@@ -68,6 +68,12 @@ function applyEnvOverrides(cfg) {
 		cfg.session.secret = String(process.env.SESSION_SECRET)
 	}
 
+	// Session store location (connect-pg-simple)
+	// Useful if you want the session table under a different schema (e.g. `security`).
+	cfg.session.store = cfg.session.store ?? {}
+	if (process.env.SESSION_SCHEMA) cfg.session.store.schemaName = String(process.env.SESSION_SCHEMA).trim()
+	if (process.env.SESSION_TABLE) cfg.session.store.tableName = String(process.env.SESSION_TABLE).trim()
+
 	// Optional cookie overrides (useful behind HTTPS/proxy)
 	const cookieSecure = envBool(process.env.SESSION_COOKIE_SECURE)
 	if (cookieSecure != null) cfg.session.cookie.secure = cookieSecure

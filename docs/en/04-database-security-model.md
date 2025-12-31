@@ -23,6 +23,20 @@ The current queries imply these minimum tables/fields:
 - `security.method`: `method_id` (PK), `object_id` (FK), `method_na`, `tx_nu`
 - `security.permission_method`: `profile_id` (FK), `method_id` (FK)
 
+## Optional (recommended) fields and tables
+
+For real-world usage (not just demos), it’s common to add:
+
+- `security."user"`:
+   - `is_active` (disable users without deleting)
+   - `created_at`, `updated_at`
+   - `last_login_at`
+   - optional `user_em` (email)
+- `security.profile.profile_na` (human-friendly profile name)
+- `security.audit_log` (audit events for login/logout/tx)
+
+The `npm run db:init` CLI creates these extensions in an idempotent way.
+
 ## Runtime behavior
 
 1. On startup, `Security.loadDataTx()` builds `txMap: Map<tx_nu, {object_na, method_na}>`.

@@ -8,7 +8,7 @@
 ## Install
 
 1. `npm install`
-2. Set up the DB and the `security` schema (see [docs/en/04-database-security-model.md](04-database-security-model.md)).
+2. Set up the DB and create the `security` schema (recommended: `npm run db:init`, see [docs/en/11-db-init.md](11-db-init.md)).
 3. Copy [\.env.example](../../.env.example) to `.env` and set `PG*` or `DATABASE_URL`.
 
 > Note: [src/config/config.json](../../src/config/config.json) keeps `CHANGE_ME` placeholders so real secrets are not committed.

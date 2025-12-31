@@ -43,6 +43,20 @@ Las queries actuales implican estas tablas y campos mínimos:
   - `profile_id` (FK → profile)
   - `method_id` (FK → method)
 
+## Campos y tablas opcionales (recomendados)
+
+Para uso real (no solo demo), es común agregar:
+
+- `security."user"`:
+  - `is_active` (deshabilitar cuentas sin borrar)
+  - `created_at`, `updated_at`
+  - `last_login_at`
+  - `user_em` (email) opcional
+- `security.profile.profile_na` (nombre humano del perfil)
+- `security.audit_log` (auditoría de login/logout/tx)
+
+El CLI `npm run db:init` crea estas extensiones de forma idempotente.
+
 ## Cómo se usa en runtime
 
 1. En startup, `Security.loadDataTx()` arma `txMap: Map<tx_nu, {object_na, method_na}>`.

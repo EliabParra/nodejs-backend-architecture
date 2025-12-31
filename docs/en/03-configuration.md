@@ -31,6 +31,8 @@ Supported variables:
 - Postgres: `DATABASE_URL` or `PGHOST`, `PGPORT`, `PGDATABASE`, `PGUSER`, `PGPASSWORD`, `PGSSL`
 - Session (rotation): `SESSION_SECRET` or `SESSION_SECRETS` (comma-separated)
   - Example: `SESSION_SECRETS=current_secret,previous_secret`
+- Session store (optional): `SESSION_SCHEMA`, `SESSION_TABLE`
+  - Useful if you want the session table to live under another schema (e.g. `security`).
 - Cookies (optional): `SESSION_COOKIE_SECURE`, `SESSION_COOKIE_SAMESITE`, `SESSION_COOKIE_MAXAGE_MS`
 
 Extra variables (production / reverse proxy):
