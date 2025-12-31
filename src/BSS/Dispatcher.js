@@ -1,16 +1,16 @@
 import Session from "./Session.js"
 import express from "express"
-import { buildPagesRouter, pagesPath } from "../router/pages.js"
 import rateLimit from "express-rate-limit"
 import { randomUUID, randomBytes } from "node:crypto"
 import cors from "cors"
 import helmet from "helmet"
-import path from "node:path"
+import { registerFrontendHosting } from "../frontend-adapters/index.js"
 
 export default class Dispatcher {
     constructor() {
         this.app = express()
         this.server = null
+        this.initialized = false
 
         this.app.disable('x-powered-by')
 
@@ -105,50 +105,6 @@ export default class Dispatcher {
                 .status(this.clientErrors.tooManyRequests.code)
                 .send(this.clientErrors.tooManyRequests)
         })
-
-        this.init()
-    }
-
-    getFrontendMode() {
-        const raw = String(config?.app?.frontendMode ?? 'pages').trim().toLowerCase()
-        if (raw === 'pages' || raw === 'spa' || raw === 'none') return raw
-        return 'pages'
-    }
-
-    resolveSpaDistPath() {
-        const fromEnv = process.env.SPA_DIST_PATH
-        if (fromEnv && String(fromEnv).trim().length > 0) return path.resolve(String(fromEnv))
-
-        const fromConfig = config?.app?.spaDistPath
-        if (fromConfig && String(fromConfig).trim().length > 0) return path.resolve(String(fromConfig))
-
-        // Deliberately no default: keep backend decoupled from any specific frontend repo/framework.
-        return null
-    }
-
-    serveSpa() {
-        const distPath = this.resolveSpaDistPath()
-        if (!distPath) {
-            throw new Error(
-                'SPA mode enabled but no dist path configured. Set SPA_DIST_PATH (env) or config.app.spaDistPath to a folder containing index.html.'
-            )
-        }
-
-        // Serve Angular assets
-        this.app.use(express.static(distPath))
-
-        // SPA fallback: any unmatched GET that accepts HTML returns index.html
-        // (Express 5 uses path-to-regexp v6; '*' is not a valid string pattern)
-        this.app.get(/.*/, (req, res, next) => {
-            if (req.method !== 'GET') return next()
-
-            const accept = String(req.headers?.accept ?? '')
-            if (!accept.includes('text/html')) return next()
-
-            return res.status(200).sendFile(path.join(distPath, 'index.html'), (err) => {
-                if (err) return next(err)
-            })
-        })
     }
 
     ensureCsrfToken(req) {
@@ -203,14 +159,9 @@ export default class Dispatcher {
         })
     }
 
-    init() {
-        const mode = this.getFrontendMode()
-
-        // Backend-rendered pages and assets (legacy)
-        if (mode === 'pages') {
-            this.app.use(express.static(pagesPath))
-            this.app.use(buildPagesRouter({ session: this.session }))
-        }
+    async init() {
+        // Optional pages hosting is registered before API routes.
+        await registerFrontendHosting(this.app, { session: this.session, stage: 'preApi' })
 
         // API routes (always)
         this.app.get('/health', this.health.bind(this))
@@ -220,13 +171,13 @@ export default class Dispatcher {
         this.app.post("/login", this.loginRateLimiter, this.csrfProtection.bind(this), this.login.bind(this))
         this.app.post("/logout", this.csrfProtection.bind(this), this.logout.bind(this))
 
-        // Angular SPA hosting (optional)
-        if (mode === 'spa') {
-            this.serveSpa()
-        }
+        // Optional SPA hosting is registered after API routes to avoid shadowing them.
+        await registerFrontendHosting(this.app, { session: this.session, stage: 'postApi' })
 
         // Final error handler: keep API contract stable (no default HTML errors)
         this.app.use(this.finalErrorHandler.bind(this))
+
+        this.initialized = true
     }
 
     health(req, res) {
@@ -441,6 +392,9 @@ export default class Dispatcher {
     }
 
     serverOn() {
+        if (!this.initialized) {
+            throw new Error('Dispatcher not initialized. Call await dispatcher.init() before serverOn().')
+        }
         this.server = this.app.listen(config.app.port, () =>
             log.show({ type: log.TYPE_INFO, msg: `Server running on http://${config.app.host}:${config.app.port}` })
         )

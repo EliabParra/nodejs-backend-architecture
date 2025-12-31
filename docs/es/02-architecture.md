@@ -13,8 +13,7 @@
 
 1. [src/index.js](../../src/index.js)
    - Importa [src/globals.js](../../src/globals.js)
-   - Importa [src/router/routes.js](../../src/router/routes.js) (define rutas de páginas)
-   - Crea `new Dispatcher()` y llama `serverOn()`
+   - Crea `new Dispatcher()`, ejecuta `await dispatcher.init()` y luego llama `serverOn()`
 
 2. [src/globals.js](../../src/globals.js)
    - Carga JSON via `require` (config, queries, messages)
@@ -30,7 +29,6 @@
 
 ### Endpoint
 
-- `POST /toProccess` definido en [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.js)
 
 ### Secuencia (alto nivel)
 
@@ -63,6 +61,8 @@ Dispatcher.toProccess
   v
 Response { code, msg, data?, alerts? }
 ```
+
+Nota sobre desacople: el backend puede correr en modo **API-only** (`APP_FRONTEND_MODE=none`). En ese modo, el código de hosting de páginas/SPAs se carga mediante un **adapter** (import dinámico) solo cuando el modo lo requiere, para que el core no importe módulos de UI.
 
 ## Router de páginas
 

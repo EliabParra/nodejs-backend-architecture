@@ -13,8 +13,7 @@
 
 1. [src/index.js](../../src/index.js)
    - Imports [src/globals.js](../../src/globals.js)
-   - Imports [src/router/routes.js](../../src/router/routes.js) (page routes definition)
-   - Creates `new Dispatcher()` and calls `serverOn()`
+  - Creates `new Dispatcher()`, runs `await dispatcher.init()`, then calls `serverOn()`
 
 2. [src/globals.js](../../src/globals.js)
    - Loads JSON via `require` (config, queries, messages)
@@ -57,6 +56,8 @@ Dispatcher.toProccess
   v
 Response { code, msg, data?, alerts? }
 ```
+
+Decoupling note: the backend can run in **API-only** mode (`APP_FRONTEND_MODE=none`). In that mode, page/SPA hosting is implemented via a **frontend adapter** loaded with a dynamic import only when the selected mode requires it, so the core does not import UI modules.
 
 ## Pages router
 
