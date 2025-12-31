@@ -241,10 +241,15 @@ export default class Dispatcher {
         else if (status === 404) response = this.serverErrors.notFound
         else if (status === 503) response = this.clientErrors.serviceUnavailable
 
+        const rawMessage = typeof err?.message === 'string' ? err.message.trim() : ''
+        const errorName = typeof err?.name === 'string' && err.name.trim() ? err.name.trim() : undefined
+        const errorCode = err?.code != null ? String(err.code) : undefined
+        const safeErrorMessage = rawMessage || errorName || errorCode || 'unknown'
+
         try { res.locals.__errorLogged = true } catch { }
         log.show({
             type: log.TYPE_ERROR,
-            msg: `${this.serverErrors.serverError.msg}, unhandled: ${err?.message ?? 'unknown'}`,
+            msg: `${this.serverErrors.serverError.msg}, unhandled: ${safeErrorMessage}`,
             ctx: {
                 requestId: req.requestId,
                 method: req.method,
@@ -252,7 +257,9 @@ export default class Dispatcher {
                 status,
                 user_id: req.session?.user_id,
                 profile_id: req.session?.profile_id,
-                durationMs: typeof req.requestStartMs === 'number' ? (Date.now() - req.requestStartMs) : undefined
+                durationMs: typeof req.requestStartMs === 'number' ? (Date.now() - req.requestStartMs) : undefined,
+                errorName,
+                errorCode
             }
         })
 
