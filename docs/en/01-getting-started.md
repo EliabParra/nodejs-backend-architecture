@@ -100,7 +100,10 @@ In backend `.env` set:
 
 - `FRONTEND_PATH=...` (path to the frontend repo containing `package.json`)
 - (optional) `FRONTEND_SCRIPT=start`
+- (optional) `FRONTEND_ARGS=...` (e.g. `--port 4201` to avoid `4200` conflicts)
 - (optional) `BACKEND_SCRIPT=dev`
+- (optional) `BACKEND_ARGS=...`
+- (optional) `FULL_KEEP_ALIVE=true`
 
 To connect any frontend, see [10-frontend-clients-and-requests.md](10-frontend-clients-and-requests.md).
 

@@ -54,12 +54,14 @@ These endpoints are meant for monitoring (health checks) and readiness (dependen
 
 Implementation: [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.js)
 
-## Successful request logging
+## Request logging
 
-In addition to error logs, the server logs each **successful** request (status `2xx/3xx`) when the response finishes:
+In addition to error logs, the server logs requests when the response finishes:
 
 - Message: `METHOD /path STATUS` (e.g. `GET /health 200`)
-- Context (`ctx`): `requestId`, `durationMs` (and `user_id`/`profile_id` when present)
+- Standardized context (`ctx`):
+  - `requestId`, `method`, `path`, `status`, `durationMs`
+  - and when a session exists: `user_id`, `profile_id`
 
 This helps you:
 
@@ -67,7 +69,13 @@ This helps you:
 - correlate logs using the `X-Request-Id` header
 - get basic traffic visibility in dev
 
-Output is controlled by `config.log.activation` (the `info` level).
+Output is controlled by `config.log.activation`.
+
+Notes:
+
+- `2xx/3xx` requests are logged as `info`.
+- `4xx/5xx` requests are logged as `warning` only if they were not already logged as an error (to avoid duplicates).
+- For production log aggregation, you can emit JSON logs by setting `LOG_FORMAT=json` (see [docs/en/03-configuration.md](03-configuration.md)).
 
 ## CORS + session (frontend on another port)
 

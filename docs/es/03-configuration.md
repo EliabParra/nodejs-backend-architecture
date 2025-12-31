@@ -42,6 +42,12 @@ Variables extra (producción / reverse proxy):
   - `CORS_CREDENTIALS=true|false`
   - `CORS_ORIGINS=https://mi-frontend.com,https://admin.mi-frontend.com`
 
+Logging (opcional):
+
+- `LOG_FORMAT=text|json`
+  - `text` (default): formato humano (colores) como el curso.
+  - `json`: una línea JSON por evento (recomendado para producción / agregadores de logs).
+
 ## config.json
 
 Archivo: [src/config/config.json](../../src/config/config.json)
@@ -54,6 +60,7 @@ Archivo: [src/config/config.json](../../src/config/config.json)
 - `session`: configuración de `express-session` (ver [src/BSS/Session.js](../../src/BSS/Session.js))
 - `bo.path`: ruta relativa usada por `Security` para importar BO dinámicamente (ver [src/BSS/Security.js](../../src/BSS/Security.js))
 - `log.activation`: flags por nivel (error/info/debug/warn) usados por [src/BSS/Log.js](../../src/BSS/Log.js)
+- `log.format` (opcional): `"text"` | `"json"` (puede venir de `LOG_FORMAT`)
 
 Nota: con `info` activo, el servidor loguea también requests exitosos (2xx/3xx) con `requestId` y `durationMs` (ver [docs/es/05-api-contract.md](05-api-contract.md)).
 
@@ -107,7 +114,12 @@ Para `spa`, el backend NO asume ninguna carpeta por defecto (para mantenerse des
 
 - `FRONTEND_PATH`: ruta al repo del frontend (debe tener `package.json`).
 - `FRONTEND_SCRIPT` (default `start`): qué script ejecutar en el frontend.
+- `FRONTEND_ARGS` (opcional): args extra para el script del frontend.
+  - Se pasan como: `npm run <FRONTEND_SCRIPT> -- <FRONTEND_ARGS>`
+  - Ejemplo (Angular, evitar conflicto de puerto 4200): `FRONTEND_ARGS=--port 4201`
 - `BACKEND_SCRIPT` (default `dev`): qué script ejecutar en el backend.
+- `BACKEND_ARGS` (opcional): args extra para el script del backend (mismo patrón con `--`).
+- `FULL_KEEP_ALIVE=true|false` (opcional): si `true`, no apaga el otro proceso cuando uno termina (útil en algunos flujos de dev).
 
 ## messages.json
 

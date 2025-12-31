@@ -296,4 +296,8 @@ Ver variables en [03-configuration.md](03-configuration.md).
 
 - `FRONTEND_PATH=RUTA_AL_REPO_FRONT` (debe contener `package.json`)
 - `FRONTEND_SCRIPT=start` (opcional)
+- `FRONTEND_ARGS=...` (opcional)
+  - Ejemplo (Angular): `FRONTEND_ARGS=--port 4201`
 - `BACKEND_SCRIPT=dev` (opcional)
+- `BACKEND_ARGS=...` (opcional)
+- `FULL_KEEP_ALIVE=true` (opcional)

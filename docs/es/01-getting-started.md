@@ -100,7 +100,10 @@ Requiere configurar en el `.env` del backend:
 
 - `FRONTEND_PATH=...` (ruta al repo del frontend con `package.json`)
 - (opcional) `FRONTEND_SCRIPT=start`
+- (opcional) `FRONTEND_ARGS=...` (ej. `--port 4201` para evitar conflicto con `4200`)
 - (opcional) `BACKEND_SCRIPT=dev`
+- (opcional) `BACKEND_ARGS=...`
+- (opcional) `FULL_KEEP_ALIVE=true`
 
 Para conectar cualquier frontend, ver [10-frontend-clients-and-requests.md](10-frontend-clients-and-requests.md).
 

@@ -42,6 +42,12 @@ Extra variables (production / reverse proxy):
   - `CORS_CREDENTIALS=true|false`
   - `CORS_ORIGINS=https://my-frontend.example,https://admin.my-frontend.example`
 
+Logging (optional):
+
+- `LOG_FORMAT=text|json`
+  - `text` (default): human-friendly colored logs.
+  - `json`: one-line JSON per event (recommended for production log aggregation).
+
 ## config.json
 
 File: [src/config/config.json](../../src/config/config.json)
@@ -54,6 +60,7 @@ File: [src/config/config.json](../../src/config/config.json)
 - `session`: `express-session` settings (used by [src/BSS/Session.js](../../src/BSS/Session.js))
 - `bo.path`: relative path used by `Security` to dynamically import BO modules (see [src/BSS/Security.js](../../src/BSS/Security.js))
 - `log.activation`: flags per log level (error/info/debug/warn) used by [src/BSS/Log.js](../../src/BSS/Log.js)
+- `log.format` (optional): `"text"` | `"json"` (can be overridden via `LOG_FORMAT`)
 
 Note: with `info` enabled, the server also logs successful requests (2xx/3xx) with `requestId` and `durationMs` (see [docs/en/05-api-contract.md](05-api-contract.md)).
 
@@ -107,7 +114,12 @@ For `spa`, the backend deliberately has NO default dist folder (to stay decouple
 
 - `FRONTEND_PATH`: path to the frontend repo (must contain `package.json`).
 - `FRONTEND_SCRIPT` (default `start`): which npm script to run in the frontend.
+- `FRONTEND_ARGS` (optional): extra args passed to the frontend script.
+  - Passed as: `npm run <FRONTEND_SCRIPT> -- <FRONTEND_ARGS>`
+  - Example (Angular, avoid port 4200 conflicts): `FRONTEND_ARGS=--port 4201`
 - `BACKEND_SCRIPT` (default `dev`): which npm script to run in the backend.
+- `BACKEND_ARGS` (optional): extra args passed to the backend script (same `--` pattern).
+- `FULL_KEEP_ALIVE=true|false` (optional): when `true`, don't auto-shutdown the other process when one exits.
 
 ## messages.json
 
