@@ -71,7 +71,7 @@
  */
 
 /**
- * Logout request body (demo frontend may send an object, but body is optional).
+ * Logout request body (optional).
  * @typedef {Object} LogoutBody
  * @property {any} [msg]
  */
