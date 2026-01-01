@@ -8,6 +8,7 @@
 [![Express](https://img.shields.io/badge/Express-5.x-000000?style=for-the-badge)](#)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-required-336791?style=for-the-badge)](#)
 [![Tests](https://img.shields.io/badge/Tests-node%20--test-2f6feb?style=for-the-badge)](#)
+[![CI](https://img.shields.io/github/actions/workflow/status/EliabParra/nodejs-backend-architecture/ci.yml?branch=main&style=for-the-badge)](https://github.com/EliabParra/nodejs-backend-architecture/actions/workflows/ci.yml)
 [![Licencia: MIT](https://img.shields.io/badge/License-MIT-2f6feb?style=for-the-badge)](LICENSE)
 
 </div>
