@@ -2,12 +2,13 @@
 
 # Node.js Backend Architecture (Template)
 
-Backend template for Node.js (ESM) + Express 5, designed for real projects.
+Production-oriented **backend starter/blueprint** for Node.js (ESM) + Express 5 + Postgres.
 
 [![Node.js (ESM)](https://img.shields.io/badge/Node.js-ESM-3c873a?style=for-the-badge)](#)
 [![Express](https://img.shields.io/badge/Express-5.x-000000?style=for-the-badge)](#)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-required-336791?style=for-the-badge)](#)
 [![Tests](https://img.shields.io/badge/Tests-node%20--test-2f6feb?style=for-the-badge)](#)
+[![License: MIT](https://img.shields.io/badge/License-MIT-2f6feb?style=for-the-badge)](LICENSE)
 
 </div>
 
@@ -15,32 +16,27 @@ Backend template for Node.js (ESM) + Express 5, designed for real projects.
 
 ## English
 
-### What this repository is
+This repository is a **starter/blueprint** that gives you a solid backend baseline (security model + DX tooling) without forcing you into a full framework.
 
-This repository is a **backend template** designed to be easy to extend and safe as a starting point for real projects.
+### Highlights
 
-- **Default is API-only** (`APP_FRONTEND_MODE=none`).
-- **Demos/examples are optional** and kept isolated under `examples/` and `public/`.
+- Cookie sessions with Postgres store + CSRF protection (designed for web apps).
+- Transaction/RPC-style execution via `POST /toProccess` (`tx` → permissions → BO method).
+- DB-backed permission model (`security` schema) with CLIs for init + BO sync + permissions.
+- Operational basics included: `/health`, `/ready`, request IDs, consistent JSON errors.
+- Optional frontend hosting modes (`none`/`pages`/`spa`) with safe ordering.
 
-### Goals and audience
+### Who this is for
 
-**Goals**
-- Provide a clean baseline: config, security model, session, health/readiness endpoints.
-- Standardize the full flow: request → security (`tx` + permissions) → BO execution → validation → normalized JSON response.
-- Support any frontend approach: separate SPA, legacy `pages`, or serving a built SPA.
+- Internal apps (B2B/admin) that want cookie sessions + CSRF.
+- Teams that want a maintainable baseline and clear extension points.
 
-**Audience**
-- Developers who want a stable baseline.
-- Teams that need a starter backend with clear boundaries and optional demos.
-- Internal apps (B2B/admin) where cookie sessions + CSRF fit well.
+### Who this is NOT for (yet)
 
-### Key concepts
+- Public REST APIs that must be OpenAPI-first.
+- Projects that require TypeScript-first + DI from day one.
 
-- **BO (Business Object)** modules live in `BO/<ObjectName>/`.
-- A single transactional endpoint **`POST /toProccess`** executes operations identified by `tx`.
-- The DB schema **`security`** stores `tx` mappings and permission rules.
-
-### Quickstart
+### Quickstart (10 minutes)
 
 1) Install:
 
@@ -77,6 +73,24 @@ Useful endpoints:
 - `POST /logout`
 - `POST /toProccess`
 
+### Core idea (BO + tx)
+
+- Your business logic lives in BO modules under `BO/<ObjectName>/<ObjectName>BO.js`.
+- `security.method` maps `tx` → `(object_na, method_na)`.
+- `security.permission_method` controls which profiles can execute which methods.
+
+Scaffold a BO:
+
+```bash
+npm run bo -- new Order
+```
+
+Sync BO methods to DB (tx mapping):
+
+```bash
+npm run bo -- sync Order --txStart 100
+```
+
 ### Documentation (EN)
 
 Start here:
@@ -104,6 +118,10 @@ The `BO/` folder is intentionally **empty by design**.
 - Add your BOs under `BO/<ObjectName>/<ObjectName>BO.js`.
 - Scaffold quickly: `npm run bo -- new ObjectName`.
 - Demo BOs (optional): `examples/bo-demo/BO/`.
+
+### License
+
+MIT. See [LICENSE](LICENSE).
 
 ## Repo layout
 
