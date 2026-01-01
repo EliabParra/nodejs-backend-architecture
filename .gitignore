@@ -6,3 +6,6 @@ node_modules/
 .tmp-server-*.txt
 docs/api/
 .tmp-starterpack/
+chat-historial/
+nodejs-backend-architecture.code-workspace
+*.code-workspace
