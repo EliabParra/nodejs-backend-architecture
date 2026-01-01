@@ -15,31 +15,7 @@ import { applySessionMiddleware } from '../src/express/session/apply-session-mid
 import { createHealthHandler } from '../src/express/handlers/health.js'
 import { createReadyHandler } from '../src/express/handlers/ready.js'
 
-async function withGlobalLock(fn) {
-  const prev = globalThis.__globalTestLock ?? Promise.resolve()
-  let release
-  const next = new Promise((resolve) => { release = resolve })
-  globalThis.__globalTestLock = prev.then(() => next)
-  await prev
-  try {
-    return await fn()
-  } finally {
-    release()
-  }
-}
-
-function snapshotGlobals(keys) {
-  const snap = {}
-  for (const k of keys) snap[k] = globalThis[k]
-  return snap
-}
-
-function restoreGlobals(snapshot) {
-  for (const [k, v] of Object.entries(snapshot)) {
-    if (v === undefined) delete globalThis[k]
-    else globalThis[k] = v
-  }
-}
+import { withGlobals, withGlobalLock, snapshotGlobals, restoreGlobals } from './_helpers/global-state.mjs'
 
 const GLOBAL_KEYS = ['config', 'msgs', 'log', 'db', 'security']
 
@@ -89,9 +65,7 @@ function makeEsMsgsForCsrfAndJson() {
 }
 
 test('GET /health returns ok + name + requestId (and X-Request-Id header)', async () => {
-  await withGlobalLock(async () => {
-    const snap = snapshotGlobals(GLOBAL_KEYS)
-    try {
+  await withGlobals(GLOBAL_KEYS, async () => {
       const app = express()
       applyRequestId(app)
       app.get('/health', createHealthHandler({ name: 'test-service' }))
@@ -103,16 +77,11 @@ test('GET /health returns ok + name + requestId (and X-Request-Id header)', asyn
       assert.equal(res.body.name, 'test-service')
       assert.ok(typeof res.body.requestId === 'string' && res.body.requestId.length > 0)
       assert.equal(res.headers['x-request-id'], res.body.requestId)
-    } finally {
-      restoreGlobals(snap)
-    }
   })
 })
 
 test('GET /ready returns 503 when security is not ready', async () => {
-  await withGlobalLock(async () => {
-    const snap = snapshotGlobals(GLOBAL_KEYS)
-    try {
+  await withGlobals(GLOBAL_KEYS, async () => {
       const { clientErrors } = makeErrors()
 
       globalThis.security = { isReady: false }
@@ -124,16 +93,11 @@ test('GET /ready returns 503 when security is not ready', async () => {
       const res = await request(app).get('/ready')
       assert.equal(res.status, 503)
       assert.deepEqual(res.body, clientErrors.serviceUnavailable)
-    } finally {
-      restoreGlobals(snap)
-    }
   })
 })
 
 test('GET /ready returns 503 when DB is not reachable (db check fails)', async () => {
-  await withGlobalLock(async () => {
-    const snap = snapshotGlobals(GLOBAL_KEYS)
-    try {
+  await withGlobals(GLOBAL_KEYS, async () => {
       const { clientErrors } = makeErrors()
 
       globalThis.security = { isReady: true }
@@ -145,16 +109,11 @@ test('GET /ready returns 503 when DB is not reachable (db check fails)', async (
       const res = await request(app).get('/ready')
       assert.equal(res.status, 503)
       assert.deepEqual(res.body, clientErrors.serviceUnavailable)
-    } finally {
-      restoreGlobals(snap)
-    }
   })
 })
 
 test('GET /ready returns 200 when security is ready and DB check succeeds', async () => {
-  await withGlobalLock(async () => {
-    const snap = snapshotGlobals(GLOBAL_KEYS)
-    try {
+  await withGlobals(GLOBAL_KEYS, async () => {
       const { clientErrors } = makeErrors()
 
       globalThis.security = { isReady: true }
@@ -166,16 +125,11 @@ test('GET /ready returns 200 when security is ready and DB check succeeds', asyn
       const res = await request(app).get('/ready')
       assert.equal(res.status, 200)
       assert.deepEqual(res.body, { ok: true })
-    } finally {
-      restoreGlobals(snap)
-    }
   })
 })
 
 test('final error handler maps status=400 to invalidParameters', async () => {
-  await withGlobalLock(async () => {
-    const snap = snapshotGlobals(GLOBAL_KEYS)
-    try {
+  await withGlobals(GLOBAL_KEYS, async () => {
       const { clientErrors, serverErrors } = makeErrors()
 
       const events = []
@@ -203,9 +157,6 @@ test('final error handler maps status=400 to invalidParameters', async () => {
       assert.equal(res.status, 400)
       assert.deepEqual(res.body, { msg: clientErrors.invalidParameters.msg, code: 400, alerts: [] })
       assert.ok(events.length >= 1)
-    } finally {
-      restoreGlobals(snap)
-    }
   })
 })
 

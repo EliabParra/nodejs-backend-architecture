@@ -6,31 +6,7 @@ import request from 'supertest'
 import Dispatcher from '../src/BSS/Dispatcher.js'
 import { csrfProtection, csrfTokenHandler } from '../src/express/middleware/csrf.js'
 
-async function withGlobalLock(fn) {
-  const prev = globalThis.__globalTestLock ?? Promise.resolve()
-  let release
-  const next = new Promise((resolve) => { release = resolve })
-  globalThis.__globalTestLock = prev.then(() => next)
-  await prev
-  try {
-    return await fn()
-  } finally {
-    release()
-  }
-}
-
-function snapshotGlobals(keys) {
-  const snap = {}
-  for (const k of keys) snap[k] = globalThis[k]
-  return snap
-}
-
-function restoreGlobals(snapshot) {
-  for (const [k, v] of Object.entries(snapshot)) {
-    if (v === undefined) delete globalThis[k]
-    else globalThis[k] = v
-  }
-}
+import { withGlobals } from './_helpers/global-state.mjs'
 
 const GLOBAL_KEYS = ['config', 'msgs', 'log', 'db', 'security', 'v']
 
@@ -82,9 +58,7 @@ function makeValidatorStub() {
 }
 
 test('POST /login returns invalidParameters when body schema is invalid (with CSRF)', async () => {
-  await withGlobalLock(async () => {
-    const snap = snapshotGlobals(GLOBAL_KEYS)
-    try {
+  await withGlobals(GLOBAL_KEYS, async () => {
       globalThis.msgs = makeTestMsgs()
       globalThis.v = makeValidatorStub()
       globalThis.config = {
@@ -117,16 +91,11 @@ test('POST /login returns invalidParameters when body schema is invalid (with CS
       assert.equal(res.body.code, 400)
       assert.equal(res.body.msg, globalThis.msgs.en.errors.client.invalidParameters.msg)
       assert.ok(Array.isArray(res.body.alerts) && res.body.alerts.length > 0)
-    } finally {
-      restoreGlobals(snap)
-    }
   })
 })
 
 test('POST /toProccess returns login error when session does not exist', async () => {
-  await withGlobalLock(async () => {
-    const snap = snapshotGlobals(GLOBAL_KEYS)
-    try {
+  await withGlobals(GLOBAL_KEYS, async () => {
       globalThis.msgs = makeTestMsgs()
       globalThis.v = makeValidatorStub()
       globalThis.config = {
@@ -146,16 +115,11 @@ test('POST /toProccess returns login error when session does not exist', async (
       const res = await request(dispatcher.app).post('/toProccess').send({ tx: 1 })
       assert.equal(res.status, 401)
       assert.deepEqual(res.body, globalThis.msgs.en.errors.client.login)
-    } finally {
-      restoreGlobals(snap)
-    }
   })
 })
 
 test('POST /toProccess returns serviceUnavailable when security.ready rejects', async () => {
-  await withGlobalLock(async () => {
-    const snap = snapshotGlobals(GLOBAL_KEYS)
-    try {
+  await withGlobals(GLOBAL_KEYS, async () => {
       globalThis.msgs = makeTestMsgs()
       globalThis.v = makeValidatorStub()
       globalThis.config = {
@@ -202,74 +166,64 @@ test('POST /toProccess returns serviceUnavailable when security.ready rejects', 
 
       assert.equal(res.status, 503)
       assert.deepEqual(res.body, globalThis.msgs.en.errors.client.serviceUnavailable)
-    } finally {
-      restoreGlobals(snap)
-    }
   })
 })
 
 test('POST /toProccess returns permissionDenied when permissions check fails (and audits best-effort)', async () => {
-  await withGlobalLock(async () => {
-    const snap = snapshotGlobals(GLOBAL_KEYS)
-    try {
-      globalThis.msgs = makeTestMsgs()
-      globalThis.v = makeValidatorStub()
-      globalThis.config = {
-        app: { lang: 'en', bodyLimit: '100kb' },
-        cors: { enabled: false },
-        session: { secret: 'test-secret', resave: false, saveUninitialized: true }
-      }
-
-      const auditCalls = []
-      globalThis.db = {
-        exe: async (...args) => auditCalls.push(args)
-      }
-
-      globalThis.log = { TYPE_INFO: 'info', TYPE_WARNING: 'warn', TYPE_ERROR: 'error', show: () => {} }
-      globalThis.security = {
-        isReady: true,
-        getDataTx: () => ({ method_na: 'm', object_na: 'o' }),
-        getPermissions: () => false
-      }
-
-      const dispatcher = new Dispatcher()
-
-      dispatcher.app.use(express.json())
-      dispatcher.app.get('/csrf', csrfTokenHandler)
-      dispatcher.app.get('/__setSession', (req, res) => {
-        req.session.user_id = 1
-        req.session.profile_id = 2
-        res.status(200).send({ ok: true })
-      })
-      dispatcher.app.post('/toProccess', csrfProtection, dispatcher.toProccess.bind(dispatcher))
-
-      const agent = request.agent(dispatcher.app)
-
-      await agent.get('/__setSession')
-      const csrfRes = await agent.get('/csrf')
-      const csrfToken = csrfRes.body.csrfToken
-
-      const res = await agent
-        .post('/toProccess')
-        .set('X-CSRF-Token', csrfToken)
-        .send({ tx: 1, params: { a: 1 } })
-
-      assert.equal(res.status, 403)
-      assert.deepEqual(res.body, globalThis.msgs.en.errors.client.permissionDenied)
-
-      assert.ok(auditCalls.length >= 1)
-      assert.equal(auditCalls[0][0], 'security')
-      assert.equal(auditCalls[0][1], 'insertAuditLog')
-    } finally {
-      restoreGlobals(snap)
+  await withGlobals(GLOBAL_KEYS, async () => {
+    globalThis.msgs = makeTestMsgs()
+    globalThis.v = makeValidatorStub()
+    globalThis.config = {
+      app: { lang: 'en', bodyLimit: '100kb' },
+      cors: { enabled: false },
+      session: { secret: 'test-secret', resave: false, saveUninitialized: true }
     }
+
+    const auditCalls = []
+    globalThis.db = {
+      exe: async (...args) => auditCalls.push(args)
+    }
+
+    globalThis.log = { TYPE_INFO: 'info', TYPE_WARNING: 'warn', TYPE_ERROR: 'error', show: () => {} }
+    globalThis.security = {
+      isReady: true,
+      getDataTx: () => ({ method_na: 'm', object_na: 'o' }),
+      getPermissions: () => false
+    }
+
+    const dispatcher = new Dispatcher()
+
+    dispatcher.app.use(express.json())
+    dispatcher.app.get('/csrf', csrfTokenHandler)
+    dispatcher.app.get('/__setSession', (req, res) => {
+      req.session.user_id = 1
+      req.session.profile_id = 2
+      res.status(200).send({ ok: true })
+    })
+    dispatcher.app.post('/toProccess', csrfProtection, dispatcher.toProccess.bind(dispatcher))
+
+    const agent = request.agent(dispatcher.app)
+
+    await agent.get('/__setSession')
+    const csrfRes = await agent.get('/csrf')
+    const csrfToken = csrfRes.body.csrfToken
+
+    const res = await agent
+      .post('/toProccess')
+      .set('X-CSRF-Token', csrfToken)
+      .send({ tx: 1, params: { a: 1 } })
+
+    assert.equal(res.status, 403)
+    assert.deepEqual(res.body, globalThis.msgs.en.errors.client.permissionDenied)
+
+    assert.ok(auditCalls.length >= 1)
+    assert.equal(auditCalls[0][0], 'security')
+    assert.equal(auditCalls[0][1], 'insertAuditLog')
   })
 })
 
 test('POST /toProccess returns executeMethod response when permissions allow (and audits tx_exec)', async () => {
-  await withGlobalLock(async () => {
-    const snap = snapshotGlobals(GLOBAL_KEYS)
-    try {
+  await withGlobals(GLOBAL_KEYS, async () => {
       globalThis.msgs = makeTestMsgs()
       globalThis.v = makeValidatorStub()
       globalThis.config = {
@@ -324,16 +278,11 @@ test('POST /toProccess returns executeMethod response when permissions allow (an
       assert.ok(auditInsertCalls.length >= 1)
       const hasTxExec = auditInsertCalls.some((c) => Array.isArray(c[2]) && c[2][3] === 'tx_exec')
       assert.equal(hasTxExec, true)
-    } finally {
-      restoreGlobals(snap)
-    }
   })
 })
 
 test('POST /toProccess returns unknown when tx is not found (and audits tx_error)', async () => {
-  await withGlobalLock(async () => {
-    const snap = snapshotGlobals(GLOBAL_KEYS)
-    try {
+  await withGlobals(GLOBAL_KEYS, async () => {
       globalThis.msgs = makeTestMsgs()
       globalThis.v = makeValidatorStub()
       globalThis.config = {
@@ -384,16 +333,11 @@ test('POST /toProccess returns unknown when tx is not found (and audits tx_error
       assert.ok(auditInsertCalls.length >= 1)
       const hasTxError = auditInsertCalls.some((c) => Array.isArray(c[2]) && c[2][3] === 'tx_error')
       assert.equal(hasTxError, true)
-    } finally {
-      restoreGlobals(snap)
-    }
   })
 })
 
 test('POST /logout returns login error when session does not exist (CSRF bypass)', async () => {
-  await withGlobalLock(async () => {
-    const snap = snapshotGlobals(GLOBAL_KEYS)
-    try {
+  await withGlobals(GLOBAL_KEYS, async () => {
       globalThis.msgs = makeTestMsgs()
       globalThis.v = makeValidatorStub()
       globalThis.config = {
@@ -412,16 +356,11 @@ test('POST /logout returns login error when session does not exist (CSRF bypass)
       const res = await request(dispatcher.app).post('/logout').send({})
       assert.equal(res.status, 401)
       assert.deepEqual(res.body, globalThis.msgs.en.errors.client.login)
-    } finally {
-      restoreGlobals(snap)
-    }
   })
 })
 
 test('POST /logout destroys session and returns success when session exists (requires CSRF)', async () => {
-  await withGlobalLock(async () => {
-    const snap = snapshotGlobals(GLOBAL_KEYS)
-    try {
+  await withGlobals(GLOBAL_KEYS, async () => {
       globalThis.msgs = makeTestMsgs()
       globalThis.v = makeValidatorStub()
       globalThis.config = {
@@ -471,8 +410,5 @@ test('POST /logout destroys session and returns success when session exists (req
       // After logout, session should be gone (new request should behave as unauthenticated).
       const res2 = await agent.post('/logout').send({})
       assert.equal(res2.status, 401)
-    } finally {
-      restoreGlobals(snap)
-    }
   })
 })

@@ -103,7 +103,11 @@ Empieza aquí:
 |---|---|
 | `npm start` | Levanta el API server |
 | `npm run dev` | Levanta con `nodemon` |
-| `npm test` | Tests DB-safe (`node --test`) |
+| `npm test` | Tests DB-safe (Node test runner) |
+| `npm run test:watch` | Corre tests en modo watch |
+| `npm run test:http` | Corre solo tests HTTP |
+| `npm run test:cli` | Corre solo tests de CLI |
+| `npm run test:coverage` | Genera cobertura (c8) |
 | `npm run db:init` | Inicializa schema `security` (idempotente) |
 | `npm run bo -- <command>` | CLI BO (scaffold, sync tx, permisos) |
 | `npm run hashpw -- "<plainPassword>" [saltRounds]` | Genera hashes bcrypt |

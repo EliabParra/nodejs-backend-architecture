@@ -17,6 +17,13 @@ npm ci
 npm test
 ```
 
+Optional (recommended):
+
+```bash
+npm run test:watch
+npm run test:coverage
+```
+
 ## Pull requests
 
 - Keep PRs focused and small.

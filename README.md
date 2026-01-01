@@ -105,7 +105,11 @@ Start here:
 |---|---|
 | `npm start` | Runs the API server |
 | `npm run dev` | Runs with `nodemon` |
-| `npm test` | DB-safe tests (`node --test`) |
+| `npm test` | DB-safe tests (Node test runner) |
+| `npm run test:watch` | Runs tests in watch mode |
+| `npm run test:http` | Runs HTTP tests only |
+| `npm run test:cli` | Runs CLI tests only |
+| `npm run test:coverage` | Generates coverage (c8) |
 | `npm run db:init` | Initializes the `security` schema (idempotent) |
 | `npm run bo -- <command>` | BO CLI (scaffold BOs, sync tx, manage permissions) |
 | `npm run hashpw -- "<plainPassword>" [saltRounds]` | Generates bcrypt hashes |
