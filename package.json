@@ -2,6 +2,7 @@
   "name": "nodejs-backend-architecture",
   "version": "0.0.1",
   "description": "Una arquitectura de backend desacoplada para Node.js",
+  "license": "MIT",
   "main": "src/index.js",
   "scripts": {
     "test": "node --test",
