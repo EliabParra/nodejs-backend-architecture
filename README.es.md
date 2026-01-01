@@ -114,6 +114,8 @@ Empieza aquí:
 | `npm run full` | Helper opcional (backend + frontend) vía `FRONTEND_PATH` |
 | `npm run export:starter` | Export limpio (sin BOs demo) |
 
+Nota de cobertura: `c8` está configurado para enfocarse en lógica de runtime (`src/**/*.js`) y excluye wiring/entrypoints (p. ej. `src/index.js`) y definiciones solo JSDoc (`src/jsdoc/**`).
+
 ## BO/ (tu dominio)
 
 La carpeta `BO/` se mantiene **vacía por diseño**.

@@ -116,6 +116,8 @@ Start here:
 | `npm run full` | Optional dev helper (backend + frontend) via `FRONTEND_PATH` |
 | `npm run export:starter` | Exports a clean starterpack (without demo BOs) |
 
+Coverage note: `c8` is configured to focus on runtime logic (`src/**/*.js`) and excludes wiring/entrypoints (e.g. `src/index.js`) and JSDoc-only definitions (`src/jsdoc/**`).
+
 ### BO/ (your domain)
 
 The `BO/` folder is intentionally **empty by design**.

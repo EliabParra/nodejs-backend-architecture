@@ -44,6 +44,8 @@
       "src/**/*.js"
     ],
     "exclude": [
+      "src/index.js",
+      "src/jsdoc/**",
       "test/**",
       "scripts/**",
       "BO/**",
