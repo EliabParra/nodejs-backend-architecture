@@ -1,6 +1,6 @@
 # Documentación (ES)
 
-Estas docs describen un **template backend (Node.js + Express)** pensado para cursos y proyectos reales: una base API-first, con seguridad por `tx` + permisos, y ejemplos **opcionales** aislados.
+Estas docs describen un **template backend (Node.js + Express)** para proyectos reales: una base API-first, con seguridad por `tx` + permisos, y ejemplos **opcionales** aislados.
 
 ## Qué es
 
@@ -9,13 +9,12 @@ Un backend de referencia que muestra un patrón de arquitectura (dispatcher tran
 ## Objetivo
 
 - Servir como base reutilizable para proyectos (sin acoplarlo a un “demo” específico).
-- Enseñar un flujo completo: request → seguridad → BO → validación → respuesta.
+- Estandarizar un flujo completo: request → seguridad → BO → validación → respuesta.
 - Permitir integrar cualquier frontend (SPA separada, `pages`, o `spa` con build).
 
 ## Audiencia
 
-- Estudiantes: entender cómo extender el backend (crear BOs, mapear `tx`, asignar permisos).
-- Docentes/ayudantes: tener un repo plantilla consistente para prácticas y evaluación.
+- Desarrolladores: extender el backend (crear BOs, mapear `tx`, asignar permisos).
 - Equipos: usarlo como punto de partida para un backend real.
 
 ## Principios

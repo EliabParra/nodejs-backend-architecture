@@ -1,6 +1,6 @@
 # Documentation (EN)
 
-These docs describe a **backend template (Node.js + Express)** intended for teaching and real projects: an API-first base with `tx` + permissions, plus **optional** examples kept isolated.
+These docs describe a **backend template (Node.js + Express)** for real projects: an API-first base with `tx` + permissions, plus **optional** examples kept isolated.
 
 ## What this is
 
@@ -9,13 +9,12 @@ A reference backend that demonstrates the architecture pattern (transaction disp
 ## Goals
 
 - Be reusable as a clean starting point (not coupled to a specific demo domain).
-- Teach the full flow: request → security → BO → validation → response.
+- Standardize the full flow: request → security → BO → validation → response.
 - Integrate with any frontend (separate SPA, `pages`, or `spa` serving a build).
 
 ## Audience
 
-- Students: learn how to extend the backend (create BOs, map `tx`, assign permissions).
-- Instructors/TAs: consistent template repo for labs and grading.
+- Developers: extend the backend (create BOs, map `tx`, assign permissions).
 - Teams: a starting point for a real backend.
 
 ## Principles

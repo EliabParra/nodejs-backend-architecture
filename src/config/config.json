@@ -7,7 +7,7 @@
         "frontendMode": "none"
     },
     "db": {
-        "database": "curso-node",
+        "database": "app_db",
         "user": "postgres",
         "password": "CHANGE_ME",
         "port": 5432,

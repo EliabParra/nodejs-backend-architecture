@@ -2,7 +2,7 @@
 
 # Node.js Backend Architecture (Template)
 
-Backend template for Node.js (ESM) + Express 5, designed for teaching and real projects.
+Backend template for Node.js (ESM) + Express 5, designed for real projects.
 
 [![Node.js (ESM)](https://img.shields.io/badge/Node.js-ESM-3c873a?style=for-the-badge)](#)
 [![Express](https://img.shields.io/badge/Express-5.x-000000?style=for-the-badge)](#)
@@ -15,7 +15,7 @@ Backend template for Node.js (ESM) + Express 5, designed for teaching and real p
 
 ### Qué es este repositorio
 
-Este repo es un **template de backend** pensado para ser fácil de enseñar, fácil de extender y seguro como base para proyectos reales.
+Este repo es un **template de backend** pensado para ser fácil de extender y seguro como base para proyectos reales.
 
 - **Por defecto es API-only** (`APP_FRONTEND_MODE=none`).
 - Los **demos/ejemplos son opcionales** y viven aislados en `examples/` y `public/`.
@@ -24,13 +24,13 @@ Este repo es un **template de backend** pensado para ser fácil de enseñar, fá
 
 **Objetivos**
 - Dar una base limpia: config, modelo de seguridad, sesión, endpoints de health/readiness.
-- Enseñar el flujo completo: request → seguridad (`tx` + permisos) → ejecución BO → validación → respuesta JSON normalizada.
+- Estandarizar el flujo completo: request → seguridad (`tx` + permisos) → ejecución BO → validación → respuesta JSON normalizada.
 - Soportar cualquier frontend: SPA separada, `pages` (legacy) o servir un build SPA.
 
 **Audiencia**
-- Estudiantes (extender sin “hacks” manuales en DB).
-- Docentes/ayudantes (repo consistente para prácticas y evaluación).
-- Equipos (starter backend con límites claros y demos opcionales).
+- Desarrolladores que quieran una base estable y consistente.
+- Equipos que necesiten un starter backend con límites claros y demos opcionales.
+- Proyectos internos (B2B/admin) donde sesiones/cookies y CSRF sean el camino.
 
 ### Conceptos clave
 
@@ -104,17 +104,13 @@ La carpeta `BO/` se mantiene **vacía por diseño**.
 - BOs demo (opcional): `examples/bo-demo/BO/`.
 
 <br/><br/>
-<div align="center">
-    -Mención al Profesor Jubert Pérez por enseñarme la base de esta arquitectura.-
-</div>
-
 ---
 
 ## English
 
 ### What this repository is
 
-This repository is a **backend template** designed to be easy to teach, easy to extend, and safe as a starting point for real projects.
+This repository is a **backend template** designed to be easy to extend and safe as a starting point for real projects.
 
 - **Default is API-only** (`APP_FRONTEND_MODE=none`).
 - **Demos/examples are optional** and kept isolated under `examples/` and `public/`.
@@ -123,13 +119,13 @@ This repository is a **backend template** designed to be easy to teach, easy to 
 
 **Goals**
 - Provide a clean baseline: config, security model, session, health/readiness endpoints.
-- Teach the full flow: request → security (`tx` + permissions) → BO execution → validation → normalized JSON response.
+- Standardize the full flow: request → security (`tx` + permissions) → BO execution → validation → normalized JSON response.
 - Support any frontend approach: separate SPA, legacy `pages`, or serving a built SPA.
 
 **Audience**
-- Students (extend the backend without manual DB hacks).
-- Instructors/TAs (consistent template repo for labs and grading).
-- Teams (starter backend with clear boundaries and optional demos).
+- Developers who want a stable baseline.
+- Teams that need a starter backend with clear boundaries and optional demos.
+- Internal apps (B2B/admin) where cookie sessions + CSRF fit well.
 
 ### Key concepts
 
@@ -210,7 +206,3 @@ The `BO/` folder is intentionally **empty by design**.
 - `docs/`: ES/EN documentation
 - `public/`: optional demo pages/scripts (only served when enabled)
 
-<br/><br/>
-<div align="center">
-    -Mention to Professor Jubert Perez for teaching me the basics of this architecture.-
-</div>
