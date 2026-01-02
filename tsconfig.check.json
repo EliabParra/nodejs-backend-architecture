@@ -4,6 +4,12 @@
         "checkJs": true,
         "noEmit": true
     },
-    "include": ["src/BSS/EmailService.js", "src/types/**/*.d.ts"],
+    "include": [
+        "src/BSS/EmailService.js",
+        "src/BSS/Session.js",
+        "src/BSS/Dispatcher.js",
+        "src/BSS/Security.js",
+        "src/types/**/*.d.ts"
+    ],
     "exclude": ["node_modules", "dist"]
 }

@@ -1,6 +1,9 @@
 import rateLimit from 'express-rate-limit'
 
-function isAuthPublicSensitiveMethod({ object_na, method_na } = {}) {
+/** @param {{ object_na?: string, method_na?: string } | null | undefined} txData */
+function isAuthPublicSensitiveMethod(txData) {
+    const object_na = txData?.object_na
+    const method_na = txData?.method_na
     if (object_na !== 'Auth') return false
     return (
         method_na === 'register' ||
@@ -20,7 +23,7 @@ function getTxDataFromReq(req) {
     const tx = req?.body?.tx
     if (tx == null) return null
     try {
-        return globalThis.security?.getDataTx?.(tx) ?? null
+        return security?.getDataTx?.(tx) ?? null
     } catch {
         return null
     }

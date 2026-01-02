@@ -1,3 +1,7 @@
+/**
+ * @param {unknown} val
+ * @returns {val is Record<string, any>}
+ */
 export function isPlainObject(val) {
     return val !== null && typeof val === 'object' && !Array.isArray(val)
 }
