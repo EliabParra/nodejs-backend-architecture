@@ -155,12 +155,16 @@ export default class Session {
             try {
                 await db.exe('security', 'updateUserLastLogin', [user.user_id])
             } catch {}
-            await auditBestEffort(req, {
-                action: 'login',
-                user_id: user.user_id,
-                profile_id: user.profile_id,
-                details: { user_na: user.user_na },
-            }, this.ctx)
+            await auditBestEffort(
+                req,
+                {
+                    action: 'login',
+                    user_id: user.user_id,
+                    profile_id: user.profile_id,
+                    details: { user_na: user.user_na },
+                },
+                this.ctx
+            )
 
             return res.status(this.successMsgs.login.code).send(this.successMsgs.login)
         } catch (err) {
@@ -212,12 +216,16 @@ export default class Session {
             appName: config?.app?.name,
         })
 
-        await auditBestEffort(req, {
-            action: 'login_challenge_sent',
-            user_id: user.user_id,
-            profile_id: user.profile_id,
-            details: { sentTo: this.email.maskEmail(user.user_em) },
-        }, this.ctx)
+        await auditBestEffort(
+            req,
+            {
+                action: 'login_challenge_sent',
+                user_id: user.user_id,
+                profile_id: user.profile_id,
+                details: { sentTo: this.email.maskEmail(user.user_em) },
+            },
+            this.ctx
+        )
 
         return res.status(this.successMsgs.loginVerificationRequired.code).send({
             ...this.successMsgs.loginVerificationRequired,
@@ -324,12 +332,16 @@ export default class Session {
             try {
                 await db.exe('security', 'updateUserLastLogin', [row.user_id])
             } catch {}
-            await auditBestEffort(req, {
-                action: 'login',
-                user_id: row.user_id,
-                profile_id: row.profile_id,
-                details: { user_na: row.user_na, twoStep: true },
-            }, this.ctx)
+            await auditBestEffort(
+                req,
+                {
+                    action: 'login',
+                    user_id: row.user_id,
+                    profile_id: row.profile_id,
+                    details: { user_na: row.user_na, twoStep: true },
+                },
+                this.ctx
+            )
 
             return res.status(this.successMsgs.login.code).send(this.successMsgs.login)
         } catch (err) {

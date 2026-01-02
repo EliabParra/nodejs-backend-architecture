@@ -180,14 +180,18 @@ export default class Dispatcher {
             }
 
             if (!effectiveSecurity.getPermissions(data)) {
-                await auditBestEffort(req, {
-                    action: 'tx_denied',
-                    object_na: data.object_na,
-                    method_na: data.method_na,
-                    tx: req.body?.tx,
-                    profile_id: effectiveProfileId,
-                    details: { reason: 'permissionDenied' },
-                }, this.ctx)
+                await auditBestEffort(
+                    req,
+                    {
+                        action: 'tx_denied',
+                        object_na: data.object_na,
+                        method_na: data.method_na,
+                        tx: req.body?.tx,
+                        profile_id: effectiveProfileId,
+                        details: { reason: 'permissionDenied' },
+                    },
+                    this.ctx
+                )
 
                 return res
                     .status(this.clientErrors.permissionDenied.code)
@@ -196,14 +200,18 @@ export default class Dispatcher {
 
             const response = await effectiveSecurity.executeMethod(data)
 
-            await auditBestEffort(req, {
-                action: 'tx_exec',
-                object_na: data.object_na,
-                method_na: data.method_na,
-                tx: req.body?.tx,
-                profile_id: effectiveProfileId,
-                details: { responseCode: response?.code },
-            }, this.ctx)
+            await auditBestEffort(
+                req,
+                {
+                    action: 'tx_exec',
+                    object_na: data.object_na,
+                    method_na: data.method_na,
+                    tx: req.body?.tx,
+                    profile_id: effectiveProfileId,
+                    details: { responseCode: response?.code },
+                },
+                this.ctx
+            )
 
             res.status(response.code).send(response)
         } catch (err) {
@@ -215,14 +223,18 @@ export default class Dispatcher {
             const tx = req.body?.tx
             const effectiveSecurity = this.ctx?.security ?? security
             const txData = tx != null ? effectiveSecurity.getDataTx(tx) : null
-            await auditBestEffort(req, {
-                action: 'tx_error',
-                object_na: txData?.object_na,
-                method_na: txData?.method_na,
-                tx,
-                profile_id: effectiveProfileId,
-                details: { error: String(err?.message || err) },
-            }, this.ctx)
+            await auditBestEffort(
+                req,
+                {
+                    action: 'tx_error',
+                    object_na: txData?.object_na,
+                    method_na: txData?.method_na,
+                    tx,
+                    profile_id: effectiveProfileId,
+                    details: { error: String(err?.message || err) },
+                },
+                this.ctx
+            )
 
             log.show({
                 type: log.TYPE_ERROR,
