@@ -32,14 +32,17 @@ function getCookie(req, name) {
  * Implements login/logout and the canonical "session exists" rule.
  */
 export default class Session {
-    constructor(app) {
+    /** @param {import('express').Express} app @param {AppContext=} ctx */
+    constructor(app, ctx) {
+        this.ctx = ctx
         applySessionMiddleware(app)
-        this.serverErrors = msgs[config.app.lang].errors.server
-        this.clientErrors = msgs[config.app.lang].errors.client
-        this.successMsgs = msgs[config.app.lang].success
-        this.email = new EmailService()
+        const effectiveConfig = this.ctx?.config ?? config
+        this.serverErrors = msgs[effectiveConfig.app.lang].errors.server
+        this.clientErrors = msgs[effectiveConfig.app.lang].errors.client
+        this.successMsgs = msgs[effectiveConfig.app.lang].success
+        this.email = new EmailService(this.ctx)
 
-        this.authCfg = config.auth ?? {}
+        this.authCfg = effectiveConfig.auth ?? {}
         this.loginId = String(this.authCfg.loginId ?? 'email')
             .trim()
             .toLowerCase()

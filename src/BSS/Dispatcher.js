@@ -1,6 +1,7 @@
 import Session from './Session.js'
 import express from 'express'
 import { registerFrontendHosting } from '../frontend-adapters/index.js'
+import { createAppContext } from '../context/app-context.js'
 
 import { applyHelmet } from '../express/middleware/helmet.js'
 import { applyRequestId } from '../express/middleware/request-id.js'
@@ -40,6 +41,7 @@ import { redactSecretsInString } from '../helpers/sanitize.js'
  */
 export default class Dispatcher {
     constructor() {
+        this.ctx = createAppContext()
         this.app = express()
         this.server = null
         this.initialized = false
@@ -56,7 +58,7 @@ export default class Dispatcher {
         applyCorsIfEnabled(this.app)
         applyBodyParsers(this.app)
 
-        this.session = new Session(this.app)
+        this.session = new Session(this.app, this.ctx)
         this.serverErrors = msgs[config.app.lang].errors.server
         this.clientErrors = msgs[config.app.lang].errors.client
         this.successMsgs = msgs[config.app.lang].success
