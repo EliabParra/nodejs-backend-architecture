@@ -283,14 +283,21 @@ export default class Session {
             }
 
             const expiresAt = row.expires_at ? new Date(row.expires_at) : null
-            if (!expiresAt || Number.isNaN(expiresAt.getTime()) || expiresAt.getTime() <= Date.now()) {
+            if (
+                !expiresAt ||
+                Number.isNaN(expiresAt.getTime()) ||
+                expiresAt.getTime() <= Date.now()
+            ) {
                 return (res as any)
                     .status(this.clientErrors.expiredToken.code)
                     .send(this.clientErrors.expiredToken)
             }
 
             const attempts = Number(row.attempt_count ?? 0)
-            if (Number.isFinite(this.loginChallengeMaxAttempts) && attempts >= this.loginChallengeMaxAttempts) {
+            if (
+                Number.isFinite(this.loginChallengeMaxAttempts) &&
+                attempts >= this.loginChallengeMaxAttempts
+            ) {
                 return (res as any)
                     .status(this.clientErrors.tooManyRequests.code)
                     .send(this.clientErrors.tooManyRequests)
@@ -330,9 +337,10 @@ export default class Session {
                 httpOnly: true,
                 sameSite: (config as any)?.session?.cookie?.sameSite ?? 'lax',
                 secure: Boolean((config as any)?.session?.cookie?.secure),
-                maxAge: Number.isFinite(this.deviceCookieMaxAgeMs) ? this.deviceCookieMaxAgeMs : undefined,
+                maxAge: Number.isFinite(this.deviceCookieMaxAgeMs)
+                    ? this.deviceCookieMaxAgeMs
+                    : undefined,
             })
-
             ;(req as any).session.user_id = row.user_id
             ;(req as any).session.user_na = row.user_na
             ;(req as any).session.profile_id = row.profile_id
