@@ -42,14 +42,16 @@ import { redactSecretsInString } from '../helpers/sanitize.js'
 export default class Dispatcher {
     constructor() {
         this.ctx = createAppContext()
+        const effectiveConfig = this.ctx?.config ?? config
+        const effectiveMsgs = this.ctx?.msgs ?? msgs
         this.app = express()
         this.server = null
         this.initialized = false
 
         this.app.disable('x-powered-by')
 
-        if (config?.app?.trustProxy != null) {
-            this.app.set('trust proxy', config.app.trustProxy)
+        if (effectiveConfig?.app?.trustProxy != null) {
+            this.app.set('trust proxy', effectiveConfig.app.trustProxy)
         }
 
         applyHelmet(this.app)
@@ -59,9 +61,9 @@ export default class Dispatcher {
         applyBodyParsers(this.app)
 
         this.session = new Session(this.app, this.ctx)
-        this.serverErrors = msgs[config.app.lang].errors.server
-        this.clientErrors = msgs[config.app.lang].errors.client
-        this.successMsgs = msgs[config.app.lang].success
+        this.serverErrors = effectiveMsgs[effectiveConfig.app.lang].errors.server
+        this.clientErrors = effectiveMsgs[effectiveConfig.app.lang].errors.client
+        this.successMsgs = effectiveMsgs[effectiveConfig.app.lang].success
 
         // Normalize malformed JSON bodies (Express/body-parser defaults to HTML)
         this.app.use(jsonBodySyntaxErrorHandler)
@@ -72,11 +74,12 @@ export default class Dispatcher {
     }
 
     async init() {
+        const effectiveConfig = this.ctx?.config ?? config
         // Optional pages hosting is registered before API routes.
         await registerFrontendHosting(this.app, { session: this.session, stage: 'preApi' })
 
         // API routes (always)
-        this.app.get('/health', createHealthHandler({ name: config?.app?.name ?? 'app' }))
+        this.app.get('/health', createHealthHandler({ name: effectiveConfig?.app?.name ?? 'app' }))
         this.app.get('/ready', createReadyHandler({ clientErrors: this.clientErrors }))
         this.app.get('/csrf', csrfTokenHandler)
         this.app.post(
@@ -112,8 +115,11 @@ export default class Dispatcher {
     async toProccess(req, res) {
         let effectiveProfileId = null
         try {
+            const effectiveConfig = this.ctx?.config ?? config
+            const effectiveSecurity = this.ctx?.security ?? security
+
             const hasSession = this.session.sessionExists(req)
-            const publicProfileId = Number(config?.auth?.publicProfileId)
+            const publicProfileId = Number(effectiveConfig?.auth?.publicProfileId)
             effectiveProfileId = hasSession
                 ? req.session.profile_id
                 : Number.isInteger(publicProfileId) && publicProfileId > 0
@@ -129,9 +135,9 @@ export default class Dispatcher {
                 return sendInvalidParameters(res, this.clientErrors.invalidParameters, schemaAlerts)
             }
 
-            if (!security.isReady) {
+            if (!effectiveSecurity.isReady) {
                 try {
-                    await security.ready
+                    await effectiveSecurity.ready
                 } catch {
                     return res
                         .status(this.clientErrors.serviceUnavailable.code)
@@ -139,7 +145,7 @@ export default class Dispatcher {
                 }
             }
 
-            const txData = security.getDataTx(req.body.tx)
+            const txData = effectiveSecurity.getDataTx(req.body.tx)
 
             if (!txData)
                 throw new Error(this.serverErrors.txNotFound.msg.replace('{tx}', req.body.tx))
@@ -173,7 +179,7 @@ export default class Dispatcher {
                 params: effectiveParams,
             }
 
-            if (!security.getPermissions(data)) {
+            if (!effectiveSecurity.getPermissions(data)) {
                 await auditBestEffort(req, {
                     action: 'tx_denied',
                     object_na: data.object_na,
@@ -188,7 +194,7 @@ export default class Dispatcher {
                     .send(this.clientErrors.permissionDenied)
             }
 
-            const response = await security.executeMethod(data)
+            const response = await effectiveSecurity.executeMethod(data)
 
             await auditBestEffort(req, {
                 action: 'tx_exec',
@@ -207,7 +213,8 @@ export default class Dispatcher {
             } catch {}
 
             const tx = req.body?.tx
-            const txData = tx != null ? security.getDataTx(tx) : null
+            const effectiveSecurity = this.ctx?.security ?? security
+            const txData = tx != null ? effectiveSecurity.getDataTx(tx) : null
             await auditBestEffort(req, {
                 action: 'tx_error',
                 object_na: txData?.object_na,
@@ -230,11 +237,11 @@ export default class Dispatcher {
                     tx: req.body?.tx,
                     object_na:
                         req.body?.tx != null
-                            ? security.getDataTx(req.body.tx)?.object_na
+                            ? effectiveSecurity.getDataTx(req.body.tx)?.object_na
                             : undefined,
                     method_na:
                         req.body?.tx != null
-                            ? security.getDataTx(req.body.tx)?.method_na
+                            ? effectiveSecurity.getDataTx(req.body.tx)?.method_na
                             : undefined,
                     user_id: req.session?.user_id,
                     profile_id: req.session?.profile_id,
