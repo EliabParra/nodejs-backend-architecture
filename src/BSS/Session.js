@@ -5,7 +5,7 @@ import { applySessionMiddleware } from '../express/session/apply-session-middlew
 import { auditBestEffort } from './helpers/audit-log.js'
 import { redactSecretsInString } from '../helpers/sanitize.js'
 import { validateLoginSchema } from './helpers/http-validators.js'
-import EmailService from './Email.js'
+import EmailService from './EmailService.js'
 
 function sha256Hex(value) {
     return createHash('sha256').update(String(value), 'utf8').digest('hex')
