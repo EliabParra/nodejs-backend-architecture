@@ -5,6 +5,8 @@ async function main() {
     // Importing this module should not require runtime globals yet
     // (they're only accessed when calling the exported functions).
     await import(new URL('../dist/src/BSS/helpers/http-validators.js', import.meta.url))
+    await import(new URL('../dist/src/BSS/helpers/audit-log.js', import.meta.url))
+    await import(new URL('../dist/src/BSS/helpers/http-responses.js', import.meta.url))
 
     // Import globals module too (should be safe to import).
     await import(new URL('../dist/src/globals.js', import.meta.url))
