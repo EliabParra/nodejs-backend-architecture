@@ -46,10 +46,37 @@ async function copyDirIfExists(fromDir, toDir) {
     await fs.cp(fromDir, toDir, { recursive: true, force: true })
 }
 
+async function copySrcJs(fromSrcDir, toDistSrcDir) {
+    try {
+        await fs.access(fromSrcDir)
+    } catch {
+        return
+    }
+    await fs.rm(toDistSrcDir, { recursive: true, force: true })
+    await fs.mkdir(path.dirname(toDistSrcDir), { recursive: true })
+
+    // Copy JS runtime sources as-is. TS sources are compiled separately.
+    await fs.cp(fromSrcDir, toDistSrcDir, {
+        recursive: true,
+        force: true,
+        filter: (srcPath) => {
+            // Keep directories (we can't cheaply stat here; allow through).
+            if (!srcPath) return true
+            if (srcPath.endsWith('.ts')) return false
+            if (srcPath.endsWith('.d.ts')) return false
+            return true
+        },
+    })
+}
+
 async function main() {
     await fs.rm(distDir, { recursive: true, force: true })
 
-    await run(process.execPath, [resolveTscScript(), '-p', 'tsconfig.build.json'])
+    // Copy JS runtime sources first.
+    await copySrcJs(path.join(repoRoot, 'src'), path.join(distDir, 'src'))
+
+    // Compile TS sources to dist/, overwriting same-path JS when applicable.
+    await run(process.execPath, [resolveTscScript(), '-p', 'tsconfig.build.ts.json'])
 
     await copyFileIfExists(path.join(repoRoot, 'package.json'), path.join(distDir, 'package.json'))
     await copyFileIfExists(
