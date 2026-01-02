@@ -103,6 +103,8 @@ Empieza aquí:
 |---|---|
 | `npm start` | Levanta el API server |
 | `npm run dev` | Levanta con `nodemon` |
+| `npm run format` | Formatea el repo (Prettier) |
+| `npm run format:check` | Verifica formato (ideal para CI) |
 | `npm test` | Tests DB-safe (Node test runner) |
 | `npm run test:watch` | Corre tests en modo watch |
 | `npm run test:http` | Corre solo tests HTTP |

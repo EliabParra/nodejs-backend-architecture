@@ -105,6 +105,8 @@ Start here:
 |---|---|
 | `npm start` | Runs the API server |
 | `npm run dev` | Runs with `nodemon` |
+| `npm run format` | Formats the repo (Prettier) |
+| `npm run format:check` | Checks formatting (CI-friendly) |
 | `npm test` | DB-safe tests (Node test runner) |
 | `npm run test:watch` | Runs tests in watch mode |
 | `npm run test:http` | Runs HTTP tests only |

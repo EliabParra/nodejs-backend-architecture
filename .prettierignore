@@ -1,0 +1,14 @@
+node_modules/
+coverage/
+.vscode/
+.DS_Store
+
+# Build artifacts (if any)
+dist/
+build/
+
+# Logs
+*.log
+
+# Package manager
+package-lock.json
