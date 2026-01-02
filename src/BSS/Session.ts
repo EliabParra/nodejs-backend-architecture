@@ -7,8 +7,23 @@ import { redactSecretsInString } from '../helpers/sanitize.js'
 import { validateLoginSchema } from './helpers/http-validators.js'
 import EmailService from './EmailService.js'
 
+type EmailServiceLike = {
+    sendLoginChallenge: (args: {
+        to: string
+        token: string
+        code: string
+        appName?: unknown
+    }) => Promise<void> | void
+    maskEmail: (value: string) => string
+}
+
 function sha256Hex(value: unknown) {
     return createHash('sha256').update(String(value), 'utf8').digest('hex')
+}
+
+function asRecord(value: unknown): Record<string, unknown> {
+    if (value && typeof value === 'object') return value as Record<string, unknown>
+    return {}
 }
 
 function getCookie(req: AppRequest, name: string) {
@@ -57,7 +72,10 @@ export default class Session {
         this.serverErrors = msgs[effectiveConfig.app.lang].errors.server
         this.clientErrors = msgs[effectiveConfig.app.lang].errors.client
         this.successMsgs = msgs[effectiveConfig.app.lang].success
-        this.email = new (EmailService as any)(this.ctx)
+        const EmailServiceCtor = EmailService as unknown as new (
+            ctx?: AppContext
+        ) => EmailServiceLike
+        this.email = new EmailServiceCtor(this.ctx)
 
         this.authCfg = effectiveConfig.auth ?? {}
         this.loginId = String(this.authCfg.loginId ?? 'email')
@@ -96,7 +114,8 @@ export default class Session {
                 })
             }
 
-            const identifier = req.body?.username
+            const body = asRecord(req.body)
+            const identifier = body.username
             const queryName = this.loginId === 'username' ? 'getUserByUsername' : 'getUserByEmail'
             const result = await db.exe('security', queryName, [identifier])
             if (!result?.rows || result.rows.length === 0) {
@@ -109,7 +128,7 @@ export default class Session {
             const storedHash = user.user_pw
             const ok =
                 typeof storedHash === 'string' &&
-                (await bcrypt.compare(req.body?.password, storedHash))
+                (await bcrypt.compare(String(body.password), storedHash))
             if (!ok)
                 return res
                     .status(this.clientErrors.usernameOrPasswordIncorrect.code)
@@ -260,8 +279,9 @@ export default class Session {
                     .send(this.clientErrors.sessionExists)
             }
 
-            const token = req.body?.token
-            const code = req.body?.code
+            const body = asRecord(req.body)
+            const token = body.token
+            const code = body.code
             if (typeof token !== 'string' || typeof code !== 'string') {
                 return res
                     .status(this.clientErrors.invalidParameters.code)

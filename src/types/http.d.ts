@@ -20,7 +20,7 @@ declare global {
     }
 
     type AppRequest = {
-        body?: any
+        body?: unknown
         headers?: Record<string, string | string[] | undefined>
         method?: string
         originalUrl?: string

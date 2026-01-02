@@ -30,6 +30,11 @@ import { auditBestEffort } from './helpers/audit-log.js'
 import { sendInvalidParameters } from './helpers/http-responses.js'
 import { redactSecretsInString } from '../helpers/sanitize.js'
 
+function asRecord(value: unknown): Record<string, unknown> {
+    if (value && typeof value === 'object') return value as Record<string, unknown>
+    return {}
+}
+
 /**
  * Express API orchestrator.
  *
@@ -157,7 +162,8 @@ export default class Dispatcher {
                 }
             }
 
-            const tx = req.body?.tx
+            const body = asRecord(req.body)
+            const tx = body.tx
             const txData = tx != null ? effectiveSecurity.getDataTx(tx) : null
 
             if (!txData)
@@ -165,7 +171,7 @@ export default class Dispatcher {
 
             // For security-sensitive Auth flows triggered via /toProccess, attach request context
             // from the server (never trust client-provided values).
-            let effectiveParams = req.body?.params
+            let effectiveParams = body.params
             if (txData?.object_na === 'Auth') {
                 const method = txData?.method_na
                 if (
@@ -176,8 +182,9 @@ export default class Dispatcher {
                     method === 'verifyPasswordReset' ||
                     method === 'resetPassword'
                 ) {
+                    const baseParams = asRecord(body.params)
                     effectiveParams = {
-                        ...(((req.body as any)?.params ?? {}) as any),
+                        ...baseParams,
                         _request: {
                             ip: req.ip ?? null,
                             userAgent: req.get?.('User-Agent') ?? null,
@@ -233,7 +240,8 @@ export default class Dispatcher {
                 res.locals.__errorLogged = true
             } catch {}
 
-            const tx = req.body?.tx
+            const body = asRecord(req.body)
+            const tx = body.tx
             const effectiveSecurity = this.ctx?.security ?? security
             const txData = tx != null ? effectiveSecurity.getDataTx(tx) : null
             await auditBestEffort(
@@ -405,7 +413,9 @@ export default class Dispatcher {
             })
         } finally {
             try {
-                await (db as any)?.pool?.end?.()
+                const pool = (db as unknown as { pool?: { end?: () => Promise<void> | void } })
+                    ?.pool
+                await pool?.end?.()
             } catch {}
         }
     }

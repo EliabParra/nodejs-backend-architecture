@@ -4,7 +4,7 @@ type AuditArgs = {
     action: string
     object_na?: string | null
     method_na?: string | null
-    tx?: number | null
+    tx?: unknown
     user_id?: number | null
     profile_id?: number | null
     details?: Record<string, unknown>
@@ -28,17 +28,17 @@ export async function auditBestEffort(
         object_na = null,
         method_na = null,
         tx = null,
-        user_id = (req as any)?.session?.user_id ?? null,
-        profile_id = (req as any)?.session?.profile_id ?? null,
+        user_id = req?.session?.user_id ?? null,
+        profile_id = req?.session?.profile_id ?? null,
         details = {},
     } = args ?? ({} as AuditArgs)
 
     try {
-        const effectiveDb = (ctx as any)?.db ?? db
+        const effectiveDb = (ctx as unknown as { db?: any } | null)?.db ?? db
         const safeDetails = redactSecrets((details ?? {}) as Record<string, unknown>)
 
         await effectiveDb.exe('security', 'insertAuditLog', [
-            (req as any)?.requestId,
+            req?.requestId,
             user_id,
             profile_id,
             action,
