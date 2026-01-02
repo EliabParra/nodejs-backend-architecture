@@ -58,12 +58,12 @@ export default class Security {
         try {
             const r = await effectiveDb.exe('security', 'loadPermissions', null)
             if (!r || !r.rows) throw new Error('loadPermissions returned null')
-            ;(r.rows as Array<{ profile_id: unknown; method_na: unknown; object_na: unknown }>).forEach(
-                (el) => {
-                    const key = this.permissionKey(el.profile_id, el.method_na, el.object_na)
-                    this.permission.set(key, true)
-                }
-            )
+            ;(
+                r.rows as Array<{ profile_id: unknown; method_na: unknown; object_na: unknown }>
+            ).forEach((el) => {
+                const key = this.permissionKey(el.profile_id, el.method_na, el.object_na)
+                this.permission.set(key, true)
+            })
             return true
         } catch (err: any) {
             effectiveLog.show({

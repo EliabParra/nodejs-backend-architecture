@@ -133,7 +133,7 @@ export default class Dispatcher {
             const hasSession = this.session.sessionExists(req)
             const publicProfileId = Number(effectiveConfig?.auth?.publicProfileId)
             effectiveProfileId = hasSession
-                                ? (req.session?.profile_id ?? null)
+                ? (req.session?.profile_id ?? null)
                 : Number.isInteger(publicProfileId) && publicProfileId > 0
                   ? publicProfileId
                   : null
@@ -161,9 +161,7 @@ export default class Dispatcher {
             const txData = tx != null ? effectiveSecurity.getDataTx(tx) : null
 
             if (!txData)
-                throw new Error(
-                    this.serverErrors.txNotFound.msg.replace('{tx}', String(tx))
-                )
+                throw new Error(this.serverErrors.txNotFound.msg.replace('{tx}', String(tx)))
 
             // For security-sensitive Auth flows triggered via /toProccess, attach request context
             // from the server (never trust client-provided values).
@@ -262,14 +260,8 @@ export default class Dispatcher {
                     path: req.originalUrl,
                     status,
                     tx,
-                    object_na:
-                        tx != null
-                            ? effectiveSecurity.getDataTx(tx)?.object_na
-                            : undefined,
-                    method_na:
-                        tx != null
-                            ? effectiveSecurity.getDataTx(tx)?.method_na
-                            : undefined,
+                    object_na: tx != null ? effectiveSecurity.getDataTx(tx)?.object_na : undefined,
+                    method_na: tx != null ? effectiveSecurity.getDataTx(tx)?.method_na : undefined,
                     user_id: req.session?.user_id,
                     profile_id: req.session?.profile_id,
                     durationMs:
