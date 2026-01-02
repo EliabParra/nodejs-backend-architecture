@@ -39,26 +39,27 @@ This repository is a **starter/blueprint** that gives you a solid backend baseli
 
 ### Quickstart (10 minutes)
 
-1) Install:
+1. Install:
 
 ```bash
 npm install
 ```
 
-2) Configure environment:
+2. Configure environment:
 
 Copy `.env.example` to `.env` and set your Postgres connection (`DATABASE_URL` or `PG*`).
 
-3) Initialize DB (required):
+3. Initialize DB (required):
 
 ```bash
 npm run db:init
 ```
 
 Docs (EN):
+
 - DB init CLI: [docs/en/10-db-init-cli.md](docs/en/10-db-init-cli.md)
 
-4) Run:
+4. Run:
 
 ```bash
 npm run dev
@@ -67,6 +68,7 @@ npm start
 ```
 
 Useful endpoints:
+
 - `GET /health`
 - `GET /ready`
 - `GET /csrf`
@@ -95,28 +97,29 @@ npm run bo -- sync Order --txStart 100
 ### Documentation (EN)
 
 Start here:
+
 - English index: [docs/en/00-index.md](docs/en/00-index.md)
 - Frontend tutorial (EN): [docs/en/11-frontend-clients-and-requests.md](docs/en/11-frontend-clients-and-requests.md)
 - Examples (EN): [docs/en/12-examples.md](docs/en/12-examples.md)
 
 ### Scripts
 
-| Script | Description |
-|---|---|
-| `npm start` | Runs the API server |
-| `npm run dev` | Runs with `nodemon` |
-| `npm run format` | Formats the repo (Prettier) |
-| `npm run format:check` | Checks formatting (CI-friendly) |
-| `npm test` | DB-safe tests (Node test runner) |
-| `npm run test:watch` | Runs tests in watch mode |
-| `npm run test:http` | Runs HTTP tests only |
-| `npm run test:cli` | Runs CLI tests only |
-| `npm run test:coverage` | Generates coverage (c8) |
-| `npm run db:init` | Initializes the `security` schema (idempotent) |
-| `npm run bo -- <command>` | BO CLI (scaffold BOs, sync tx, manage permissions) |
-| `npm run hashpw -- "<plainPassword>" [saltRounds]` | Generates bcrypt hashes |
-| `npm run full` | Optional dev helper (backend + frontend) via `FRONTEND_PATH` |
-| `npm run export:starter` | Exports a clean starterpack (without demo BOs) |
+| Script                                             | Description                                                  |
+| -------------------------------------------------- | ------------------------------------------------------------ |
+| `npm start`                                        | Runs the API server                                          |
+| `npm run dev`                                      | Runs with `nodemon`                                          |
+| `npm run format`                                   | Formats the repo (Prettier)                                  |
+| `npm run format:check`                             | Checks formatting (CI-friendly)                              |
+| `npm test`                                         | DB-safe tests (Node test runner)                             |
+| `npm run test:watch`                               | Runs tests in watch mode                                     |
+| `npm run test:http`                                | Runs HTTP tests only                                         |
+| `npm run test:cli`                                 | Runs CLI tests only                                          |
+| `npm run test:coverage`                            | Generates coverage (c8)                                      |
+| `npm run db:init`                                  | Initializes the `security` schema (idempotent)               |
+| `npm run bo -- <command>`                          | BO CLI (scaffold BOs, sync tx, manage permissions)           |
+| `npm run hashpw -- "<plainPassword>" [saltRounds]` | Generates bcrypt hashes                                      |
+| `npm run full`                                     | Optional dev helper (backend + frontend) via `FRONTEND_PATH` |
+| `npm run export:starter`                           | Exports a clean starterpack (without demo BOs)               |
 
 Coverage note: `c8` is configured to focus on runtime logic (`src/**/*.js`) and excludes wiring/entrypoints (e.g. `src/index.js`) and JSDoc-only definitions (`src/jsdoc/**`).
 
@@ -139,4 +142,3 @@ MIT. See [LICENSE](LICENSE).
 - `scripts/`: CLI tools (BO CLI, db-init, export starterpack, etc.)
 - `docs/`: ES/EN documentation
 - `public/`: optional demo pages/scripts (only served when enabled)
-

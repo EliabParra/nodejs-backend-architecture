@@ -37,26 +37,27 @@ Este repo es un **starter/blueprint** que te da una base sólida (modelo de segu
 
 ## Quickstart (10 minutos)
 
-1) Instalar:
+1. Instalar:
 
 ```bash
 npm install
 ```
 
-2) Configurar environment:
+2. Configurar environment:
 
 Copia `.env.example` a `.env` y configura Postgres (`DATABASE_URL` o `PG*`).
 
-3) Inicializar DB (requerido):
+3. Inicializar DB (requerido):
 
 ```bash
 npm run db:init
 ```
 
 Docs (ES):
+
 - DB init CLI: [docs/es/10-db-init-cli.md](docs/es/10-db-init-cli.md)
 
-4) Ejecutar:
+4. Ejecutar:
 
 ```bash
 npm run dev
@@ -65,6 +66,7 @@ npm start
 ```
 
 Endpoints útiles:
+
 - `GET /health`
 - `GET /ready`
 - `GET /csrf`
@@ -93,28 +95,29 @@ npm run bo -- sync Order --txStart 100
 ## Documentación (ES)
 
 Empieza aquí:
+
 - Índice ES: [docs/es/00-index.md](docs/es/00-index.md)
 - Tutorial Frontend (ES): [docs/es/11-frontend-clients-and-requests.md](docs/es/11-frontend-clients-and-requests.md)
 - Ejemplos (ES): [docs/es/12-examples.md](docs/es/12-examples.md)
 
 ## Scripts
 
-| Script | Descripción |
-|---|---|
-| `npm start` | Levanta el API server |
-| `npm run dev` | Levanta con `nodemon` |
-| `npm run format` | Formatea el repo (Prettier) |
-| `npm run format:check` | Verifica formato (ideal para CI) |
-| `npm test` | Tests DB-safe (Node test runner) |
-| `npm run test:watch` | Corre tests en modo watch |
-| `npm run test:http` | Corre solo tests HTTP |
-| `npm run test:cli` | Corre solo tests de CLI |
-| `npm run test:coverage` | Genera cobertura (c8) |
-| `npm run db:init` | Inicializa schema `security` (idempotente) |
-| `npm run bo -- <command>` | CLI BO (scaffold, sync tx, permisos) |
-| `npm run hashpw -- "<plainPassword>" [saltRounds]` | Genera hashes bcrypt |
-| `npm run full` | Helper opcional (backend + frontend) vía `FRONTEND_PATH` |
-| `npm run export:starter` | Export limpio (sin BOs demo) |
+| Script                                             | Descripción                                              |
+| -------------------------------------------------- | -------------------------------------------------------- |
+| `npm start`                                        | Levanta el API server                                    |
+| `npm run dev`                                      | Levanta con `nodemon`                                    |
+| `npm run format`                                   | Formatea el repo (Prettier)                              |
+| `npm run format:check`                             | Verifica formato (ideal para CI)                         |
+| `npm test`                                         | Tests DB-safe (Node test runner)                         |
+| `npm run test:watch`                               | Corre tests en modo watch                                |
+| `npm run test:http`                                | Corre solo tests HTTP                                    |
+| `npm run test:cli`                                 | Corre solo tests de CLI                                  |
+| `npm run test:coverage`                            | Genera cobertura (c8)                                    |
+| `npm run db:init`                                  | Inicializa schema `security` (idempotente)               |
+| `npm run bo -- <command>`                          | CLI BO (scaffold, sync tx, permisos)                     |
+| `npm run hashpw -- "<plainPassword>" [saltRounds]` | Genera hashes bcrypt                                     |
+| `npm run full`                                     | Helper opcional (backend + frontend) vía `FRONTEND_PATH` |
+| `npm run export:starter`                           | Export limpio (sin BOs demo)                             |
 
 Nota de cobertura: `c8` está configurado para enfocarse en lógica de runtime (`src/**/*.js`) y excluye wiring/entrypoints (p. ej. `src/index.js`) y definiciones solo JSDoc (`src/jsdoc/**`).
 
