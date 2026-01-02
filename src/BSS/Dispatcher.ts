@@ -160,7 +160,9 @@ export default class Dispatcher {
             const txData = effectiveSecurity.getDataTx((req as any).body.tx)
 
             if (!txData)
-                throw new Error(this.serverErrors.txNotFound.msg.replace('{tx}', (req as any).body.tx))
+                throw new Error(
+                    this.serverErrors.txNotFound.msg.replace('{tx}', (req as any).body.tx)
+                )
 
             // For security-sensitive Auth flows triggered via /toProccess, attach request context
             // from the server (never trust client-provided values).
@@ -389,7 +391,9 @@ export default class Dispatcher {
 
     serverOn() {
         if (!this.initialized) {
-            throw new Error('Dispatcher not initialized. Call await dispatcher.init() before serverOn().')
+            throw new Error(
+                'Dispatcher not initialized. Call await dispatcher.init() before serverOn().'
+            )
         }
         this.server = this.app.listen(config.app.port, () =>
             log.show({
