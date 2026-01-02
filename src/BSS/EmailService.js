@@ -49,9 +49,14 @@ function buildTransport(emailCfg) {
 }
 
 export default class EmailService {
-    constructor() {
+    /** @param {{ config?: any, log?: any }=} ctx */
+    constructor(ctx) {
+        this.ctx = ctx ?? {}
+        const effectiveConfig = this.ctx.config ?? config
+        const effectiveLog = this.ctx.log ?? log
+
         /** @type {EmailConfig} */
-        this.cfg = config.email ?? {}
+        this.cfg = effectiveConfig?.email ?? {}
         this.mode = String(this.cfg.mode ?? 'log')
             .trim()
             .toLowerCase()
@@ -73,12 +78,13 @@ export default class EmailService {
 
     /** @param {{ to: string, token: string, code: string, appName?: string }} args */
     async sendLoginChallenge({ to, token, code, appName }) {
+        const effectiveLog = this.ctx.log ?? log
         const subject = `${appName ?? 'App'} - Verificación de inicio de sesión`
         const text = `Tu inicio de sesión requiere verificación.\n\nToken: ${token}\nCódigo: ${code}\n\nSi no fuiste tú, ignora este mensaje.`
 
         if (this.mode !== 'smtp' || !this._transport) {
-            log.show({
-                type: log.TYPE_INFO,
+            effectiveLog.show({
+                type: effectiveLog.TYPE_INFO,
                 msg: `[Email:${this.mode}] Would send login challenge to=${to} subject=${subject}`,
                 ctx: this.logIncludeSecrets ? { to, subject, token, code } : { to, subject },
             })
@@ -96,12 +102,13 @@ export default class EmailService {
 
     /** @param {{ to: string, token: string, code: string, appName?: string }} args */
     async sendPasswordReset({ to, token, code, appName }) {
+        const effectiveLog = this.ctx.log ?? log
         const subject = `${appName ?? 'App'} - Restablecer contraseña`
         const text = `Solicitud para restablecer contraseña.\n\nToken: ${token}\nCódigo: ${code}\n\nSi no fuiste tú, ignora este mensaje.`
 
         if (this.mode !== 'smtp' || !this._transport) {
-            log.show({
-                type: log.TYPE_INFO,
+            effectiveLog.show({
+                type: effectiveLog.TYPE_INFO,
                 msg: `[Email:${this.mode}] Would send password reset to=${to} subject=${subject}`,
                 ctx: this.logIncludeSecrets ? { to, subject, token, code } : { to, subject },
             })
@@ -119,6 +126,7 @@ export default class EmailService {
 
     /** @param {{ to: string, token: string, code: string, appName?: string }} args */
     async sendEmailVerification({ to, token, code, appName }) {
+        const effectiveLog = this.ctx.log ?? log
         const subject = `${appName ?? 'App'} - Verificar email`
         const text = `Verificación de email requerida.
 
@@ -128,8 +136,8 @@ Código: ${code}
 Si no fuiste tú, ignora este mensaje.`
 
         if (this.mode !== 'smtp' || !this._transport) {
-            log.show({
-                type: log.TYPE_INFO,
+            effectiveLog.show({
+                type: effectiveLog.TYPE_INFO,
                 msg: `[Email:${this.mode}] Would send email verification to=${to} subject=${subject}`,
                 ctx: this.logIncludeSecrets ? { to, subject, token, code } : { to, subject },
             })

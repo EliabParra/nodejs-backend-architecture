@@ -13,4 +13,13 @@ declare global {
     interface GlobalThis {
         security: any
     }
+
+    type AppContext = {
+        config: any
+        log: any
+        db: any
+        msgs: any
+        v: any
+        security: any
+    }
 }
