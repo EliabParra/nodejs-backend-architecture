@@ -16,6 +16,7 @@
         "test:coverage": "c8 --reporter=text --reporter=text-summary --reporter=lcov node --import ./test/setup.mjs --test",
         "build": "node scripts/build-dist.mjs",
         "smoke:dist": "npm run build && node scripts/smoke-dist.mjs",
+        "verify:migration": "npm run typecheck && npm run smoke:dist && npm test",
         "start": "node src/index.js",
         "start:dist": "cd dist && node src/index.js",
         "dev:dist": "nodemon --watch src --watch BO --watch public --watch scripts/build-dist.mjs --ext js,ts,json,mjs,html,css --signal SIGINT --exec \"npm run build && node dist/src/index.js\"",
