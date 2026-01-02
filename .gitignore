@@ -10,3 +10,4 @@ docs/api/
 chat-historial/
 nodejs-backend-architecture.code-workspace
 *.code-workspace
+dist/
