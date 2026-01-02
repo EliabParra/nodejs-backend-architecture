@@ -528,7 +528,7 @@ import { createHash, randomBytes } from 'node:crypto'
 import { AuthErrorHandler } from './errors/AuthErrorHandler.js'
 import { AuthValidate } from './AuthValidate.js'
 import { AuthRepository } from './Auth.js'
-import EmailService from '../../src/BSS/Email.js'
+import EmailService from '../../src/BSS/EmailService.js'
 
 const successMsgs = require('./authSuccessMsgs.json')[config.app.lang]
 const email = new EmailService()
