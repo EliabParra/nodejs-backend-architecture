@@ -26,6 +26,8 @@ function applyEnvOverrides(cfg) {
     cfg.session.cookie = cfg.session.cookie ?? {}
     cfg.cors = cfg.cors ?? {}
     cfg.log = cfg.log ?? {}
+    cfg.auth = cfg.auth ?? {}
+    cfg.email = cfg.email ?? {}
 
     const appPort = envInt(process.env.APP_PORT)
     if (appPort != null) cfg.app.port = appPort
@@ -103,6 +105,39 @@ function applyEnvOverrides(cfg) {
     // Logging
     // LOG_FORMAT=text|json (json = one-line JSON per event, better for log aggregation)
     if (process.env.LOG_FORMAT) cfg.log.format = String(process.env.LOG_FORMAT).trim().toLowerCase()
+
+    // Auth (optional module)
+    // AUTH_LOGIN_ID=email|username
+    if (process.env.AUTH_LOGIN_ID) {
+        const v = String(process.env.AUTH_LOGIN_ID).trim().toLowerCase()
+        if (v === 'email' || v === 'username') cfg.auth.loginId = v
+    }
+    const login2StepNewDevice = envBool(process.env.AUTH_LOGIN_2STEP_NEW_DEVICE)
+    if (login2StepNewDevice != null) cfg.auth.login2StepNewDevice = login2StepNewDevice
+
+    const publicProfileId = envInt(process.env.AUTH_PUBLIC_PROFILE_ID)
+    if (publicProfileId != null) cfg.auth.publicProfileId = publicProfileId
+
+    const sessionProfileId = envInt(process.env.AUTH_SESSION_PROFILE_ID)
+    if (sessionProfileId != null) cfg.auth.sessionProfileId = sessionProfileId
+
+    const requireEmailVerification = envBool(process.env.AUTH_REQUIRE_EMAIL_VERIFICATION)
+    if (requireEmailVerification != null)
+        cfg.auth.requireEmailVerification = requireEmailVerification
+
+    // Email (optional)
+    // EMAIL_MODE=smtp|log
+    if (process.env.EMAIL_MODE) cfg.email.mode = String(process.env.EMAIL_MODE).trim().toLowerCase()
+    if (process.env.SMTP_HOST) cfg.email.smtpHost = String(process.env.SMTP_HOST).trim()
+    if (process.env.SMTP_PORT) {
+        const p = envInt(process.env.SMTP_PORT)
+        if (p != null) cfg.email.smtpPort = p
+    }
+    if (process.env.SMTP_USER) cfg.email.smtpUser = String(process.env.SMTP_USER)
+    if (process.env.SMTP_PASS) cfg.email.smtpPass = String(process.env.SMTP_PASS)
+    const smtpSecure = envBool(process.env.SMTP_SECURE)
+    if (smtpSecure != null) cfg.email.smtpSecure = smtpSecure
+    if (process.env.SMTP_FROM) cfg.email.from = String(process.env.SMTP_FROM)
 
     return cfg
 }

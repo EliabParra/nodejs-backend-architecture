@@ -13,6 +13,9 @@
  * @param {Object} [args.details]
  * @returns {Promise<void>}
  */
+
+import { redactSecrets } from '../../helpers/sanitize.js'
+
 export async function auditBestEffort(
     req,
     {
@@ -26,6 +29,7 @@ export async function auditBestEffort(
     }
 ) {
     try {
+        const safeDetails = redactSecrets(details ?? {})
         await db.exe('security', 'insertAuditLog', [
             req?.requestId,
             user_id,
@@ -34,7 +38,7 @@ export async function auditBestEffort(
             object_na,
             method_na,
             tx,
-            JSON.stringify(details ?? {}),
+            JSON.stringify(safeDetails),
         ])
     } catch {}
 }

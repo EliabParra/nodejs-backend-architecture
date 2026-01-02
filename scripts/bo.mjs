@@ -23,6 +23,7 @@ Usage:
 
 Commands:
   new  <ObjectName>            Create BO folder + files
+    auth                         Create Auth BO preset (password reset 2-step)
   sync <ObjectName>            Read BO methods and upsert to DB (tx mapping)
   list                         List objects/methods/tx from DB
   perms                        Grant/revoke permissions (interactive)
@@ -42,6 +43,10 @@ Notes:
 - After changing tx/perms in DB, restart the server (Security cache loads on startup).
 - Requires DATABASE_URL / PG* env vars or config.json DB settings.
 `)
+}
+
+function isTty() {
+    return Boolean(process.stdin.isTTY && process.stdout.isTTY)
 }
 
 function parseArgs(argv) {
@@ -287,6 +292,414 @@ const successMsgs = require('./${objectName.toLowerCase()}SuccessMsgs.json')[con
 export class ${objectName}BO {
 ${methodBodies}
 }
+
+`
+}
+
+function authMethods() {
+    return ['requestPasswordReset', 'verifyPasswordReset', 'resetPassword']
+}
+
+function templateAuthSuccessMsgs() {
+    // Keep keys aligned with method names.
+    return (
+        JSON.stringify(
+            {
+                es: {
+                    requestPasswordReset: 'Si existe una cuenta, enviaremos instrucciones al email',
+                    verifyPasswordReset: 'Verificación correcta',
+                    resetPassword: 'Contraseña actualizada',
+                },
+                en: {
+                    requestPasswordReset: 'If an account exists, we will email instructions',
+                    verifyPasswordReset: 'Verification ok',
+                    resetPassword: 'Password updated',
+                },
+            },
+            null,
+            2
+        ) + '\n'
+    )
+}
+
+function templateAuthErrorMsgs() {
+    return (
+        JSON.stringify(
+            {
+                es: {
+                    invalidParameters: { msg: 'Parámetros inválidos', code: 400 },
+                    invalidToken: { msg: 'Token inválido', code: 401 },
+                    expiredToken: { msg: 'Token expirado', code: 401 },
+                    tooManyRequests: { msg: 'Demasiados intentos, inténtalo más tarde', code: 429 },
+                    unknownError: { msg: 'Error desconocido', code: 500 },
+                },
+                en: {
+                    invalidParameters: { msg: 'Invalid parameters', code: 400 },
+                    invalidToken: { msg: 'Invalid token', code: 401 },
+                    expiredToken: { msg: 'Expired token', code: 401 },
+                    tooManyRequests: { msg: 'Too many attempts, try later', code: 429 },
+                    unknownError: { msg: 'Unknown error', code: 500 },
+                },
+            },
+            null,
+            2
+        ) + '\n'
+    )
+}
+
+function templateAuthAlertsLabels() {
+    return (
+        JSON.stringify(
+            {
+                es: {
+                    labels: {
+                        identifier: 'El email o usuario',
+                        email: 'El email',
+                        token: 'El token',
+                        code: 'El código',
+                        newPassword: 'La nueva contraseña',
+                    },
+                },
+                en: {
+                    labels: {
+                        identifier: 'Email or username',
+                        email: 'Email',
+                        token: 'Token',
+                        code: 'Code',
+                        newPassword: 'New password',
+                    },
+                },
+            },
+            null,
+            2
+        ) + '\n'
+    )
+}
+
+function templateAuthErrorHandler() {
+    return `import { createRequire } from 'node:module'
+const require = createRequire(import.meta.url)
+const errorMsgs = require('./authErrorMsgs.json')[config.app.lang]
+
+export class AuthErrorHandler {
+    static invalidParameters(alerts) {
+        const { code, msg } = errorMsgs.invalidParameters
+        return { code, msg, alerts: alerts ?? [] }
+    }
+
+    static invalidToken() { return errorMsgs.invalidToken }
+    static expiredToken() { return errorMsgs.expiredToken }
+    static tooManyRequests() { return errorMsgs.tooManyRequests }
+    static unknownError() { return errorMsgs.unknownError }
+}
+`
+}
+
+function templateAuthValidate() {
+    return `import { createRequire } from 'node:module'
+const require = createRequire(import.meta.url)
+const labels = require('./errors/authAlerts.json')[config.app.lang].labels
+
+export class AuthValidate {
+    static normalizeText(value) {
+        return typeof value === 'string' ? value.trim() : value
+    }
+
+    static validateIdentifier(value) {
+        const id = this.normalizeText(value)
+        if (typeof id !== 'string') return v.validateString({ value: id, label: labels.identifier })
+        return v.validateLength({ value: id, label: labels.identifier }, 3, 320)
+    }
+
+    static validateEmail(value) {
+        const email = this.normalizeText(value)
+        if (typeof email !== 'string') return v.validateString({ value: email, label: labels.email })
+        return v.validateEmail({ value: email, label: labels.email })
+    }
+
+    static validateToken(value) {
+        const token = this.normalizeText(value)
+        if (typeof token !== 'string') return v.validateString({ value: token, label: labels.token })
+        return v.validateLength({ value: token, label: labels.token }, 16, 256)
+    }
+
+    static validateCode(value) {
+        const code = this.normalizeText(value)
+        if (typeof code !== 'string') return v.validateString({ value: code, label: labels.code })
+        return v.validateLength({ value: code, label: labels.code }, 4, 12)
+    }
+
+    static validateNewPassword(value, { min = 8, max = 200 } = {}) {
+        const pw = this.normalizeText(value)
+        if (typeof pw !== 'string') return v.validateString({ value: pw, label: labels.newPassword })
+        return v.validateLength({ value: pw, label: labels.newPassword }, min, max)
+    }
+}
+`
+}
+
+function templateAuthRepo() {
+    return `/*
+Auth Repository
+
+- Isola acceso a DB para el BO.
+*/
+
+export class AuthRepository {
+    static async getUserByEmail(email) {
+        const r = await db.exe('security', 'getUserByEmail', [email])
+        return r?.rows?.[0] ?? null
+    }
+
+    static async getUserByUsername(username) {
+        const r = await db.exe('security', 'getUserByUsername', [username])
+        return r?.rows?.[0] ?? null
+    }
+
+    static async insertPasswordReset({ userId, tokenHash, sentTo, expiresSeconds, ip, userAgent }) {
+        return await db.exe('security', 'insertPasswordReset', [
+            userId,
+            tokenHash,
+            sentTo,
+            String(expiresSeconds),
+            ip ?? null,
+            userAgent ?? null,
+        ])
+    }
+
+    static async getPasswordResetByTokenHash(tokenHash) {
+        const r = await db.exe('security', 'getPasswordResetByTokenHash', [tokenHash])
+        return r?.rows?.[0] ?? null
+    }
+
+    static async incrementPasswordResetAttempt(resetId) {
+        await db.exe('security', 'incrementPasswordResetAttempt', [resetId])
+        return true
+    }
+
+    static async markPasswordResetUsed(resetId) {
+        await db.exe('security', 'markPasswordResetUsed', [resetId])
+        return true
+    }
+
+    static async insertOneTimeCode({ userId, purpose, codeHash, expiresSeconds, meta }) {
+        await db.exe('security', 'insertOneTimeCode', [
+            userId,
+            purpose,
+            codeHash,
+            String(expiresSeconds),
+            JSON.stringify(meta ?? {}),
+        ])
+        return true
+    }
+
+    static async getValidOneTimeCode({ userId, purpose, codeHash }) {
+        const r = await db.exe('security', 'getValidOneTimeCodeForPurpose', [userId, purpose, codeHash])
+        return r?.rows?.[0] ?? null
+    }
+
+    static async incrementOneTimeCodeAttempt(codeId) {
+        await db.exe('security', 'incrementOneTimeCodeAttempt', [codeId])
+        return true
+    }
+
+    static async consumeOneTimeCode(codeId) {
+        await db.exe('security', 'consumeOneTimeCode', [codeId])
+        return true
+    }
+
+    static async updateUserPassword({ userId, passwordHash }) {
+        await db.exe('security', 'updateUserPassword', [userId, passwordHash])
+        return true
+    }
+}
+`
+}
+
+function templateAuthBO() {
+    // Note: BO lives under /BO and is dynamically imported by Security.
+    // It can still import src/* via relative path.
+    return `import { createRequire } from 'node:module'
+const require = createRequire(import.meta.url)
+
+import bcrypt from 'bcryptjs'
+import { createHash, randomBytes } from 'node:crypto'
+
+import { AuthErrorHandler } from './errors/AuthErrorHandler.js'
+import { AuthValidate } from './AuthValidate.js'
+import { AuthRepository } from './Auth.js'
+import EmailService from '../../src/BSS/Email.js'
+
+const successMsgs = require('./authSuccessMsgs.json')[config.app.lang]
+const email = new EmailService()
+
+function sha256Hex(value) {
+    return createHash('sha256').update(String(value), 'utf8').digest('hex')
+}
+
+function isEmail(value) {
+    return typeof value === 'string' && value.includes('@')
+}
+
+export class AuthBO {
+    async requestPasswordReset(params) {
+        try {
+            const identifier = params?.identifier
+            if (!AuthValidate.validateIdentifier(identifier)) {
+                return AuthErrorHandler.invalidParameters(v.getAlerts())
+            }
+
+            // Avoid account enumeration: always return success.
+            let user = null
+            if (isEmail(identifier)) user = await AuthRepository.getUserByEmail(identifier)
+            else user = await AuthRepository.getUserByUsername(identifier)
+
+            if (!user || !user.user_em) {
+                return { code: 200, msg: successMsgs.requestPasswordReset ?? 'OK' }
+            }
+
+            const expiresSeconds = Number(config?.auth?.passwordResetExpiresSeconds ?? 900)
+            const maxAttempts = Number(config?.auth?.passwordResetMaxAttempts ?? 5)
+            const purpose = String(config?.auth?.passwordResetPurpose ?? 'password_reset')
+
+            const token = randomBytes(32).toString('hex')
+            const code = String(Math.floor(100000 + Math.random() * 900000))
+            const tokenHash = sha256Hex(token)
+            const codeHash = sha256Hex(code)
+
+            await AuthRepository.insertPasswordReset({
+                userId: user.user_id,
+                tokenHash,
+                sentTo: user.user_em,
+                expiresSeconds,
+                ip: null,
+                userAgent: null,
+            })
+            await AuthRepository.insertOneTimeCode({
+                userId: user.user_id,
+                purpose,
+                codeHash,
+                expiresSeconds,
+                meta: { tokenHash, maxAttempts },
+            })
+
+            await email.sendPasswordReset({
+                to: user.user_em,
+                token,
+                code,
+                appName: config?.app?.name,
+            })
+
+            return { code: 200, msg: successMsgs.requestPasswordReset ?? 'OK' }
+        } catch (err) {
+            log.show({
+                type: log.TYPE_ERROR,
+                msg:
+                    msgs[config.app.lang].errors.server.serverError.msg +
+                    ', AuthBO.requestPasswordReset: ' +
+                    String(err?.message || err),
+            })
+            return AuthErrorHandler.unknownError()
+        }
+    }
+
+    async verifyPasswordReset(params) {
+        try {
+            const token = params?.token
+            const code = params?.code
+            if (!AuthValidate.validateToken(token) || !AuthValidate.validateCode(code)) {
+                return AuthErrorHandler.invalidParameters(v.getAlerts())
+            }
+
+            const purpose = String(config?.auth?.passwordResetPurpose ?? 'password_reset')
+            const tokenHash = sha256Hex(token)
+            const reset = await AuthRepository.getPasswordResetByTokenHash(tokenHash)
+            if (!reset || reset.used_at) return AuthErrorHandler.invalidToken()
+
+            const expiresAt = reset.expires_at ? new Date(reset.expires_at) : null
+            if (!expiresAt || Number.isNaN(expiresAt.getTime()) || expiresAt.getTime() <= Date.now()) {
+                return AuthErrorHandler.expiredToken()
+            }
+
+            const codeHash = sha256Hex(code)
+            const otp = await AuthRepository.getValidOneTimeCode({ userId: reset.user_id, purpose, codeHash })
+            if (!otp) {
+                try { await AuthRepository.incrementPasswordResetAttempt(reset.reset_id) } catch {}
+                return AuthErrorHandler.invalidToken()
+            }
+
+            const attempts = Number(otp.attempt_count ?? 0)
+            const maxAttempts = Number(config?.auth?.passwordResetMaxAttempts ?? 5)
+            if (Number.isFinite(maxAttempts) && attempts >= maxAttempts) {
+                return AuthErrorHandler.tooManyRequests()
+            }
+
+            return { code: 200, msg: successMsgs.verifyPasswordReset ?? 'OK' }
+        } catch (err) {
+            log.show({
+                type: log.TYPE_ERROR,
+                msg:
+                    msgs[config.app.lang].errors.server.serverError.msg +
+                    ', AuthBO.verifyPasswordReset: ' +
+                    String(err?.message || err),
+            })
+            return AuthErrorHandler.unknownError()
+        }
+    }
+
+    async resetPassword(params) {
+        try {
+            const token = params?.token
+            const code = params?.code
+            const newPassword = params?.newPassword
+
+            if (!AuthValidate.validateToken(token) || !AuthValidate.validateCode(code) || !AuthValidate.validateNewPassword(newPassword, { min: 8, max: 200 })) {
+                return AuthErrorHandler.invalidParameters(v.getAlerts())
+            }
+
+            const purpose = String(config?.auth?.passwordResetPurpose ?? 'password_reset')
+            const tokenHash = sha256Hex(token)
+            const reset = await AuthRepository.getPasswordResetByTokenHash(tokenHash)
+            if (!reset || reset.used_at) return AuthErrorHandler.invalidToken()
+
+            const expiresAt = reset.expires_at ? new Date(reset.expires_at) : null
+            if (!expiresAt || Number.isNaN(expiresAt.getTime()) || expiresAt.getTime() <= Date.now()) {
+                return AuthErrorHandler.expiredToken()
+            }
+
+            const codeHash = sha256Hex(code)
+            const otp = await AuthRepository.getValidOneTimeCode({ userId: reset.user_id, purpose, codeHash })
+            if (!otp) {
+                try { await AuthRepository.incrementPasswordResetAttempt(reset.reset_id) } catch {}
+                return AuthErrorHandler.invalidToken()
+            }
+
+            const attempts = Number(otp.attempt_count ?? 0)
+            const maxAttempts = Number(config?.auth?.passwordResetMaxAttempts ?? 5)
+            if (Number.isFinite(maxAttempts) && attempts >= maxAttempts) {
+                return AuthErrorHandler.tooManyRequests()
+            }
+
+            const hash = await bcrypt.hash(String(newPassword), 10)
+            await AuthRepository.updateUserPassword({ userId: reset.user_id, passwordHash: hash })
+
+            // Best effort: consume code + mark reset used.
+            try { await AuthRepository.consumeOneTimeCode(otp.code_id) } catch {}
+            try { await AuthRepository.markPasswordResetUsed(reset.reset_id) } catch {}
+
+            return { code: 200, msg: successMsgs.resetPassword ?? 'OK' }
+        } catch (err) {
+            log.show({
+                type: log.TYPE_ERROR,
+                msg:
+                    msgs[config.app.lang].errors.server.serverError.msg +
+                    ', AuthBO.resetPassword: ' +
+                    String(err?.message || err),
+            })
+            return AuthErrorHandler.unknownError()
+        }
+    }
+}
 `
 }
 
@@ -334,6 +747,27 @@ async function getNextTx() {
 async function upsertMethodsToDb(objectName, methods, opts) {
     await ensureDbQueries()
 
+    // Ask developer for tx numbers when doing real DB writes and none were specified.
+    if (!opts.dry && opts.db && !opts.tx && opts.txStart == null && isTty()) {
+        const nextTx = await getNextTx()
+        const rl = readline.createInterface({ input: process.stdin, output: process.stdout })
+        try {
+            console.log('Methods:', methods.join(', '))
+            const ans = String(
+                await rl.question(
+                    `TX mapping: enter comma-separated tx (same count) OR press enter to auto-assign from txStart=${nextTx}: `
+                )
+            ).trim()
+            if (ans.length > 0) {
+                opts.tx = ans
+            } else {
+                opts.txStart = String(nextTx)
+            }
+        } finally {
+            rl.close()
+        }
+    }
+
     const explicitTx = parseCsv(opts.tx).map((n) => Number(n))
     if (explicitTx.length > 0 && explicitTx.length !== methods.length) {
         throw new Error('--tx must have same amount as --methods')
@@ -363,6 +797,55 @@ async function upsertMethodsToDb(objectName, methods, opts) {
     }
 
     return mapping
+}
+
+async function cmdAuth(opts) {
+    const objectName = 'Auth'
+    const methods = authMethods()
+
+    const force = Boolean(opts.force)
+    const baseDir = path.join(repoRoot, 'BO', objectName)
+
+    if (opts.dry) {
+        console.log(`DRY RUN: would create ${baseDir}`)
+    } else {
+        await fs.mkdir(baseDir, { recursive: true })
+    }
+
+    const files = [
+        { p: path.join(baseDir, `${objectName}BO.js`), c: templateAuthBO() },
+        { p: path.join(baseDir, `${objectName}.js`), c: templateAuthRepo() },
+        { p: path.join(baseDir, `${objectName}Validate.js`), c: templateAuthValidate() },
+        {
+            p: path.join(baseDir, `${objectName.toLowerCase()}SuccessMsgs.json`),
+            c: templateAuthSuccessMsgs(),
+        },
+        {
+            p: path.join(baseDir, 'errors', `${objectName}ErrorHandler.js`),
+            c: templateAuthErrorHandler(),
+        },
+        {
+            p: path.join(baseDir, 'errors', `${objectName.toLowerCase()}ErrorMsgs.json`),
+            c: templateAuthErrorMsgs(),
+        },
+        {
+            p: path.join(baseDir, 'errors', `${objectName.toLowerCase()}Alerts.json`),
+            c: templateAuthAlertsLabels(),
+        },
+    ]
+
+    for (const f of files) {
+        if (opts.dry) console.log('DRY RUN write', f.p)
+        else await writeFileSafe(f.p, f.c, force)
+    }
+
+    console.log(`Created BO ${objectName} with methods: ${methods.join(', ')}`)
+
+    if (opts.db) {
+        const mapping = await upsertMethodsToDb(objectName, methods, opts)
+        console.log('DB tx mapping:', mapping)
+        console.log('Restart the server to reload Security cache.')
+    }
 }
 
 async function cmdNew(objectName, opts) {
@@ -546,6 +1029,10 @@ async function main() {
             await cmdNew(args[1], opts)
             return
         }
+        if (cmd === 'auth') {
+            await cmdAuth(opts)
+            return
+        }
         if (cmd === 'sync') {
             await cmdSync(args[1], opts)
             return
@@ -584,6 +1071,8 @@ export {
     templateValidate,
     templateRepo,
     templateBO,
+    authMethods,
+    templateAuthBO,
     parseMethodsFromBO,
 }
 

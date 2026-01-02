@@ -12,6 +12,7 @@ import { csrfProtection, csrfTokenHandler } from '../express/middleware/csrf.js'
 import {
     createLoginRateLimiter,
     createToProccessRateLimiter,
+    createAuthPasswordResetRateLimiter,
 } from '../express/rate-limit/limiters.js'
 import { createHealthHandler } from '../express/handlers/health.js'
 import { createReadyHandler } from '../express/handlers/ready.js'
@@ -19,12 +20,14 @@ import { createFinalErrorHandler } from '../express/middleware/final-error-handl
 
 import {
     validateLoginSchema,
+    validateLoginVerifySchema,
     validateLogoutSchema,
     validateToProccessSchema,
 } from './helpers/http-validators.js'
 
 import { auditBestEffort } from './helpers/audit-log.js'
 import { sendInvalidParameters } from './helpers/http-responses.js'
+import { redactSecretsInString } from '../helpers/sanitize.js'
 
 /**
  * Express API orchestrator.
@@ -63,6 +66,7 @@ export default class Dispatcher {
 
         this.loginRateLimiter = createLoginRateLimiter(this.clientErrors)
         this.toProccessRateLimiter = createToProccessRateLimiter(this.clientErrors)
+        this.authPasswordResetRateLimiter = createAuthPasswordResetRateLimiter(this.clientErrors)
     }
 
     async init() {
@@ -76,10 +80,17 @@ export default class Dispatcher {
         this.app.post(
             '/toProccess',
             this.toProccessRateLimiter,
+            this.authPasswordResetRateLimiter,
             csrfProtection,
             this.toProccess.bind(this)
         )
         this.app.post('/login', this.loginRateLimiter, csrfProtection, this.login.bind(this))
+        this.app.post(
+            '/login/verify',
+            this.loginRateLimiter,
+            csrfProtection,
+            this.verifyLogin.bind(this)
+        )
         this.app.post('/logout', csrfProtection, this.logout.bind(this))
 
         // Optional SPA hosting is registered after API routes to avoid shadowing them.
@@ -97,9 +108,19 @@ export default class Dispatcher {
     }
 
     async toProccess(req, res) {
+        let effectiveProfileId = null
         try {
-            if (!this.session.sessionExists(req))
+            const hasSession = this.session.sessionExists(req)
+            const publicProfileId = Number(config?.auth?.publicProfileId)
+            effectiveProfileId = hasSession
+                ? req.session.profile_id
+                : Number.isInteger(publicProfileId) && publicProfileId > 0
+                  ? publicProfileId
+                  : null
+
+            if (!hasSession && effectiveProfileId == null) {
                 return res.status(this.clientErrors.login.code).send(this.clientErrors.login)
+            }
 
             const schemaAlerts = validateToProccessSchema(req.body)
             if (schemaAlerts.length > 0) {
@@ -120,11 +141,34 @@ export default class Dispatcher {
 
             if (!txData)
                 throw new Error(this.serverErrors.txNotFound.msg.replace('{tx}', req.body.tx))
+
+            // For security-sensitive Auth flows triggered via /toProccess, attach request context
+            // from the server (never trust client-provided values).
+            let effectiveParams = req.body.params
+            if (txData?.object_na === 'Auth') {
+                const method = txData?.method_na
+                if (
+                    method === 'register' ||
+                    method === 'requestEmailVerification' ||
+                    method === 'verifyEmail' ||
+                    method === 'requestPasswordReset' ||
+                    method === 'verifyPasswordReset' ||
+                    method === 'resetPassword'
+                ) {
+                    effectiveParams = {
+                        ...(req.body.params ?? {}),
+                        _request: {
+                            ip: req.ip ?? null,
+                            userAgent: req.get('User-Agent') ?? null,
+                        },
+                    }
+                }
+            }
             const data = {
-                profile_id: req.session.profile_id,
+                profile_id: effectiveProfileId,
                 method_na: txData.method_na,
                 object_na: txData.object_na,
-                params: req.body.params,
+                params: effectiveParams,
             }
 
             if (!security.getPermissions(data)) {
@@ -133,6 +177,7 @@ export default class Dispatcher {
                     object_na: data.object_na,
                     method_na: data.method_na,
                     tx: req.body?.tx,
+                    profile_id: effectiveProfileId,
                     details: { reason: 'permissionDenied' },
                 })
 
@@ -148,6 +193,7 @@ export default class Dispatcher {
                 object_na: data.object_na,
                 method_na: data.method_na,
                 tx: req.body?.tx,
+                profile_id: effectiveProfileId,
                 details: { responseCode: response?.code },
             })
 
@@ -165,12 +211,15 @@ export default class Dispatcher {
                 object_na: txData?.object_na,
                 method_na: txData?.method_na,
                 tx,
+                profile_id: effectiveProfileId,
                 details: { error: String(err?.message || err) },
             })
 
             log.show({
                 type: log.TYPE_ERROR,
-                msg: `${this.serverErrors.serverError.msg}, /toProccess: ${err.message}`,
+                msg: `${this.serverErrors.serverError.msg}, /toProccess: ${redactSecretsInString(
+                    err?.message || err
+                )}`,
                 ctx: {
                     requestId: req.requestId,
                     method: req.method,
@@ -211,7 +260,43 @@ export default class Dispatcher {
             } catch {}
             log.show({
                 type: log.TYPE_ERROR,
-                msg: `${this.serverErrors.serverError.msg}, /login: ${err.message}`,
+                msg: `${this.serverErrors.serverError.msg}, /login: ${redactSecretsInString(
+                    err?.message || err
+                )}`,
+                ctx: {
+                    requestId: req.requestId,
+                    method: req.method,
+                    path: req.originalUrl,
+                    status,
+                    durationMs:
+                        typeof req.requestStartMs === 'number'
+                            ? Date.now() - req.requestStartMs
+                            : undefined,
+                    user_id: req.session?.user_id,
+                    profile_id: req.session?.profile_id,
+                },
+            })
+            res.status(status).send(this.clientErrors.unknown)
+        }
+    }
+
+    async verifyLogin(req, res) {
+        try {
+            const schemaAlerts = validateLoginVerifySchema(req.body)
+            if (schemaAlerts.length > 0) {
+                return sendInvalidParameters(res, this.clientErrors.invalidParameters, schemaAlerts)
+            }
+            await this.session.verifyLoginChallenge(req, res)
+        } catch (err) {
+            const status = this.clientErrors.unknown.code
+            try {
+                res.locals.__errorLogged = true
+            } catch {}
+            log.show({
+                type: log.TYPE_ERROR,
+                msg: `${this.serverErrors.serverError.msg}, /login/verify: ${redactSecretsInString(
+                    err?.message || err
+                )}`,
                 ctx: {
                     requestId: req.requestId,
                     method: req.method,
@@ -248,7 +333,9 @@ export default class Dispatcher {
             } catch {}
             log.show({
                 type: log.TYPE_ERROR,
-                msg: `${this.serverErrors.serverError.msg}, /logout: ${err.message}`,
+                msg: `${this.serverErrors.serverError.msg}, /logout: ${redactSecretsInString(
+                    err?.message || err
+                )}`,
                 ctx: {
                     requestId: req.requestId,
                     method: req.method,

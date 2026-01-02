@@ -72,6 +72,30 @@ export default class DBComponent {
         this.serverErrors = msgs[config.app.lang].errors.server
     }
 
+    async exeRaw(sql, params) {
+        let client
+        try {
+            if (typeof sql !== 'string' || sql.trim().length === 0) {
+                throw new Error('exeRaw sql must be a non-empty string')
+            }
+            const paramsArray = buildParamsArray(params)
+
+            client = await this.pool.connect()
+            return await client.query(sql, paramsArray)
+        } catch (e) {
+            const msg = `${this.serverErrors.dbError.msg}, DBComponent.exeRaw: ${e?.message || e}`
+            log.show({ type: log.TYPE_ERROR, msg })
+            const err = new Error(this.serverErrors.dbError.msg)
+            err.code = this.serverErrors.dbError.code
+            err.cause = e
+            throw err
+        } finally {
+            try {
+                client?.release?.()
+            } catch {}
+        }
+    }
+
     async exe(schema, query, params) {
         let client
         try {

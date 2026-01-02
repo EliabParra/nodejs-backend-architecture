@@ -1,0 +1,24 @@
+{
+    "es": {
+        "labels": {
+            "identifier": "El email o usuario",
+            "email": "El email",
+            "username": "El nombre de usuario",
+            "password": "La contraseña",
+            "token": "El token",
+            "code": "El código",
+            "newPassword": "La nueva contraseña"
+        }
+    },
+    "en": {
+        "labels": {
+            "identifier": "Email or username",
+            "email": "Email",
+            "username": "Username",
+            "password": "Password",
+            "token": "Token",
+            "code": "Code",
+            "newPassword": "New password"
+        }
+    }
+}

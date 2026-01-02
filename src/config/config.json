@@ -47,5 +47,26 @@
         "enabled": true,
         "credentials": true,
         "origins": ["http://localhost:5173", "http://localhost:4200"]
+    },
+    "auth": {
+        "loginId": "email",
+        "login2StepNewDevice": false,
+        "publicProfileId": null,
+        "sessionProfileId": 1,
+        "requireEmailVerification": true,
+        "deviceCookieName": "device_token",
+        "deviceCookieMaxAgeMs": 15552000000,
+        "loginChallengeExpiresSeconds": 600,
+        "loginChallengeMaxAttempts": 5,
+        "passwordResetExpiresSeconds": 900,
+        "passwordResetMaxAttempts": 5,
+        "passwordResetPurpose": "password_reset",
+        "emailVerificationExpiresSeconds": 900,
+        "emailVerificationMaxAttempts": 5,
+        "emailVerificationPurpose": "email_verification"
+    },
+    "email": {
+        "mode": "log",
+        "from": "no-reply@example.com"
     }
 }

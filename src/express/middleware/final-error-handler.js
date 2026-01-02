@@ -1,3 +1,5 @@
+import { redactSecretsInString } from '../../helpers/sanitize.js'
+
 export function createFinalErrorHandler({ clientErrors, serverErrors }) {
     return function finalErrorHandler(err, req, res, next) {
         if (res.headersSent) return next(err)
@@ -21,7 +23,8 @@ export function createFinalErrorHandler({ clientErrors, serverErrors }) {
         else if (status === 404) response = serverErrors.notFound
         else if (status === 503) response = clientErrors.serviceUnavailable
 
-        const rawMessage = typeof err?.message === 'string' ? err.message.trim() : ''
+        const rawMessage =
+            typeof err?.message === 'string' ? redactSecretsInString(err.message.trim()) : ''
         const errorName =
             typeof err?.name === 'string' && err.name.trim() ? err.name.trim() : undefined
         const errorCode = err?.code != null ? String(err.code) : undefined

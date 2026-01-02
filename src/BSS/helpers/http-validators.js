@@ -85,3 +85,27 @@ export function validateLogoutSchema(body) {
 
     return alerts
 }
+
+/**
+ * Validates the request body shape for `POST /login/verify`.
+ *
+ * @param {unknown} body
+ * @returns {string[]} alerts
+ */
+export function validateLoginVerifySchema(body) {
+    const alerts = []
+
+    if (!isPlainObject(body)) {
+        alerts.push(v.getMessage('object', { value: body, label: 'body' }))
+        return alerts
+    }
+
+    if (typeof body.token !== 'string') {
+        alerts.push(v.getMessage('string', { value: body.token, label: 'token' }))
+    }
+    if (typeof body.code !== 'string') {
+        alerts.push(v.getMessage('string', { value: body.code, label: 'code' }))
+    }
+
+    return alerts
+}

@@ -33,3 +33,31 @@ test('db-init --print generates expected SQL without touching DB', () => {
 
     // Note: db-init does not create project/domain schemas (only security + sessions)
 })
+
+test('db-init --print --auth includes auth tables (and optional 2-step login tables)', () => {
+    const r = spawnSync(
+        process.execPath,
+        [
+            path.join(repoRoot, 'scripts', 'db-init.mjs'),
+            '--print',
+            '--yes',
+            '--auth',
+            '--authLogin2StepNewDevice',
+        ],
+        { encoding: 'utf8' }
+    )
+
+    assert.equal(r.status, 0, r.stderr || r.stdout)
+    const out = (r.stdout || '') + (r.stderr || '')
+
+    // auth implies email column (identifier default is email)
+    assert.match(out, /alter table security\."user" add column if not exists user_em/)
+
+    // auth tables
+    assert.match(out, /create table if not exists security\.password_reset/)
+    assert.match(out, /create table if not exists security\.one_time_code/)
+
+    // new-device 2-step login tables
+    assert.match(out, /create table if not exists security\.user_device/)
+    assert.match(out, /create table if not exists security\.login_challenge/)
+})

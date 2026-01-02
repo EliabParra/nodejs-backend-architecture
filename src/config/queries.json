@@ -1,7 +1,40 @@
 {
     "security": {
-        "getUser": "select u.user_id, u.user_na, u.user_pw, up.profile_id from security.\"user\" u inner join security.user_profile up on up.user_id = u.user_id where u.user_na = $1",
-        "loadPermissions": "select o.object_na, m.method_na, p.profile_id from security.permission_method pm inner join security.profile p on pm.profile_id = p.profile_id inner join security.user_profile up on p.profile_id = up.profile_id inner join security.method m on m.method_id = pm.method_id inner join security.object o on o.object_id = m.object_id",
+        "getUser": "select u.user_id, u.user_na, u.user_em, u.email_verified_at, u.user_pw, up.profile_id from security.\"user\" u inner join security.user_profile up on up.user_id = u.user_id where u.user_na = $1",
+        "getUserByUsername": "select u.user_id, u.user_na, u.user_em, u.email_verified_at, u.user_pw, up.profile_id from security.\"user\" u inner join security.user_profile up on up.user_id = u.user_id where u.user_na = $1",
+        "getUserByEmail": "select u.user_id, u.user_na, u.user_em, u.email_verified_at, u.user_pw, up.profile_id from security.\"user\" u inner join security.user_profile up on up.user_id = u.user_id where u.user_em = $1",
+
+        "getUserBaseByUsername": "select user_id, user_na, user_em, email_verified_at from security.\"user\" where user_na = $1",
+        "getUserBaseByEmail": "select user_id, user_na, user_em, email_verified_at from security.\"user\" where user_em = $1",
+        "insertUser": "insert into security.\"user\" (user_na, user_em, user_pw) values ($1, $2, $3) returning user_id",
+        "upsertUserProfile": "insert into security.user_profile (user_id, profile_id) values ($1, $2) on conflict (user_id) do update set profile_id = excluded.profile_id",
+        "setUserEmailVerified": "update security.\"user\" set email_verified_at = now(), updated_at = now() where user_id = $1 and email_verified_at is null",
+
+        "getActiveUserDeviceByUserAndTokenHash": "select device_id from security.user_device where user_id = $1 and device_token_hash = $2 and revoked_at is null",
+        "touchUserDevice": "update security.user_device set last_used_at = now(), user_agent = $3, ip = $4 where user_id = $1 and device_token_hash = $2 and revoked_at is null",
+        "upsertUserDevice": "insert into security.user_device (user_id, device_token_hash, created_at, last_used_at, user_agent, ip) values ($1, $2, now(), now(), $3, $4) on conflict (device_token_hash) do update set last_used_at = now(), revoked_at = null returning device_id",
+
+        "insertLoginChallenge": "insert into security.login_challenge (user_id, token_hash, code_hash, created_at, expires_at, request_ip, user_agent) values ($1, $2, $3, now(), now() + ($4 || ' seconds')::interval, $5, $6) returning challenge_id",
+        "getLoginChallengeByTokenHash": "select lc.challenge_id, lc.user_id, lc.code_hash, lc.expires_at, lc.verified_at, lc.attempt_count, u.user_na, u.user_em, u.email_verified_at, up.profile_id from security.login_challenge lc inner join security.\"user\" u on u.user_id = lc.user_id inner join security.user_profile up on up.user_id = u.user_id where lc.token_hash = $1",
+        "incrementLoginChallengeAttempt": "update security.login_challenge set attempt_count = attempt_count + 1 where challenge_id = $1",
+        "markLoginChallengeVerified": "update security.login_challenge set verified_at = now() where challenge_id = $1 and verified_at is null",
+
+        "insertPasswordReset": "insert into security.password_reset (user_id, token_hash, token_sent_to, created_at, expires_at, request_ip, user_agent) values ($1, $2, $3, now(), now() + ($4 || ' seconds')::interval, $5, $6) returning reset_id",
+        "invalidateActivePasswordResetsForUser": "update security.password_reset set used_at = now() where user_id = $1 and used_at is null",
+        "getPasswordResetByTokenHash": "select reset_id, user_id, token_hash, expires_at, used_at, attempt_count from security.password_reset where token_hash = $1",
+        "incrementPasswordResetAttempt": "update security.password_reset set attempt_count = attempt_count + 1 where reset_id = $1",
+        "markPasswordResetUsed": "update security.password_reset set used_at = now() where reset_id = $1 and used_at is null",
+
+        "insertOneTimeCode": "insert into security.one_time_code (user_id, purpose, code_hash, created_at, expires_at, meta) values ($1, $2, $3, now(), now() + ($4 || ' seconds')::interval, $5::jsonb)",
+        "consumeOneTimeCodesForUserPurpose": "update security.one_time_code set consumed_at = now() where user_id = $1 and purpose = $2 and consumed_at is null",
+        "getValidOneTimeCodeForPurpose": "select code_id, user_id, purpose, code_hash, expires_at, consumed_at, attempt_count, meta from security.one_time_code where user_id = $1 and purpose = $2 and code_hash = $3 and consumed_at is null and expires_at > now() order by created_at desc limit 1",
+        "getValidOneTimeCodeForPurposeAndTokenHash": "select code_id, user_id, purpose, code_hash, expires_at, consumed_at, attempt_count, meta from security.one_time_code where purpose = $1 and (meta->>'tokenHash') = $2 and code_hash = $3 and consumed_at is null and expires_at > now() order by created_at desc limit 1",
+        "getActiveOneTimeCodeForPurposeAndTokenHash": "select code_id, user_id, purpose, expires_at, consumed_at, attempt_count, meta from security.one_time_code where purpose = $1 and (meta->>'tokenHash') = $2 and consumed_at is null order by created_at desc limit 1",
+        "incrementOneTimeCodeAttempt": "update security.one_time_code set attempt_count = attempt_count + 1 where code_id = $1",
+        "consumeOneTimeCode": "update security.one_time_code set consumed_at = now() where code_id = $1 and consumed_at is null",
+
+        "updateUserPassword": "update security.\"user\" set user_pw = $2, updated_at = now() where user_id = $1",
+        "loadPermissions": "select o.object_na, m.method_na, p.profile_id from security.permission_method pm inner join security.profile p on pm.profile_id = p.profile_id inner join security.method m on m.method_id = pm.method_id inner join security.object o on o.object_id = m.object_id",
         "loadDataTx": "select m.tx_nu, o.object_na, m.method_na from security.method m inner join security.object o on m.object_id = o.object_id",
 
         "getNextTx": "select coalesce(max(m.tx_nu), 0) + 1 as next_tx from security.method m",
