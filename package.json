@@ -18,6 +18,7 @@
         "smoke:dist": "npm run build && node scripts/smoke-dist.mjs",
         "start": "node src/index.js",
         "start:dist": "cd dist && node src/index.js",
+        "dev:dist": "nodemon --watch src --watch BO --watch public --watch scripts/build-dist.mjs --ext js,ts,json,mjs,html,css --signal SIGINT --exec \"npm run build && node dist/src/index.js\"",
         "dev": "nodemon src/index.js",
         "full": "node scripts/full.mjs",
         "db:init": "node scripts/db-init.mjs",
