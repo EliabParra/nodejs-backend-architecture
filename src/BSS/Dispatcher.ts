@@ -133,7 +133,7 @@ export default class Dispatcher {
             const hasSession = this.session.sessionExists(req)
             const publicProfileId = Number(effectiveConfig?.auth?.publicProfileId)
             effectiveProfileId = hasSession
-                ? (req as any).session.profile_id
+                                ? (req.session?.profile_id ?? null)
                 : Number.isInteger(publicProfileId) && publicProfileId > 0
                   ? publicProfileId
                   : null
@@ -142,7 +142,7 @@ export default class Dispatcher {
                 return res.status(this.clientErrors.login.code).send(this.clientErrors.login)
             }
 
-            const schemaAlerts = validateToProccessSchema((req as any).body)
+            const schemaAlerts = validateToProccessSchema(req.body)
             if (schemaAlerts.length > 0) {
                 return sendInvalidParameters(res, this.clientErrors.invalidParameters, schemaAlerts)
             }
@@ -157,16 +157,17 @@ export default class Dispatcher {
                 }
             }
 
-            const txData = effectiveSecurity.getDataTx((req as any).body.tx)
+            const tx = req.body?.tx
+            const txData = tx != null ? effectiveSecurity.getDataTx(tx) : null
 
             if (!txData)
                 throw new Error(
-                    this.serverErrors.txNotFound.msg.replace('{tx}', (req as any).body.tx)
+                    this.serverErrors.txNotFound.msg.replace('{tx}', String(tx))
                 )
 
             // For security-sensitive Auth flows triggered via /toProccess, attach request context
             // from the server (never trust client-provided values).
-            let effectiveParams = (req as any).body.params
+            let effectiveParams = req.body?.params
             if (txData?.object_na === 'Auth') {
                 const method = txData?.method_na
                 if (
@@ -178,10 +179,10 @@ export default class Dispatcher {
                     method === 'resetPassword'
                 ) {
                     effectiveParams = {
-                        ...(((req as any).body.params ?? {}) as any),
+                        ...(((req.body as any)?.params ?? {}) as any),
                         _request: {
-                            ip: (req as any).ip ?? null,
-                            userAgent: (req as any).get?.('User-Agent') ?? null,
+                            ip: req.ip ?? null,
+                            userAgent: req.get?.('User-Agent') ?? null,
                         },
                     }
                 }
@@ -200,7 +201,7 @@ export default class Dispatcher {
                         action: 'tx_denied',
                         object_na: data.object_na,
                         method_na: data.method_na,
-                        tx: (req as any).body?.tx,
+                        tx,
                         profile_id: effectiveProfileId,
                         details: { reason: 'permissionDenied' },
                     },
@@ -220,7 +221,7 @@ export default class Dispatcher {
                     action: 'tx_exec',
                     object_na: data.object_na,
                     method_na: data.method_na,
-                    tx: (req as any).body?.tx,
+                    tx,
                     profile_id: effectiveProfileId,
                     details: { responseCode: response?.code },
                 },
@@ -231,10 +232,10 @@ export default class Dispatcher {
         } catch (err: any) {
             const status = this.clientErrors.unknown.code
             try {
-                ;(res as any).locals.__errorLogged = true
+                res.locals.__errorLogged = true
             } catch {}
 
-            const tx = (req as any).body?.tx
+            const tx = req.body?.tx
             const effectiveSecurity = this.ctx?.security ?? security
             const txData = tx != null ? effectiveSecurity.getDataTx(tx) : null
             await auditBestEffort(
@@ -256,24 +257,24 @@ export default class Dispatcher {
                     err?.message || err
                 )}`,
                 ctx: {
-                    requestId: (req as any).requestId,
-                    method: (req as any).method,
-                    path: (req as any).originalUrl,
+                    requestId: req.requestId,
+                    method: req.method,
+                    path: req.originalUrl,
                     status,
-                    tx: (req as any).body?.tx,
+                    tx,
                     object_na:
-                        (req as any).body?.tx != null
-                            ? effectiveSecurity.getDataTx((req as any).body.tx)?.object_na
+                        tx != null
+                            ? effectiveSecurity.getDataTx(tx)?.object_na
                             : undefined,
                     method_na:
-                        (req as any).body?.tx != null
-                            ? effectiveSecurity.getDataTx((req as any).body.tx)?.method_na
+                        tx != null
+                            ? effectiveSecurity.getDataTx(tx)?.method_na
                             : undefined,
-                    user_id: (req as any).session?.user_id,
-                    profile_id: (req as any).session?.profile_id,
+                    user_id: req.session?.user_id,
+                    profile_id: req.session?.profile_id,
                     durationMs:
-                        typeof (req as any).requestStartMs === 'number'
-                            ? Date.now() - (req as any).requestStartMs
+                        typeof req.requestStartMs === 'number'
+                            ? Date.now() - req.requestStartMs
                             : undefined,
                 },
             })
@@ -283,7 +284,7 @@ export default class Dispatcher {
 
     async login(req: AppRequest, res: AppResponse) {
         try {
-            const schemaAlerts = validateLoginSchema((req as any).body)
+            const schemaAlerts = validateLoginSchema(req.body)
             if (schemaAlerts.length > 0) {
                 return sendInvalidParameters(res, this.clientErrors.invalidParameters, schemaAlerts)
             }
@@ -291,7 +292,7 @@ export default class Dispatcher {
         } catch (err: any) {
             const status = this.clientErrors.unknown.code
             try {
-                ;(res as any).locals.__errorLogged = true
+                res.locals.__errorLogged = true
             } catch {}
             log.show({
                 type: log.TYPE_ERROR,
@@ -299,16 +300,16 @@ export default class Dispatcher {
                     err?.message || err
                 )}`,
                 ctx: {
-                    requestId: (req as any).requestId,
-                    method: (req as any).method,
-                    path: (req as any).originalUrl,
+                    requestId: req.requestId,
+                    method: req.method,
+                    path: req.originalUrl,
                     status,
                     durationMs:
-                        typeof (req as any).requestStartMs === 'number'
-                            ? Date.now() - (req as any).requestStartMs
+                        typeof req.requestStartMs === 'number'
+                            ? Date.now() - req.requestStartMs
                             : undefined,
-                    user_id: (req as any).session?.user_id,
-                    profile_id: (req as any).session?.profile_id,
+                    user_id: req.session?.user_id,
+                    profile_id: req.session?.profile_id,
                 },
             })
             res.status(status).send(this.clientErrors.unknown)
@@ -317,7 +318,7 @@ export default class Dispatcher {
 
     async verifyLogin(req: AppRequest, res: AppResponse) {
         try {
-            const schemaAlerts = validateLoginVerifySchema((req as any).body)
+            const schemaAlerts = validateLoginVerifySchema(req.body)
             if (schemaAlerts.length > 0) {
                 return sendInvalidParameters(res, this.clientErrors.invalidParameters, schemaAlerts)
             }
@@ -325,7 +326,7 @@ export default class Dispatcher {
         } catch (err: any) {
             const status = this.clientErrors.unknown.code
             try {
-                ;(res as any).locals.__errorLogged = true
+                res.locals.__errorLogged = true
             } catch {}
             log.show({
                 type: log.TYPE_ERROR,
@@ -333,16 +334,16 @@ export default class Dispatcher {
                     err?.message || err
                 )}`,
                 ctx: {
-                    requestId: (req as any).requestId,
-                    method: (req as any).method,
-                    path: (req as any).originalUrl,
+                    requestId: req.requestId,
+                    method: req.method,
+                    path: req.originalUrl,
                     status,
                     durationMs:
-                        typeof (req as any).requestStartMs === 'number'
-                            ? Date.now() - (req as any).requestStartMs
+                        typeof req.requestStartMs === 'number'
+                            ? Date.now() - req.requestStartMs
                             : undefined,
-                    user_id: (req as any).session?.user_id,
-                    profile_id: (req as any).session?.profile_id,
+                    user_id: req.session?.user_id,
+                    profile_id: req.session?.profile_id,
                 },
             })
             res.status(status).send(this.clientErrors.unknown)
@@ -351,7 +352,7 @@ export default class Dispatcher {
 
     async logout(req: AppRequest, res: AppResponse) {
         try {
-            const schemaAlerts = validateLogoutSchema((req as any).body)
+            const schemaAlerts = validateLogoutSchema(req.body)
             if (schemaAlerts.length > 0) {
                 return sendInvalidParameters(res, this.clientErrors.invalidParameters, schemaAlerts)
             }
@@ -365,7 +366,7 @@ export default class Dispatcher {
         } catch (err: any) {
             const status = this.clientErrors.unknown.code
             try {
-                ;(res as any).locals.__errorLogged = true
+                res.locals.__errorLogged = true
             } catch {}
             log.show({
                 type: log.TYPE_ERROR,
@@ -373,16 +374,16 @@ export default class Dispatcher {
                     err?.message || err
                 )}`,
                 ctx: {
-                    requestId: (req as any).requestId,
-                    method: (req as any).method,
-                    path: (req as any).originalUrl,
+                    requestId: req.requestId,
+                    method: req.method,
+                    path: req.originalUrl,
                     status,
                     durationMs:
-                        typeof (req as any).requestStartMs === 'number'
-                            ? Date.now() - (req as any).requestStartMs
+                        typeof req.requestStartMs === 'number'
+                            ? Date.now() - req.requestStartMs
                             : undefined,
-                    user_id: (req as any).session?.user_id,
-                    profile_id: (req as any).session?.profile_id,
+                    user_id: req.session?.user_id,
+                    profile_id: req.session?.profile_id,
                 },
             })
             res.status(status).send(this.clientErrors.unknown)

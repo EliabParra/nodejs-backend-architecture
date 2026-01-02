@@ -11,7 +11,7 @@ function sha256Hex(value: unknown) {
     return createHash('sha256').update(String(value), 'utf8').digest('hex')
 }
 
-function getCookie(req: any, name: string) {
+function getCookie(req: AppRequest, name: string) {
     const header = req.headers?.cookie
     if (typeof header !== 'string' || header.length === 0) return null
     const parts = header.split(';')
@@ -73,16 +73,16 @@ export default class Session {
     }
 
     sessionExists(req: AppRequest) {
-        if ((req as any).session && (req as any).session.user_id) return true
+        if (req.session && req.session.user_id) return true
         return false
     }
 
     async createSession(req: AppRequest, res: AppResponse) {
         try {
-            const alerts = validateLoginSchema((req as any).body, { minPasswordLen: 8 })
+            const alerts = validateLoginSchema(req.body, { minPasswordLen: 8 })
 
             if (alerts.length > 0) {
-                return (res as any).status(this.clientErrors.invalidParameters.code).send({
+                return res.status(this.clientErrors.invalidParameters.code).send({
                     msg: this.clientErrors.invalidParameters.msg,
                     code: this.clientErrors.invalidParameters.code,
                     alerts,
@@ -90,17 +90,17 @@ export default class Session {
             }
 
             if (this.sessionExists(req)) {
-                return (res as any).status(this.clientErrors.sessionExists.code).send({
+                return res.status(this.clientErrors.sessionExists.code).send({
                     msg: this.clientErrors.sessionExists.msg,
                     code: this.clientErrors.sessionExists.code,
                 })
             }
 
-            const identifier = (req as any).body.username
+            const identifier = req.body?.username
             const queryName = this.loginId === 'username' ? 'getUserByUsername' : 'getUserByEmail'
             const result = await db.exe('security', queryName, [identifier])
             if (!result?.rows || result.rows.length === 0) {
-                return (res as any)
+                return res
                     .status(this.clientErrors.usernameOrPasswordIncorrect.code)
                     .send(this.clientErrors.usernameOrPasswordIncorrect)
             }
@@ -109,21 +109,21 @@ export default class Session {
             const storedHash = user.user_pw
             const ok =
                 typeof storedHash === 'string' &&
-                (await bcrypt.compare((req as any).body.password, storedHash))
+                (await bcrypt.compare(req.body?.password, storedHash))
             if (!ok)
-                return (res as any)
+                return res
                     .status(this.clientErrors.usernameOrPasswordIncorrect.code)
                     .send(this.clientErrors.usernameOrPasswordIncorrect)
 
             if (this.requireEmailVerification) {
                 const email = user.user_em
                 if (typeof email !== 'string' || email.trim().length === 0) {
-                    return (res as any)
+                    return res
                         .status(this.clientErrors.emailRequired.code)
                         .send(this.clientErrors.emailRequired)
                 }
                 if (!user.email_verified_at) {
-                    return (res as any)
+                    return res
                         .status(this.clientErrors.emailNotVerified.code)
                         .send(this.clientErrors.emailNotVerified)
                 }
@@ -133,12 +133,12 @@ export default class Session {
             if (this.login2StepNewDevice) {
                 const email = user.user_em
                 if (typeof email !== 'string' || email.trim().length === 0) {
-                    return (res as any)
+                    return res
                         .status(this.clientErrors.emailRequired.code)
                         .send(this.clientErrors.emailRequired)
                 }
 
-                const deviceToken = getCookie(req as any, this.deviceCookieName)
+                const deviceToken = getCookie(req, this.deviceCookieName)
                 const deviceTokenHash = deviceToken ? sha256Hex(deviceToken) : null
 
                 if (deviceTokenHash) {
@@ -152,8 +152,8 @@ export default class Session {
                             await db.exe('security', 'touchUserDevice', [
                                 user.user_id,
                                 deviceTokenHash,
-                                (req as any).get?.('User-Agent') ?? null,
-                                (req as any).ip ?? null,
+                                req.get?.('User-Agent') ?? null,
+                                req.ip ?? null,
                             ])
                         } catch {}
                     } else {
@@ -164,9 +164,9 @@ export default class Session {
                 }
             }
 
-            ;(req as any).session.user_id = user.user_id
-            ;(req as any).session.user_na = user.user_na
-            ;(req as any).session.profile_id = user.profile_id
+            req.session!.user_id = user.user_id
+            req.session!.user_na = user.user_na
+            req.session!.profile_id = user.profile_id
 
             // Best-effort audit/logging fields (do not fail login if this fails)
             try {
@@ -183,11 +183,11 @@ export default class Session {
                 this.ctx
             )
 
-            return (res as any).status(this.successMsgs.login.code).send(this.successMsgs.login)
+            return res.status(this.successMsgs.login.code).send(this.successMsgs.login)
         } catch (err: any) {
             const status = this.clientErrors.unknown.code
             try {
-                ;(res as any).locals.__errorLogged = true
+                res.locals.__errorLogged = true
             } catch {}
             log.show({
                 type: log.TYPE_ERROR,
@@ -195,23 +195,24 @@ export default class Session {
                     err?.message || err
                 )}`,
                 ctx: {
-                    requestId: (req as any).requestId,
-                    method: (req as any).method,
-                    path: (req as any).originalUrl,
+                    requestId: req.requestId,
+                    method: req.method,
+                    path: req.originalUrl,
                     status,
-                    user_id: (req as any).session?.user_id,
-                    profile_id: (req as any).session?.profile_id,
+                    user_id: req.session?.user_id,
+                    profile_id: req.session?.profile_id,
                     durationMs:
-                        typeof (req as any).requestStartMs === 'number'
-                            ? Date.now() - (req as any).requestStartMs
+                        typeof req.requestStartMs === 'number'
+                            ? Date.now() - req.requestStartMs
                             : undefined,
                 },
             })
-            ;(res as any).status(status).send(this.clientErrors.unknown)
+            return res.status(status).send(this.clientErrors.unknown)
         }
     }
 
     async _startLoginChallenge(req: AppRequest, res: AppResponse, user: any) {
+        const effectiveConfig = this.ctx?.config ?? config
         const token = randomBytes(32).toString('hex')
         const code = String(Math.floor(100000 + Math.random() * 900000))
         const tokenHash = sha256Hex(token)
@@ -222,15 +223,15 @@ export default class Session {
             tokenHash,
             codeHash,
             String(this.loginChallengeExpiresSeconds),
-            (req as any).ip ?? null,
-            (req as any).get?.('User-Agent') ?? null,
+            req.ip ?? null,
+            req.get?.('User-Agent') ?? null,
         ])
 
         await this.email.sendLoginChallenge({
             to: user.user_em,
             token,
             code,
-            appName: (config as any)?.app?.name,
+            appName: effectiveConfig?.app?.name,
         })
 
         await auditBestEffort(
@@ -244,7 +245,7 @@ export default class Session {
             this.ctx
         )
 
-        return (res as any).status(this.successMsgs.loginVerificationRequired.code).send({
+        return res.status(this.successMsgs.loginVerificationRequired.code).send({
             ...this.successMsgs.loginVerificationRequired,
             challengeToken: token,
             sentTo: this.email.maskEmail(user.user_em),
@@ -254,15 +255,15 @@ export default class Session {
     async verifyLoginChallenge(req: AppRequest, res: AppResponse) {
         try {
             if (this.sessionExists(req)) {
-                return (res as any)
+                return res
                     .status(this.clientErrors.sessionExists.code)
                     .send(this.clientErrors.sessionExists)
             }
 
-            const token = (req as any).body?.token
-            const code = (req as any).body?.code
+            const token = req.body?.token
+            const code = req.body?.code
             if (typeof token !== 'string' || typeof code !== 'string') {
-                return (res as any)
+                return res
                     .status(this.clientErrors.invalidParameters.code)
                     .send(this.clientErrors.invalidParameters)
             }
@@ -271,13 +272,13 @@ export default class Session {
             const r = await db.exe('security', 'getLoginChallengeByTokenHash', [tokenHash])
             const row = r?.rows?.[0]
             if (!row) {
-                return (res as any)
+                return res
                     .status(this.clientErrors.invalidToken.code)
                     .send(this.clientErrors.invalidToken)
             }
 
             if (row.verified_at) {
-                return (res as any)
+                return res
                     .status(this.clientErrors.invalidToken.code)
                     .send(this.clientErrors.invalidToken)
             }
@@ -288,7 +289,7 @@ export default class Session {
                 Number.isNaN(expiresAt.getTime()) ||
                 expiresAt.getTime() <= Date.now()
             ) {
-                return (res as any)
+                return res
                     .status(this.clientErrors.expiredToken.code)
                     .send(this.clientErrors.expiredToken)
             }
@@ -298,7 +299,7 @@ export default class Session {
                 Number.isFinite(this.loginChallengeMaxAttempts) &&
                 attempts >= this.loginChallengeMaxAttempts
             ) {
-                return (res as any)
+                return res
                     .status(this.clientErrors.tooManyRequests.code)
                     .send(this.clientErrors.tooManyRequests)
             }
@@ -308,7 +309,7 @@ export default class Session {
                 try {
                     await db.exe('security', 'incrementLoginChallengeAttempt', [row.challenge_id])
                 } catch {}
-                return (res as any)
+                return res
                     .status(this.clientErrors.invalidToken.code)
                     .send(this.clientErrors.invalidToken)
             }
@@ -316,7 +317,7 @@ export default class Session {
             await db.exe('security', 'markLoginChallengeVerified', [row.challenge_id])
 
             if (this.requireEmailVerification && !row.email_verified_at) {
-                return (res as any)
+                return res
                     .status(this.clientErrors.emailNotVerified.code)
                     .send(this.clientErrors.emailNotVerified)
             }
@@ -328,22 +329,23 @@ export default class Session {
                 await db.exe('security', 'upsertUserDevice', [
                     row.user_id,
                     deviceTokenHash,
-                    (req as any).get?.('User-Agent') ?? null,
-                    (req as any).ip ?? null,
+                    req.get?.('User-Agent') ?? null,
+                    req.ip ?? null,
                 ])
             } catch {}
 
-            ;(res as any).cookie(this.deviceCookieName, deviceToken, {
+            const effectiveConfig = this.ctx?.config ?? config
+            res.cookie!(this.deviceCookieName, deviceToken, {
                 httpOnly: true,
-                sameSite: (config as any)?.session?.cookie?.sameSite ?? 'lax',
-                secure: Boolean((config as any)?.session?.cookie?.secure),
+                sameSite: effectiveConfig?.session?.cookie?.sameSite ?? 'lax',
+                secure: Boolean(effectiveConfig?.session?.cookie?.secure),
                 maxAge: Number.isFinite(this.deviceCookieMaxAgeMs)
                     ? this.deviceCookieMaxAgeMs
                     : undefined,
             })
-            ;(req as any).session.user_id = row.user_id
-            ;(req as any).session.user_na = row.user_na
-            ;(req as any).session.profile_id = row.profile_id
+            req.session!.user_id = row.user_id
+            req.session!.user_na = row.user_na
+            req.session!.profile_id = row.profile_id
 
             try {
                 await db.exe('security', 'updateUserLastLogin', [row.user_id])
@@ -359,11 +361,11 @@ export default class Session {
                 this.ctx
             )
 
-            return (res as any).status(this.successMsgs.login.code).send(this.successMsgs.login)
+            return res.status(this.successMsgs.login.code).send(this.successMsgs.login)
         } catch (err: any) {
             const status = this.clientErrors.unknown.code
             try {
-                ;(res as any).locals.__errorLogged = true
+                res.locals.__errorLogged = true
             } catch {}
             log.show({
                 type: log.TYPE_ERROR,
@@ -371,23 +373,23 @@ export default class Session {
                     err?.message || err
                 )}`,
                 ctx: {
-                    requestId: (req as any).requestId,
-                    method: (req as any).method,
-                    path: (req as any).originalUrl,
+                    requestId: req.requestId,
+                    method: req.method,
+                    path: req.originalUrl,
                     status,
-                    user_id: (req as any).session?.user_id,
-                    profile_id: (req as any).session?.profile_id,
+                    user_id: req.session?.user_id,
+                    profile_id: req.session?.profile_id,
                     durationMs:
-                        typeof (req as any).requestStartMs === 'number'
-                            ? Date.now() - (req as any).requestStartMs
+                        typeof req.requestStartMs === 'number'
+                            ? Date.now() - req.requestStartMs
                             : undefined,
                 },
             })
-            return (res as any).status(status).send(this.clientErrors.unknown)
+            return res.status(status).send(this.clientErrors.unknown)
         }
     }
 
     destroySession(req: AppRequest) {
-        ;(req as any).session.destroy()
+        req.session!.destroy()
     }
 }

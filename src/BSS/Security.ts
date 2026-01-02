@@ -1,8 +1,16 @@
 export default class Security {
     ctx?: AppContext
 
-    permission: Map<string, boolean>
-    txMap: Map<any, any>
+    private permissionKey(profileId: unknown, method: unknown, object: unknown) {
+        return `${String(profileId)}_${String(method)}_${String(object)}`
+    }
+
+    private instanceKey(object: unknown, method: unknown) {
+        return `${String(object)}_${String(method)}`
+    }
+
+    permission: Map<string, true>
+    txMap: Map<unknown, { object_na: string; method_na: string }>
     instances: Map<string, any>
     serverErrors: any
 
@@ -50,10 +58,12 @@ export default class Security {
         try {
             const r = await effectiveDb.exe('security', 'loadPermissions', null)
             if (!r || !r.rows) throw new Error('loadPermissions returned null')
-            r.rows.forEach((el: any) => {
-                const key = `${el.profile_id}_${el.method_na}_${el.object_na}`
-                this.permission.set(key, true)
-            })
+            ;(r.rows as Array<{ profile_id: unknown; method_na: unknown; object_na: unknown }>).forEach(
+                (el) => {
+                    const key = this.permissionKey(el.profile_id, el.method_na, el.object_na)
+                    this.permission.set(key, true)
+                }
+            )
             return true
         } catch (err: any) {
             effectiveLog.show({
@@ -64,10 +74,13 @@ export default class Security {
         }
     }
 
-    getPermissions(jsonData: any) {
-        const key = `${jsonData.profile_id}_${jsonData.method_na}_${jsonData.object_na}`
-        if (this.permission.has(key)) return this.permission.get(key)
-        else return false
+    getPermissions(jsonData: {
+        profile_id: unknown
+        method_na: unknown
+        object_na: unknown
+    }): boolean {
+        const key = this.permissionKey(jsonData.profile_id, jsonData.method_na, jsonData.object_na)
+        return this.permission.has(key)
     }
 
     async loadDataTx() {
@@ -76,11 +89,16 @@ export default class Security {
         try {
             const r = await effectiveDb.exe('security', 'loadDataTx', null)
             if (!r || !r.rows) throw new Error('loadDataTx returned null')
-            r.rows.forEach((el: any) => {
-                const key = el.tx_nu
-                const value = { object_na: el.object_na, method_na: el.method_na }
-                this.txMap.set(key, value)
-            })
+            ;(r.rows as Array<{ tx_nu: unknown; object_na: unknown; method_na: unknown }>).forEach(
+                (el) => {
+                    const key = el.tx_nu
+                    const value = {
+                        object_na: String(el.object_na),
+                        method_na: String(el.method_na),
+                    }
+                    this.txMap.set(key, value)
+                }
+            )
             return true
         } catch (err: any) {
             effectiveLog.show({
@@ -91,25 +109,25 @@ export default class Security {
         }
     }
 
-    getDataTx(tx: any) {
-        if (this.txMap.has(tx)) return this.txMap.get(tx)
-        else return false
+    getDataTx(tx: unknown): { object_na: string; method_na: string } | null {
+        return this.txMap.get(tx) ?? null
     }
 
-    async executeMethod(jsonData: any) {
+    async executeMethod(jsonData: { object_na: unknown; method_na: unknown; params: any }) {
         const effectiveConfig = this.ctx?.config ?? config
         const effectiveLog = this.ctx?.log ?? log
         try {
-            const key = `${jsonData.object_na}_${jsonData.method_na}`
+            const key = this.instanceKey(jsonData.object_na, jsonData.method_na)
             if (this.instances.has(key)) {
                 const instance = this.instances.get(key)
-                return await instance[jsonData.method_na](jsonData.params)
+                return await instance[String(jsonData.method_na)](jsonData.params)
             } else {
-                const modulePath = `${effectiveConfig.bo.path}${jsonData.object_na}/${jsonData.object_na}BO.js`
+                const objectName = String(jsonData.object_na)
+                const modulePath = `${effectiveConfig.bo.path}${objectName}/${objectName}BO.js`
                 const c: any = await import(modulePath)
-                const instance = new c[`${jsonData.object_na}BO`]()
+                const instance = new c[`${objectName}BO`]()
                 this.instances.set(key, instance)
-                return await instance[jsonData.method_na](jsonData.params)
+                return await instance[String(jsonData.method_na)](jsonData.params)
             }
         } catch (err: any) {
             effectiveLog.show({
@@ -120,10 +138,12 @@ export default class Security {
                     method_na: jsonData?.method_na,
                     key:
                         jsonData?.object_na && jsonData?.method_na
-                            ? `${jsonData.object_na}_${jsonData.method_na}`
+                            ? this.instanceKey(jsonData.object_na, jsonData.method_na)
                             : undefined,
                     modulePath: jsonData?.object_na
-                        ? `${effectiveConfig.bo.path}${jsonData.object_na}/${jsonData.object_na}BO.js`
+                        ? `${effectiveConfig.bo.path}${String(jsonData.object_na)}/${String(
+                              jsonData.object_na
+                          )}BO.js`
                         : undefined,
                 },
             })
