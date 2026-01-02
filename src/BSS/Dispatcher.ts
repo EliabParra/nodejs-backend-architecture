@@ -21,11 +21,10 @@ import { createFinalErrorHandler } from '../express/middleware/final-error-handl
 
 import {
     isPlainObject,
+    parseLoginBody,
+    parseLoginVerifyBody,
+    parseLogoutBody,
     parseToProccessBody,
-    validateLoginSchema,
-    validateLoginVerifySchema,
-    validateLogoutSchema,
-    validateToProccessSchema,
 } from './helpers/http-validators.js'
 
 import { auditBestEffort } from './helpers/audit-log.js'
@@ -289,9 +288,13 @@ export default class Dispatcher {
 
     async login(req: AppRequest, res: AppResponse) {
         try {
-            const schemaAlerts = validateLoginSchema(req.body)
-            if (schemaAlerts.length > 0) {
-                return sendInvalidParameters(res, this.clientErrors.invalidParameters, schemaAlerts)
+            const parsed = parseLoginBody(req.body)
+            if (parsed.ok === false) {
+                return sendInvalidParameters(
+                    res,
+                    this.clientErrors.invalidParameters,
+                    parsed.alerts
+                )
             }
             await this.session.createSession(req, res)
         } catch (err: any) {
@@ -323,9 +326,13 @@ export default class Dispatcher {
 
     async verifyLogin(req: AppRequest, res: AppResponse) {
         try {
-            const schemaAlerts = validateLoginVerifySchema(req.body)
-            if (schemaAlerts.length > 0) {
-                return sendInvalidParameters(res, this.clientErrors.invalidParameters, schemaAlerts)
+            const parsed = parseLoginVerifyBody(req.body)
+            if (parsed.ok === false) {
+                return sendInvalidParameters(
+                    res,
+                    this.clientErrors.invalidParameters,
+                    parsed.alerts
+                )
             }
             await this.session.verifyLoginChallenge(req, res)
         } catch (err: any) {
@@ -357,9 +364,13 @@ export default class Dispatcher {
 
     async logout(req: AppRequest, res: AppResponse) {
         try {
-            const schemaAlerts = validateLogoutSchema(req.body)
-            if (schemaAlerts.length > 0) {
-                return sendInvalidParameters(res, this.clientErrors.invalidParameters, schemaAlerts)
+            const parsed = parseLogoutBody(req.body)
+            if (parsed.ok === false) {
+                return sendInvalidParameters(
+                    res,
+                    this.clientErrors.invalidParameters,
+                    parsed.alerts
+                )
             }
             if (this.session.sessionExists(req)) {
                 await auditBestEffort(req, { action: 'logout', details: {} }, this.ctx)

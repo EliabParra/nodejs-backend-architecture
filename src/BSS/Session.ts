@@ -4,7 +4,7 @@ import { createHash, randomBytes } from 'node:crypto'
 import { applySessionMiddleware } from '../express/session/apply-session-middleware.js'
 import { auditBestEffort } from './helpers/audit-log.js'
 import { redactSecretsInString } from '../helpers/sanitize.js'
-import { isPlainObject, parseLoginBody } from './helpers/http-validators.js'
+import { parseLoginBody, parseLoginVerifyBody } from './helpers/http-validators.js'
 import EmailService from './EmailService.js'
 
 type EmailServiceLike = {
@@ -272,14 +272,15 @@ export default class Session {
                     .send(this.clientErrors.sessionExists)
             }
 
-            const body = isPlainObject(req.body) ? req.body : null
-            const token = body?.token
-            const code = body?.code
-            if (typeof token !== 'string' || typeof code !== 'string') {
+            const parsed = parseLoginVerifyBody(req.body)
+            if (parsed.ok === false) {
                 return res
                     .status(this.clientErrors.invalidParameters.code)
                     .send(this.clientErrors.invalidParameters)
             }
+
+            const token = parsed.body.token
+            const code = parsed.body.code
 
             const tokenHash = sha256Hex(token)
             const r = await db.exe('security', 'getLoginChallengeByTokenHash', [tokenHash])
