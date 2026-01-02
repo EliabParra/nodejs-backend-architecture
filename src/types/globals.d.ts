@@ -67,6 +67,12 @@ declare global {
     const require: any
 
     interface GlobalThis {
+        config: AppConfig
+        log: AppLog
+        db: AppDb
+        queries: any
+        msgs: any
+        v: any
         security: AppSecurity
     }
 

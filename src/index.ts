@@ -1,0 +1,31 @@
+import './globals.js'
+import Security from './BSS/Security.js'
+import Dispatcher from './BSS/Dispatcher.js'
+import { createAppContext } from './context/app-context.js'
+
+// Security is created only for the server runtime.
+// This keeps CLI scripts (that import globals) from doing DB work on import.
+;(globalThis as unknown as { security: unknown }).security = new Security(createAppContext())
+
+const dispatcher = new Dispatcher()
+await dispatcher.init()
+dispatcher.serverOn()
+
+let shuttingDown = false
+async function shutdown(signal: string) {
+    if (shuttingDown) return
+    shuttingDown = true
+    try {
+        log.show({ type: log.TYPE_INFO, msg: `Shutting down (${signal})...` })
+        await dispatcher.shutdown()
+        process.exit(0)
+    } catch (err: any) {
+        try {
+            log.show({ type: log.TYPE_ERROR, msg: `Shutdown error: ${err?.message ?? err}` })
+        } catch {}
+        process.exit(1)
+    }
+}
+
+process.on('SIGINT', () => shutdown('SIGINT'))
+process.on('SIGTERM', () => shutdown('SIGTERM'))
