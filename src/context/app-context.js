@@ -1,10 +1,10 @@
 export function createAppContext() {
     return {
-        config,
-        log,
-        db,
-        msgs,
-        v,
-        security,
+        config: globalThis.config,
+        log: globalThis.log,
+        db: globalThis.db,
+        msgs: globalThis.msgs,
+        v: globalThis.v,
+        security: globalThis.security,
     }
 }

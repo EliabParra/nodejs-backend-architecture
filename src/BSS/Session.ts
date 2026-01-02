@@ -7,16 +7,6 @@ import { redactSecretsInString } from '../helpers/sanitize.js'
 import { parseLoginBody, parseLoginVerifyBody } from './helpers/http-validators.js'
 import EmailService from './EmailService.js'
 
-type EmailServiceLike = {
-    sendLoginChallenge: (args: {
-        to: string
-        token: string
-        code: string
-        appName?: unknown
-    }) => Promise<void> | void
-    maskEmail: (value: string) => string
-}
-
 function sha256Hex(value: unknown) {
     return createHash('sha256').update(String(value), 'utf8').digest('hex')
 }
@@ -48,7 +38,7 @@ export default class Session {
     clientErrors: any
     successMsgs: any
 
-    email: any
+    email: EmailService
     authCfg: any
 
     loginId: string
@@ -67,10 +57,7 @@ export default class Session {
         this.serverErrors = msgs[effectiveConfig.app.lang].errors.server
         this.clientErrors = msgs[effectiveConfig.app.lang].errors.client
         this.successMsgs = msgs[effectiveConfig.app.lang].success
-        const EmailServiceCtor = EmailService as unknown as new (
-            ctx?: AppContext
-        ) => EmailServiceLike
-        this.email = new EmailServiceCtor(this.ctx)
+        this.email = new EmailService(this.ctx)
 
         this.authCfg = effectiveConfig.auth ?? {}
         this.loginId = String(this.authCfg.loginId ?? 'email')
