@@ -3,14 +3,20 @@ const require = createRequire(import.meta.url)
 const errorMsgs = require('./orderErrorMsgs.json')[config.app.lang]
 
 export class OrderErrorHandler {
-  static notFound() { return errorMsgs.notFound }
+    static notFound() {
+        return errorMsgs.notFound
+    }
 
-  static invalidParameters(alerts) {
-    const { code, msg } = errorMsgs.invalidParameters
-    return { code, msg, alerts: alerts ?? [] }
-  }
+    static invalidParameters(alerts) {
+        const { code, msg } = errorMsgs.invalidParameters
+        return { code, msg, alerts: alerts ?? [] }
+    }
 
-  static unauthorized() { return errorMsgs.unauthorized }
+    static unauthorized() {
+        return errorMsgs.unauthorized
+    }
 
-  static unknownError() { return errorMsgs.unknownError }
+    static unknownError() {
+        return errorMsgs.unknownError
+    }
 }

@@ -38,9 +38,9 @@ Typical structure (placeholders):
 - Validation: `BO/<ObjectName>/<ObjectName>Validate.js`
 - Success messages: `BO/<ObjectName>/<objectName>SuccessMsgs.json`
 - Domain errors:
-  - Handler: `BO/<ObjectName>/errors/<ObjectName>ErrorHandler.js`
-  - Messages: `BO/<ObjectName>/errors/<objectName>ErrorMsgs.json`
-  - Labels: `BO/<ObjectName>/errors/<objectName>Alerts.json`
+    - Handler: `BO/<ObjectName>/errors/<ObjectName>ErrorHandler.js`
+    - Messages: `BO/<ObjectName>/errors/<objectName>ErrorMsgs.json`
+    - Labels: `BO/<ObjectName>/errors/<objectName>Alerts.json`
 
 If you want a full working example, see: [examples/bo-demo/BO](../../examples/bo-demo/BO)
 

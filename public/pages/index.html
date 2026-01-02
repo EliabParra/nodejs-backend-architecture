@@ -1,68 +1,103 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>tarea</title>
-    <link rel="stylesheet" href="../css/styles.css">
-</head>
-<body>
-    <div class="login-shell">
-        <div class="login-head">
-            <p class="login-title">Inicia sesión</p>
-            <p class="login-subtitle">Ingresa tus credenciales para continuar</p>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>tarea</title>
+        <link rel="stylesheet" href="../css/styles.css" />
+    </head>
+    <body>
+        <div class="login-shell">
+            <div class="login-head">
+                <p class="login-title">Inicia sesión</p>
+                <p class="login-subtitle">Ingresa tus credenciales para continuar</p>
+            </div>
+
+            <div class="login-form">
+                <div class="field">
+                    <label class="label" for="username">Usuario</label>
+                    <input
+                        class="input"
+                        type="text"
+                        id="username"
+                        name="username"
+                        placeholder="tu.usuario"
+                        required
+                    />
+                </div>
+
+                <div class="field">
+                    <label class="label" for="password">Contraseña</label>
+                    <input
+                        class="input"
+                        type="password"
+                        id="password"
+                        name="password"
+                        placeholder="••••••••"
+                        required
+                    />
+                </div>
+
+                <div class="login-actions">
+                    <button class="button-primary" id="submitBtn">Ingresar</button>
+                    <button class="button-primary" id="logoutBtn">Logout</button>
+                </div>
+            </div>
+
+            <p class="footer-note">Acceso exclusivo para usuarios registrados.</p>
         </div>
 
-        <div class="login-form">
-            <div class="field">
-                <label class="label" for="username">Usuario</label>
-                <input class="input" type="text" id="username" name="username" placeholder="tu.usuario" required>
-            </div>
+        <br /><br /><br />
 
-            <div class="field">
-                <label class="label" for="password">Contraseña</label>
-                <input class="input" type="password" id="password" name="password" placeholder="••••••••" required>
+        <!-- crud person -->
+        <div class="crud-shell">
+            <div class="crud-head">
+                <p class="crud-title">Persona</p>
+                <p class="crud-subtitle">Crea, actualiza y elimina personas</p>
             </div>
-
-            <div class="login-actions">
-                <button class="button-primary" id="submitBtn">Ingresar</button>
-                <button class="button-primary" id="logoutBtn">Logout</button>
+            <div class="crud-form">
+                <div class="field">
+                    <label class="label" for="id">ID</label>
+                    <input
+                        class="input"
+                        type="number"
+                        id="id"
+                        name="id"
+                        placeholder="id"
+                        required
+                    />
+                </div>
+                <div class="field">
+                    <label class="label" for="name">Nombre</label>
+                    <input
+                        class="input"
+                        type="text"
+                        id="name"
+                        name="name"
+                        placeholder="nombre"
+                        required
+                    />
+                </div>
+                <div class="field">
+                    <label class="label" for="lastName">Apellido</label>
+                    <input
+                        class="input"
+                        type="text"
+                        id="lastName"
+                        name="lastName"
+                        placeholder="apellido"
+                        required
+                    />
+                </div>
+                <div class="crud-actions">
+                    <button class="button-primary" id="getBtn">Obtener</button>
+                    <button class="button-primary" id="createBtn">Crear</button>
+                    <button class="button-primary" id="updateBtn">Actualizar</button>
+                    <button class="button-primary" id="deleteBtn">Eliminar</button>
+                </div>
             </div>
         </div>
 
-        <p class="footer-note">Acceso exclusivo para usuarios registrados.</p>
-    </div>
-
-    <br><br><br>
-
-    <!-- crud person -->
-    <div class="crud-shell">
-        <div class="crud-head">
-            <p class="crud-title">Persona</p>
-            <p class="crud-subtitle">Crea, actualiza y elimina personas</p>
-        </div>
-        <div class="crud-form">
-            <div class="field">
-                <label class="label" for="id">ID</label>
-                <input class="input" type="number" id="id" name="id" placeholder="id" required>
-            </div>
-            <div class="field">
-                <label class="label" for="name">Nombre</label>
-                <input class="input" type="text" id="name" name="name" placeholder="nombre" required>
-            </div>
-            <div class="field">
-                <label class="label" for="lastName">Apellido</label>
-                <input class="input" type="text" id="lastName" name="lastName" placeholder="apellido" required>
-            </div>
-            <div class="crud-actions">
-                <button class="button-primary" id="getBtn">Obtener</button>
-                <button class="button-primary" id="createBtn">Crear</button>
-                <button class="button-primary" id="updateBtn">Actualizar</button>
-                <button class="button-primary" id="deleteBtn">Eliminar</button>
-            </div>
-        </div>
-    </div>
-
-    <script src="../js/scripts.js" type="module"></script>
-</body>
+        <script src="../js/scripts.js" type="module"></script>
+    </body>
 </html>

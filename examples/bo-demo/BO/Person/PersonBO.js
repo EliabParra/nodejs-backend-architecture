@@ -1,7 +1,7 @@
 import { createRequire } from 'node:module'
-import { PersonRepository } from "./Person.js"
-import { PersonValidate } from "./PersonValidate.js"
-import { PersonErrorHandler } from "./errors/PersonErrorHandler.js"
+import { PersonRepository } from './Person.js'
+import { PersonValidate } from './PersonValidate.js'
+import { PersonErrorHandler } from './errors/PersonErrorHandler.js'
 
 const require = createRequire(import.meta.url)
 const successMsgs = require('./personSuccessMsgs.json')[config.app.lang]
@@ -14,13 +14,15 @@ export class PersonBO {
             if (!mode) return PersonErrorHandler.PersonInvalidParameters(v.getAlerts())
 
             const raw = PersonValidate.getLookupValue(value)
-            const lookupValue = mode === PersonValidate.LOOKUP_ID
-                ? PersonValidate.normalizeId(raw)
-                : PersonValidate.normalizeName(raw)
+            const lookupValue =
+                mode === PersonValidate.LOOKUP_ID
+                    ? PersonValidate.normalizeId(raw)
+                    : PersonValidate.normalizeName(raw)
 
-            const person = mode === PersonValidate.LOOKUP_ID
-                ? await PersonRepository.getById(lookupValue)
-                : await PersonRepository.getByName(lookupValue)
+            const person =
+                mode === PersonValidate.LOOKUP_ID
+                    ? await PersonRepository.getById(lookupValue)
+                    : await PersonRepository.getByName(lookupValue)
 
             if (!person) return PersonErrorHandler.PersonNotFound()
 
@@ -30,7 +32,10 @@ export class PersonBO {
 
             return { code: 200, msg, data: person }
         } catch (err) {
-            log.show({ type: log.TYPE_ERROR, msg: `${serverErrorMsg}, PersonBO.getPerson: ${err?.message || err}` })
+            log.show({
+                type: log.TYPE_ERROR,
+                msg: `${serverErrorMsg}, PersonBO.getPerson: ${err?.message || err}`,
+            })
             return PersonErrorHandler.UnknownError()
         }
     }
@@ -51,7 +56,10 @@ export class PersonBO {
 
             return { code: 201, msg, data: { person_na, person_ln } }
         } catch (err) {
-            log.show({ type: log.TYPE_ERROR, msg: `${serverErrorMsg}, PersonBO.createPerson: ${err?.message || err}` })
+            log.show({
+                type: log.TYPE_ERROR,
+                msg: `${serverErrorMsg}, PersonBO.createPerson: ${err?.message || err}`,
+            })
             return PersonErrorHandler.UnknownError()
         }
     }
@@ -73,7 +81,10 @@ export class PersonBO {
 
             return { code: 200, msg, data: { person_id, person_na, person_ln } }
         } catch (err) {
-            log.show({ type: log.TYPE_ERROR, msg: `${serverErrorMsg}, PersonBO.updatePerson: ${err?.message || err}` })
+            log.show({
+                type: log.TYPE_ERROR,
+                msg: `${serverErrorMsg}, PersonBO.updatePerson: ${err?.message || err}`,
+            })
             return PersonErrorHandler.UnknownError()
         }
     }
@@ -84,16 +95,20 @@ export class PersonBO {
             if (!mode) return PersonErrorHandler.PersonInvalidParameters(v.getAlerts())
 
             const raw = PersonValidate.getLookupValue(value)
-            const lookupValue = mode === PersonValidate.LOOKUP_ID
-                ? PersonValidate.normalizeId(raw)
-                : PersonValidate.normalizeName(raw)
+            const lookupValue =
+                mode === PersonValidate.LOOKUP_ID
+                    ? PersonValidate.normalizeId(raw)
+                    : PersonValidate.normalizeName(raw)
 
             if (mode === PersonValidate.LOOKUP_ID) await PersonRepository.deleteById(lookupValue)
             else await PersonRepository.deleteByName(lookupValue)
 
             return { code: 200, msg: successMsgs.deletePerson, data: { value: lookupValue } }
         } catch (err) {
-            log.show({ type: log.TYPE_ERROR, msg: `${serverErrorMsg}, PersonBO.deletePerson: ${err?.message || err}` })
+            log.show({
+                type: log.TYPE_ERROR,
+                msg: `${serverErrorMsg}, PersonBO.deletePerson: ${err?.message || err}`,
+            })
             return PersonErrorHandler.UnknownError()
         }
     }

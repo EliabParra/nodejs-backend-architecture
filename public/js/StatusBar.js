@@ -29,7 +29,7 @@ export class StatusBar {
     }
 
     showAlerts(alerts) {
-        alerts.forEach(alert => this.bar.innerHTML += `<p>${alert}</p>` + '<br>')
+        alerts.forEach((alert) => (this.bar.innerHTML += `<p>${alert}</p>` + '<br>'))
         this.show()
         return this
     }

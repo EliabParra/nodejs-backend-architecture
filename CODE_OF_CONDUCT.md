@@ -5,11 +5,13 @@
 We want a friendly, professional community.
 
 Examples of positive behavior:
+
 - Be respectful and constructive
 - Assume good intent and focus on the technical issue
 - Provide actionable feedback
 
 Unacceptable behavior includes:
+
 - Harassment, discrimination, or personal attacks
 - Publishing private information
 - Spam or deliberately disruptive behavior

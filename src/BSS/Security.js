@@ -9,35 +9,38 @@ export default class Security {
         this.initError = null
         this.ready = this.init()
         // Ensure startup failures don't become unhandled rejections.
-        this.ready.catch(() => { })
+        this.ready.catch(() => {})
     }
 
     async init() {
         try {
-            await Promise.all([
-                this.loadPermissions(),
-                this.loadDataTx()
-            ])
+            await Promise.all([this.loadPermissions(), this.loadDataTx()])
             this.isReady = true
             return true
         } catch (err) {
             this.initError = err
-            log.show({ type: log.TYPE_ERROR, msg: `${this.serverErrors.serverError.msg}, Security.init: ${err?.message || err}` })
+            log.show({
+                type: log.TYPE_ERROR,
+                msg: `${this.serverErrors.serverError.msg}, Security.init: ${err?.message || err}`,
+            })
             throw err
         }
     }
 
     async loadPermissions() {
         try {
-            const r = await db.exe("security", "loadPermissions", null)
+            const r = await db.exe('security', 'loadPermissions', null)
             if (!r || !r.rows) throw new Error('loadPermissions returned null')
-            r.rows.forEach(el => {
+            r.rows.forEach((el) => {
                 const key = `${el.profile_id}_${el.method_na}_${el.object_na}`
                 this.permission.set(key, true)
             })
             return true
         } catch (err) {
-            log.show({ type: log.TYPE_ERROR, msg: `${this.serverErrors.serverError.msg}, Security.loadPermissions: ${err?.message || err}` })
+            log.show({
+                type: log.TYPE_ERROR,
+                msg: `${this.serverErrors.serverError.msg}, Security.loadPermissions: ${err?.message || err}`,
+            })
             throw err
         }
     }
@@ -50,16 +53,19 @@ export default class Security {
 
     async loadDataTx() {
         try {
-            const r = await db.exe("security", "loadDataTx", null)
+            const r = await db.exe('security', 'loadDataTx', null)
             if (!r || !r.rows) throw new Error('loadDataTx returned null')
-            r.rows.forEach(el => {
+            r.rows.forEach((el) => {
                 const key = el.tx_nu
                 const value = { object_na: el.object_na, method_na: el.method_na }
                 this.txMap.set(key, value)
             })
             return true
         } catch (err) {
-            log.show({ type: log.TYPE_ERROR, msg: `${this.serverErrors.serverError.msg}, Security.loadDataTx: ${err?.message || err}` })
+            log.show({
+                type: log.TYPE_ERROR,
+                msg: `${this.serverErrors.serverError.msg}, Security.loadDataTx: ${err?.message || err}`,
+            })
             throw err
         }
     }
@@ -89,9 +95,14 @@ export default class Security {
                 ctx: {
                     object_na: jsonData?.object_na,
                     method_na: jsonData?.method_na,
-                    key: jsonData?.object_na && jsonData?.method_na ? `${jsonData.object_na}_${jsonData.method_na}` : undefined,
-                    modulePath: jsonData?.object_na ? `${config.bo.path}${jsonData.object_na}/${jsonData.object_na}BO.js` : undefined
-                }
+                    key:
+                        jsonData?.object_na && jsonData?.method_na
+                            ? `${jsonData.object_na}_${jsonData.method_na}`
+                            : undefined,
+                    modulePath: jsonData?.object_na
+                        ? `${config.bo.path}${jsonData.object_na}/${jsonData.object_na}BO.js`
+                        : undefined,
+                },
             })
             return this.serverErrors.serverError
         }

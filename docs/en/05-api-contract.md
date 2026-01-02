@@ -8,10 +8,10 @@ Most responses follow this shape (not all fields are always present):
 
 ```json
 {
-  "code": 200,
-  "msg": "...",
-  "data": {},
-  "alerts": []
+    "code": 200,
+    "msg": "...",
+    "data": {},
+    "alerts": []
 }
 ```
 
@@ -51,12 +51,12 @@ Use it for debugging/support: when you see an error on the client, report that `
 These endpoints are meant for monitoring (health checks) and readiness (dependencies ready):
 
 - `GET /health`: always returns `200` if the process is alive.
-  - Example body: `{ ok: true, name, uptimeSec, time, requestId }`
+    - Example body: `{ ok: true, name, uptimeSec, time, requestId }`
 - `GET /ready`: returns `200` only when the backend is ready to serve traffic.
-  - Current checks:
-    - `security.isReady` (security model loaded)
-    - DB connectivity (`SELECT 1`)
-  - If any dependency is not ready, it returns `503 serviceUnavailable`.
+    - Current checks:
+        - `security.isReady` (security model loaded)
+        - DB connectivity (`SELECT 1`)
+    - If any dependency is not ready, it returns `503 serviceUnavailable`.
 
 Implementation:
 
@@ -69,8 +69,8 @@ In addition to error logs, the server logs requests when the response finishes:
 
 - Message: `METHOD /path STATUS` (e.g. `GET /health 200`)
 - Standardized context (`ctx`):
-  - `requestId`, `method`, `path`, `status`, `durationMs`
-  - and when a session exists: `user_id`, `profile_id`
+    - `requestId`, `method`, `path`, `status`, `durationMs`
+    - and when a session exists: `user_id`, `profile_id`
 
 This helps you:
 
@@ -113,10 +113,10 @@ If you run React/Vite/Angular on a different port (e.g. `http://localhost:5173`)
 
 ```js
 fetch('http://localhost:3000/login', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  credentials: 'include',
-  body: JSON.stringify({ username, password })
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ username, password }),
 })
 ```
 
@@ -179,10 +179,10 @@ CSRF:
 
 - Success: `200` with `msgs[lang].success.login`
 - Common errors:
-  - `400 invalidParameters` + `alerts`
-  - `401 sessionExists`
-  - `401 usernameOrPasswordIncorrect`
-  - `429 tooManyRequests` (too many attempts within the time window)
+    - `400 invalidParameters` + `alerts`
+    - `401 sessionExists`
+    - `401 usernameOrPasswordIncorrect`
+    - `429 tooManyRequests` (too many attempts within the time window)
 
 ### Rate limiting (anti brute-force)
 
@@ -267,8 +267,8 @@ Also:
 
 - Limit: 120 requests per minute.
 - Key:
-  - if a session exists: per `user_id`
-  - otherwise: per IP
+    - if a session exists: per `user_id`
+    - otherwise: per IP
 - When exceeded: HTTP `429` with `msgs[lang].errors.client.tooManyRequests`.
 
 ## Demo tx values (frontend)

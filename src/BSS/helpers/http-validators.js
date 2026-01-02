@@ -23,7 +23,7 @@ export function validateToProccessSchema(body) {
     const params = body.params
     if (params !== undefined && params !== null) {
         const isOk =
-            (typeof params === 'string') ||
+            typeof params === 'string' ||
             (typeof params === 'number' && Number.isFinite(params)) ||
             (params !== null && typeof params === 'object' && !Array.isArray(params))
 
@@ -57,8 +57,14 @@ export function validateLoginSchema(body, { minPasswordLen } = {}) {
 
     if (typeof body.password !== 'string') {
         alerts.push(v.getMessage('string', { value: body.password, label: 'password' }))
-    } else if (Number.isInteger(minPasswordLen) && minPasswordLen > 0 && body.password.length < minPasswordLen) {
-        alerts.push(v.getMessage('length', { value: body.password, label: 'password', min: minPasswordLen }))
+    } else if (
+        Number.isInteger(minPasswordLen) &&
+        minPasswordLen > 0 &&
+        body.password.length < minPasswordLen
+    ) {
+        alerts.push(
+            v.getMessage('length', { value: body.password, label: 'password', min: minPasswordLen })
+        )
     }
 
     return alerts

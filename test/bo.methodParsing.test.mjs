@@ -4,7 +4,7 @@ import assert from 'node:assert/strict'
 import { parseMethodsFromBO } from '../scripts/bo.mjs'
 
 test('bo.parseMethodsFromBO extracts async method names', () => {
-  const content = `
+    const content = `
 export class PersonBO {
   async getPerson(params) { return params }
   async _helper() { return null }
@@ -13,6 +13,6 @@ export class PersonBO {
 }
 `
 
-  const methods = parseMethodsFromBO(content).sort()
-  assert.deepEqual(methods, ['_helper', 'createPerson', 'getPerson'])
+    const methods = parseMethodsFromBO(content).sort()
+    assert.deepEqual(methods, ['_helper', 'createPerson', 'getPerson'])
 })

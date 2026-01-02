@@ -63,11 +63,13 @@ Patrón recomendado:
 
 ```js
 try {
-	const r = await db.exe('schema', 'queryName', [/* params */])
-	// usar r.rows
+    const r = await db.exe('schema', 'queryName', [
+        /* params */
+    ])
+    // usar r.rows
 } catch (err) {
-	// error de infraestructura (DB), responder con error estándar
-	return personErrors.UnknownError() // o msgs[lang].errors.client.unknown
+    // error de infraestructura (DB), responder con error estándar
+    return personErrors.UnknownError() // o msgs[lang].errors.client.unknown
 }
 ```
 

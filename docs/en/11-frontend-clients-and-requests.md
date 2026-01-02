@@ -29,20 +29,20 @@ Optional dev helper: `npm run full` starts backend + frontend based on `FRONTEND
 ### Minimum rules
 
 - **Session cookies**: your frontend must send cookies.
-  - `fetch`: `credentials: 'include'`
-  - Axios: `withCredentials: true`
-  - Angular HttpClient: `{ withCredentials: true }`
+    - `fetch`: `credentials: 'include'`
+    - Axios: `withCredentials: true`
+    - Angular HttpClient: `{ withCredentials: true }`
 - **CSRF**: for `POST` requests you must send `X-CSRF-Token`.
-  - Recommended flow: call `GET /csrf` on app startup (or before the first POST) and cache the token.
+    - Recommended flow: call `GET /csrf` on app startup (or before the first POST) and cache the token.
 - **Error contract**: on errors, the backend returns consistent JSON with fields like `code`, `msg`, `alerts`.
-  - Do not assume HTML.
+    - Do not assume HTML.
 
 ### `/toProccess` shape
 
 ```json
 {
-  "tx": 123,
-  "params": { "any": "payload" }
+    "tx": 123,
+    "params": { "any": "payload" }
 }
 ```
 
@@ -50,9 +50,9 @@ Optional dev helper: `npm run full` starts backend + frontend based on `FRONTEND
 
 Create a small module that:
 
-1) Fetches and caches the CSRF token.
-2) Always sends `credentials/include`.
-3) Normalizes errors (always tries `res.json()` and returns `{ ok, data, error }`).
+1. Fetches and caches the CSRF token.
+2. Always sends `credentials/include`.
+3. Normalizes errors (always tries `res.json()` and returns `{ ok, data, error }`).
 
 You can use the existing example client as reference: [public/js/Sender.js](../../public/js/Sender.js).
 
@@ -65,40 +65,40 @@ To keep this tutorial template-first, the demo client/pages live under the Examp
 Suggested file: `public/js/apiClient.js` (or in your frontend repo).
 
 ```js
-let csrfToken = null;
+let csrfToken = null
 
 async function ensureCsrf(baseUrl) {
-  if (csrfToken) return csrfToken;
-  const res = await fetch(`${baseUrl}/csrf`, { credentials: 'include' });
-  const data = await res.json();
-  csrfToken = data?.csrfToken ?? data?.token;
-  return csrfToken;
+    if (csrfToken) return csrfToken
+    const res = await fetch(`${baseUrl}/csrf`, { credentials: 'include' })
+    const data = await res.json()
+    csrfToken = data?.csrfToken ?? data?.token
+    return csrfToken
 }
 
 export async function apiPost(baseUrl, path, body) {
-  const token = await ensureCsrf(baseUrl);
+    const token = await ensureCsrf(baseUrl)
 
-  const res = await fetch(`${baseUrl}${path}`, {
-    method: 'POST',
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-CSRF-Token': token,
-    },
-    body: JSON.stringify(body),
-  });
+    const res = await fetch(`${baseUrl}${path}`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': token,
+        },
+        body: JSON.stringify(body),
+    })
 
-  const payload = await res.json().catch(() => null);
+    const payload = await res.json().catch(() => null)
 
-  if (!res.ok) {
-    return { ok: false, error: payload ?? { code: 'unknown', msg: 'Request failed' } };
-  }
+    if (!res.ok) {
+        return { ok: false, error: payload ?? { code: 'unknown', msg: 'Request failed' } }
+    }
 
-  return { ok: true, data: payload };
+    return { ok: true, data: payload }
 }
 
 export async function toProccess(baseUrl, tx, params) {
-  return apiPost(baseUrl, '/toProccess', { tx, params });
+    return apiPost(baseUrl, '/toProccess', { tx, params })
 }
 ```
 
@@ -109,45 +109,45 @@ export async function toProccess(baseUrl, tx, params) {
 Create `src/api/client.js`:
 
 ```js
-let csrfToken = null;
+let csrfToken = null
 
 export function createApiClient(baseUrl) {
-  async function ensureCsrf() {
-    if (csrfToken) return csrfToken;
-    const res = await fetch(`${baseUrl}/csrf`, { credentials: 'include' });
-    const data = await res.json();
-    csrfToken = data?.csrfToken ?? data?.token;
-    return csrfToken;
-  }
-
-  async function post(path, body) {
-    const token = await ensureCsrf();
-
-    const res = await fetch(`${baseUrl}${path}`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRF-Token': token,
-      },
-      body: JSON.stringify(body),
-    });
-
-    const payload = await res.json().catch(() => null);
-
-    if (!res.ok) {
-      const err = payload ?? { code: 'unknown', msg: 'Request failed' };
-      throw err;
+    async function ensureCsrf() {
+        if (csrfToken) return csrfToken
+        const res = await fetch(`${baseUrl}/csrf`, { credentials: 'include' })
+        const data = await res.json()
+        csrfToken = data?.csrfToken ?? data?.token
+        return csrfToken
     }
 
-    return payload;
-  }
+    async function post(path, body) {
+        const token = await ensureCsrf()
 
-  return {
-    login: (username, password) => post('/login', { username, password }),
-    logout: () => post('/logout', {}),
-    toProccess: (tx, params) => post('/toProccess', { tx, params }),
-  };
+        const res = await fetch(`${baseUrl}${path}`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': token,
+            },
+            body: JSON.stringify(body),
+        })
+
+        const payload = await res.json().catch(() => null)
+
+        if (!res.ok) {
+            const err = payload ?? { code: 'unknown', msg: 'Request failed' }
+            throw err
+        }
+
+        return payload
+    }
+
+    return {
+        login: (username, password) => post('/login', { username, password }),
+        logout: () => post('/logout', {}),
+        toProccess: (tx, params) => post('/toProccess', { tx, params }),
+    }
 }
 ```
 
@@ -157,15 +157,15 @@ To avoid CORS issues during development, configure a proxy in `vite.config.js`:
 
 ```js
 export default {
-  server: {
-    proxy: {
-      '/csrf': 'http://localhost:3000',
-      '/login': 'http://localhost:3000',
-      '/logout': 'http://localhost:3000',
-      '/toProccess': 'http://localhost:3000',
+    server: {
+        proxy: {
+            '/csrf': 'http://localhost:3000',
+            '/login': 'http://localhost:3000',
+            '/logout': 'http://localhost:3000',
+            '/toProccess': 'http://localhost:3000',
+        },
     },
-  },
-};
+}
 ```
 
 Then your baseUrl can be empty (`''`) and you call `/toProccess` directly.
@@ -180,25 +180,23 @@ A clean Angular approach is usually:
 ### ApiService (simplified)
 
 ```ts
-import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { Injectable } from '@angular/core'
+import { HttpClient } from '@angular/common/http'
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
-  private csrfToken: string | null = null;
+    private csrfToken: string | null = null
 
-  constructor(private http: HttpClient) {}
+    constructor(private http: HttpClient) {}
 
-  async ensureCsrf(): Promise<string> {
-    if (this.csrfToken) return this.csrfToken;
+    async ensureCsrf(): Promise<string> {
+        if (this.csrfToken) return this.csrfToken
 
-    const data: any = await this.http
-      .get('/csrf', { withCredentials: true })
-      .toPromise();
+        const data: any = await this.http.get('/csrf', { withCredentials: true }).toPromise()
 
-    this.csrfToken = data?.csrfToken ?? data?.token;
-    return this.csrfToken as string;
-  }
+        this.csrfToken = data?.csrfToken ?? data?.token
+        return this.csrfToken as string
+    }
 }
 ```
 
@@ -207,8 +205,8 @@ export class ApiService {
 - If you get `401`: no session or no permission for that `tx`.
 - If you get CSRF errors: call `GET /csrf` first and send `X-CSRF-Token`.
 - If cookies are not being sent:
-  - the client is missing `credentials/include` / `withCredentials`.
-  - your CORS allowlist does not include the frontend origin.
+    - the client is missing `credentials/include` / `withCredentials`.
+    - your CORS allowlist does not include the frontend origin.
 - If you get `413`: request body is too large.
 
 ## 9) Production: cross-domain cookies (common failure mode)
@@ -217,11 +215,11 @@ If frontend and backend are on different domains and you want **cookie-based ses
 
 - Frontend: all session-dependent calls must use `credentials: 'include'` / `withCredentials: true`.
 - Backend:
-  - `cors.credentials=true`
-  - `cors.origins` must include the real frontend origin (e.g. `https://myapp.example`).
+    - `cors.credentials=true`
+    - `cors.origins` must include the real frontend origin (e.g. `https://myapp.example`).
 - Cookie:
-  - `SESSION_COOKIE_SECURE=true` (HTTPS only)
-  - `SESSION_COOKIE_SAMESITE=none` (cross-site)
+    - `SESSION_COOKIE_SECURE=true` (HTTPS only)
+    - `SESSION_COOKIE_SAMESITE=none` (cross-site)
 - If you run behind a proxy/LB terminating TLS: set `APP_TRUST_PROXY=1`.
 
 See variables in [03-configuration.md](03-configuration.md).
@@ -230,11 +228,12 @@ See variables in [03-configuration.md](03-configuration.md).
 
 ### Development (no repo coupling)
 
-1) Backend (API-only): set `APP_FRONTEND_MODE=none` in backend `.env` and run `npm run dev`.
-2) Frontend: run your framework dev server (React/Vite/Angular/etc.).
-3) Avoid CORS by using a dev proxy:
-  - Vite: `server.proxy`
-  - Angular: `proxy.conf.json`
+1. Backend (API-only): set `APP_FRONTEND_MODE=none` in backend `.env` and run `npm run dev`.
+2. Frontend: run your framework dev server (React/Vite/Angular/etc.).
+3. Avoid CORS by using a dev proxy:
+
+- Vite: `server.proxy`
+- Angular: `proxy.conf.json`
 
 ### Production
 
@@ -248,7 +247,7 @@ See variables in [03-configuration.md](03-configuration.md).
 - `FRONTEND_PATH=PATH_TO_FRONTEND_REPO` (must contain `package.json`)
 - `FRONTEND_SCRIPT=start` (optional)
 - `FRONTEND_ARGS=...` (optional)
-  - Example (Angular): `FRONTEND_ARGS=--port 4201`
+    - Example (Angular): `FRONTEND_ARGS=--port 4201`
 - `BACKEND_SCRIPT=dev` (optional)
 - `BACKEND_ARGS=...` (optional)
 - `FULL_KEEP_ALIVE=true` (optional)

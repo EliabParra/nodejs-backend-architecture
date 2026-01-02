@@ -1,59 +1,59 @@
 {
-  "name": "nodejs-backend-architecture",
-  "version": "0.0.1",
-  "description": "Una arquitectura de backend desacoplada para Node.js",
-  "license": "MIT",
-  "main": "src/index.js",
-  "scripts": {
-    "format": "prettier --write .",
-    "format:check": "prettier --check .",
-    "test": "node --import ./test/setup.mjs --test",
-    "test:http": "node --import ./test/setup.mjs --test test/*.http.test.mjs",
-    "test:cli": "node --import ./test/setup.mjs --test test/*cli*.test.mjs",
-    "test:watch": "node --import ./test/setup.mjs --test --watch",
-    "test:coverage": "c8 --reporter=text --reporter=text-summary --reporter=lcov node --import ./test/setup.mjs --test",
-    "start": "node src/index.js",
-    "dev": "nodemon src/index.js",
-    "full": "node scripts/full.mjs",
-    "db:init": "node scripts/db-init.mjs",
-    "hashpw": "node scripts/hash-password.mjs",
-    "bo": "node scripts/bo.mjs",
-    "docs:jsdoc": "jsdoc -c jsdoc.json",
-    "export:starter": "node scripts/export-starter.mjs"
-  },
-  "type": "module",
-  "dependencies": {
-    "bcryptjs": "^2.4.3",
-    "colors": "^1.4.0",
-    "connect-pg-simple": "^10.0.0",
-    "cors": "^2.8.5",
-    "dotenv": "^17.2.3",
-    "express": "^5.2.1",
-    "express-rate-limit": "^7.5.1",
-    "express-session": "^1.18.2",
-    "helmet": "^8.1.0",
-    "nodemon": "^3.1.11",
-    "pg": "^8.16.3"
-  },
-  "devDependencies": {
-    "c8": "^10.1.3",
-    "jsdoc": "^4.0.4",
-    "prettier": "^3.6.2",
-    "supertest": "^7.1.4"
-  },
-  "c8": {
-    "all": true,
-    "include": [
-      "src/**/*.js"
-    ],
-    "exclude": [
-      "src/index.js",
-      "src/jsdoc/**",
-      "test/**",
-      "scripts/**",
-      "BO/**",
-      "public/**",
-      "docs/**"
-    ]
-  }
+    "name": "nodejs-backend-architecture",
+    "version": "0.0.1",
+    "description": "Una arquitectura de backend desacoplada para Node.js",
+    "license": "MIT",
+    "main": "src/index.js",
+    "scripts": {
+        "format": "prettier --write .",
+        "format:check": "prettier --check .",
+        "test": "node --import ./test/setup.mjs --test",
+        "test:http": "node --import ./test/setup.mjs --test test/*.http.test.mjs",
+        "test:cli": "node --import ./test/setup.mjs --test test/*cli*.test.mjs",
+        "test:watch": "node --import ./test/setup.mjs --test --watch",
+        "test:coverage": "c8 --reporter=text --reporter=text-summary --reporter=lcov node --import ./test/setup.mjs --test",
+        "start": "node src/index.js",
+        "dev": "nodemon src/index.js",
+        "full": "node scripts/full.mjs",
+        "db:init": "node scripts/db-init.mjs",
+        "hashpw": "node scripts/hash-password.mjs",
+        "bo": "node scripts/bo.mjs",
+        "docs:jsdoc": "jsdoc -c jsdoc.json",
+        "export:starter": "node scripts/export-starter.mjs"
+    },
+    "type": "module",
+    "dependencies": {
+        "bcryptjs": "^2.4.3",
+        "colors": "^1.4.0",
+        "connect-pg-simple": "^10.0.0",
+        "cors": "^2.8.5",
+        "dotenv": "^17.2.3",
+        "express": "^5.2.1",
+        "express-rate-limit": "^7.5.1",
+        "express-session": "^1.18.2",
+        "helmet": "^8.1.0",
+        "nodemon": "^3.1.11",
+        "pg": "^8.16.3"
+    },
+    "devDependencies": {
+        "c8": "^10.1.3",
+        "jsdoc": "^4.0.4",
+        "prettier": "^3.6.2",
+        "supertest": "^7.1.4"
+    },
+    "c8": {
+        "all": true,
+        "include": [
+            "src/**/*.js"
+        ],
+        "exclude": [
+            "src/index.js",
+            "src/jsdoc/**",
+            "test/**",
+            "scripts/**",
+            "BO/**",
+            "public/**",
+            "docs/**"
+        ]
+    }
 }

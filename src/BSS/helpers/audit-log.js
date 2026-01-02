@@ -22,7 +22,7 @@ export async function auditBestEffort(
         tx = null,
         user_id = req?.session?.user_id ?? null,
         profile_id = req?.session?.profile_id ?? null,
-        details = {}
+        details = {},
     }
 ) {
     try {
@@ -34,7 +34,7 @@ export async function auditBestEffort(
             object_na,
             method_na,
             tx,
-            JSON.stringify(details ?? {})
+            JSON.stringify(details ?? {}),
         ])
-    } catch { }
+    } catch {}
 }

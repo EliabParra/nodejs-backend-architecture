@@ -5,12 +5,16 @@ export default class Validator {
         this.msgs = msgs[config.app.lang].alerts
     }
 
-    getStatus() { return this.status }
-    getAlerts() { return this.alerts }
+    getStatus() {
+        return this.status
+    }
+    getAlerts() {
+        return this.alerts
+    }
 
     validateInt(param) {
         const value = this.extractValue(param)
-        if (!isNaN(value) && parseInt(value) === value && value > 0) return true;
+        if (!isNaN(value) && parseInt(value) === value && value > 0) return true
         this.alerts = [this.getMessage('int', param)]
         return false
     }
@@ -37,12 +41,15 @@ export default class Validator {
 
         const value = this.extractValue(param)
         if (value.length >= min && value.length <= max) return true
-        this.alerts = [this.getMessage('lengthRange', param).replace('{min}', min).replace('{max}', max)]
+        this.alerts = [
+            this.getMessage('lengthRange', param).replace('{min}', min).replace('{max}', max),
+        ]
         return false
     }
     validateEmail(param) {
         const value = this.extractValue(param)
-        if (/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/.test(value)) return true
+        if (/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/.test(value))
+            return true
         this.alerts = [this.getMessage('email', param)]
         return false
     }
@@ -90,20 +97,33 @@ export default class Validator {
     }
 
     validate(value, type) {
-        switch(type) {
-            case 'int': return this.validateInt(value)
-            case 'real': return this.validateReal(value)
-            case 'string': return this.validateString(value)
-            case 'length': return this.validateLength(value, value.min, value.max)
-            case 'email': return this.validateEmail(value)
-            case 'notEmpty': return this.validateNotEmpty(value)
-            case 'boolean': return this.validateBoolean(value)
-            case 'date': return this.validateDate(value)
-            case 'array': return this.validateArray(value)
-            case 'arrayNotEmpty': return this.validateArrayNotEmpty(value)
-            case 'object': return this.validateObject(value)
-            case 'objectNotEmpty': return this.validateObjectNotEmpty(value)
-            default: return false
+        switch (type) {
+            case 'int':
+                return this.validateInt(value)
+            case 'real':
+                return this.validateReal(value)
+            case 'string':
+                return this.validateString(value)
+            case 'length':
+                return this.validateLength(value, value.min, value.max)
+            case 'email':
+                return this.validateEmail(value)
+            case 'notEmpty':
+                return this.validateNotEmpty(value)
+            case 'boolean':
+                return this.validateBoolean(value)
+            case 'date':
+                return this.validateDate(value)
+            case 'array':
+                return this.validateArray(value)
+            case 'arrayNotEmpty':
+                return this.validateArrayNotEmpty(value)
+            case 'object':
+                return this.validateObject(value)
+            case 'objectNotEmpty':
+                return this.validateObjectNotEmpty(value)
+            default:
+                return false
         }
     }
 
@@ -115,7 +135,7 @@ export default class Validator {
             this.status = { result: false, alerts: ['Parámetros o tipos inválidos'] }
             return false
         }
-        types = types.map(type => type.toLowerCase())
+        types = types.map((type) => type.toLowerCase())
 
         for (let i = 0; i < params.length; i++) {
             if (!this.validateString(types[i])) {
@@ -126,11 +146,15 @@ export default class Validator {
             flag = flag && sts[i]
         }
 
-        this.alerts = sts.map((s, i) => { if (!s) return this.getMessage(types[i], params[i]) }).filter(a => a !== undefined)
+        this.alerts = sts
+            .map((s, i) => {
+                if (!s) return this.getMessage(types[i], params[i])
+            })
+            .filter((a) => a !== undefined)
 
         this.status = {
             result: flag,
-            alerts: this.alerts
+            alerts: this.alerts,
         }
 
         return flag
@@ -138,7 +162,7 @@ export default class Validator {
 
     getMessage(type, param) {
         const value = this.formatValue(type, param)
-        switch(type) {
+        switch (type) {
             case 'length': {
                 const min = param?.min
                 const max = param?.max
@@ -149,27 +173,22 @@ export default class Validator {
                         .replace('{max}', max)
                 }
                 if (min != null) {
-                    return this.msgs.lengthMin
-                        .replace('{value}', value)
-                        .replace('{min}', min)
+                    return this.msgs.lengthMin.replace('{value}', value).replace('{min}', min)
                 }
                 if (max != null) {
-                    return this.msgs.lengthMax
-                        .replace('{value}', value)
-                        .replace('{max}', max)
+                    return this.msgs.lengthMax.replace('{value}', value).replace('{max}', max)
                 }
                 return this.msgs.lengthRange
                     .replace('{value}', value)
                     .replace('{min}', 0)
                     .replace('{max}', Number.MAX_SAFE_INTEGER)
             }
-            default:
-                {
-                    let msg = this.msgs[type].replace('{value}', value)
-                    if (param?.min != null) msg = msg.replace('{min}', param.min)
-                    if (param?.max != null) msg = msg.replace('{max}', param.max)
-                    return msg
-                }
+            default: {
+                let msg = this.msgs[type].replace('{value}', value)
+                if (param?.min != null) msg = msg.replace('{min}', param.min)
+                if (param?.max != null) msg = msg.replace('{max}', param.max)
+                return msg
+            }
         }
     }
 
@@ -177,9 +196,18 @@ export default class Validator {
         if (typeof param === 'object' && param !== null) {
             if (param.label != null) return param.label
             if (type === 'length') return param.value
-            try { return JSON.stringify(param) } catch { return String(param) }
+            try {
+                return JSON.stringify(param)
+            } catch {
+                return String(param)
+            }
         }
-        if (Array.isArray(param)) try { return JSON.stringify(param) } catch { return String(param) }
+        if (Array.isArray(param))
+            try {
+                return JSON.stringify(param)
+            } catch {
+                return String(param)
+            }
         return param
     }
 

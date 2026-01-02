@@ -18,40 +18,40 @@ Estas cargas se hacen al iniciar el proceso en [src/BSS/Security.js](../../src/B
 Las queries actuales implican estas tablas y campos mínimos:
 
 - `security.user`:
-  - `user_id` (PK)
-  - `user_na` (username)
-  - `user_pw` (**hash bcrypt**)
+    - `user_id` (PK)
+    - `user_na` (username)
+    - `user_pw` (**hash bcrypt**)
 
 - `security.profile`:
-  - `profile_id` (PK)
+    - `profile_id` (PK)
 
 - `security.user_profile`:
-  - `user_id` (FK → user)
-  - `profile_id` (FK → profile)
+    - `user_id` (FK → user)
+    - `profile_id` (FK → profile)
 
 - `security.object`:
-  - `object_id` (PK)
-  - `object_na` (nombre lógico del BO, ej. `Person`)
+    - `object_id` (PK)
+    - `object_na` (nombre lógico del BO, ej. `Person`)
 
 - `security.method`:
-  - `method_id` (PK)
-  - `object_id` (FK → object)
-  - `method_na` (nombre de método, ej. `getPerson`)
-  - `tx_nu` (número de transacción que envía el cliente)
+    - `method_id` (PK)
+    - `object_id` (FK → object)
+    - `method_na` (nombre de método, ej. `getPerson`)
+    - `tx_nu` (número de transacción que envía el cliente)
 
 - `security.permission_method`:
-  - `profile_id` (FK → profile)
-  - `method_id` (FK → method)
+    - `profile_id` (FK → profile)
+    - `method_id` (FK → method)
 
 ## Campos y tablas opcionales (recomendados)
 
 Para uso real (no solo demo), es común agregar:
 
 - `security."user"`:
-  - `is_active` (deshabilitar cuentas sin borrar)
-  - `created_at`, `updated_at`
-  - `last_login_at`
-  - `user_em` (email) opcional
+    - `is_active` (deshabilitar cuentas sin borrar)
+    - `created_at`, `updated_at`
+    - `last_login_at`
+    - `user_em` (email) opcional
 - `security.profile.profile_na` (nombre humano del perfil)
 - `security.audit_log` (auditoría de login/logout/tx)
 
@@ -62,35 +62,35 @@ El CLI `npm run db:init` crea estas extensiones de forma idempotente.
 1. En startup, `Security.loadDataTx()` arma `txMap: Map<tx_nu, {object_na, method_na}>`.
 2. En startup, `Security.loadPermissions()` arma `permission: Map<"profile_id_method_na_object_na", true>`.
 3. En cada request a `/toProccess`:
-   - se resuelve `txMap.get(tx)`
-   - se verifica `permission.get("<profile>_<method>_<object>")`
+    - se resuelve `txMap.get(tx)`
+    - se verifica `permission.get("<profile>_<method>_<object>")`
 
 ## Guía: registrar una nueva transacción (tx)
 
 Cuando agregas una feature nueva, estos son los pasos **mínimos** para que el dispatcher pueda ejecutarla:
 
 1. **Crear/registrar el object**
-   - Insert en `security.object` con `object_na = "<TuObjeto>"`
+    - Insert en `security.object` con `object_na = "<TuObjeto>"`
 
 2. **Crear/registrar el method**
-   - Insert en `security.method` con:
-     - `object_id` del object
-     - `method_na = "<tuMetodo>"`
-     - `tx_nu = <numeroTx>` (este número lo enviará el cliente)
+    - Insert en `security.method` con:
+        - `object_id` del object
+        - `method_na = "<tuMetodo>"`
+        - `tx_nu = <numeroTx>` (este número lo enviará el cliente)
 
 3. **Asignar permisos**
-   - Insert en `security.permission_method` un registro por perfil autorizado (`profile_id`, `method_id`).
+    - Insert en `security.permission_method` un registro por perfil autorizado (`profile_id`, `method_id`).
 
 4. **Asignar perfil al usuario** (si hace falta)
-   - Asegúrate de que `security.user_profile` conecte el user con el profile.
+    - Asegúrate de que `security.user_profile` conecte el user con el profile.
 
 ## Reglas de consistencia (críticas)
 
 - `object_na` debe coincidir exactamente con:
-  - carpeta `BO/<object_na>/`
-  - archivo `BO/<object_na>/<object_na>BO.js`
-  - nombre exportado de clase `export class <object_na>BO { ... }`
-  (ver [docs/es/06-dynamic-dispatch-and-bo.md](06-dynamic-dispatch-and-bo.md))
+    - carpeta `BO/<object_na>/`
+    - archivo `BO/<object_na>/<object_na>BO.js`
+    - nombre exportado de clase `export class <object_na>BO { ... }`
+      (ver [docs/es/06-dynamic-dispatch-and-bo.md](06-dynamic-dispatch-and-bo.md))
 
 - `method_na` debe existir como método en la clase BO (ej. `<method_na>(params)` en `BO/<object_na>/<object_na>BO.js`).
 

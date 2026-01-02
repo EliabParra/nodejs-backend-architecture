@@ -124,12 +124,12 @@ Te lista `profile_id`, `object_na`, métodos disponibles y te deja elegir.
 ## Flujo recomendado (proyecto real)
 
 1. Crear BO (y su estructura):
-   - `npm run bo -- new ObjectName --methods getObject,createObject,updateObject,deleteObject`
+    - `npm run bo -- new ObjectName --methods getObject,createObject,updateObject,deleteObject`
 2. Implementar DB queries reales del repositorio (reemplazar los `TODO_*` en el repo).
 3. Mapear métodos a DB (tx):
-   - `npm run bo -- sync ObjectName --txStart <n>`
+    - `npm run bo -- sync ObjectName --txStart <n>`
 4. Asignar permisos por perfil:
-   - `npm run bo -- perms --profile <profileId> --allow ObjectName.getObject,ObjectName.createObject`
+    - `npm run bo -- perms --profile <profileId> --allow ObjectName.getObject,ObjectName.createObject`
 5. Reiniciar el server para recargar cache de `Security`.
 
 ## Consideraciones importantes

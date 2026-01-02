@@ -1,14 +1,14 @@
 {
-  "es": {
-    "getPerson": "Persona {person_na} {person_ln} encontrada",
-    "createPerson": "Persona {person_na} {person_ln} creada exitosamente",
-    "updatePerson": "Persona {person_na} {person_ln} actualizada exitosamente",
-    "deletePerson": "Persona eliminada exitosamente"
-  },
-  "en": {
-    "getPerson": "Person {person_na} {person_ln} found",
-    "createPerson": "Person {person_na} {person_ln} created successfully",
-    "updatePerson": "Person {person_na} {person_ln} updated successfully",
-    "deletePerson": "Person deleted successfully"
-  }
+    "es": {
+        "getPerson": "Persona {person_na} {person_ln} encontrada",
+        "createPerson": "Persona {person_na} {person_ln} creada exitosamente",
+        "updatePerson": "Persona {person_na} {person_ln} actualizada exitosamente",
+        "deletePerson": "Persona eliminada exitosamente"
+    },
+    "en": {
+        "getPerson": "Person {person_na} {person_ln} found",
+        "createPerson": "Person {person_na} {person_ln} created successfully",
+        "updatePerson": "Person {person_na} {person_ln} updated successfully",
+        "deletePerson": "Person deleted successfully"
+    }
 }

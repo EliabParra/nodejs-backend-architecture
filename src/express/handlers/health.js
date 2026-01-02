@@ -5,7 +5,7 @@ export function createHealthHandler({ name }) {
             name,
             uptimeSec: Math.round(process.uptime()),
             time: new Date().toISOString(),
-            requestId: req.requestId
+            requestId: req.requestId,
         })
     }
 }

@@ -8,10 +8,10 @@ La mayoría de las respuestas siguen este shape (no siempre vienen todos los cam
 
 ```json
 {
-  "code": 200,
-  "msg": "...",
-  "data": {},
-  "alerts": []
+    "code": 200,
+    "msg": "...",
+    "data": {},
+    "alerts": []
 }
 ```
 
@@ -51,12 +51,12 @@ Cada request recibe un identificador único y el servidor responde el header:
 Estos endpoints sirven para monitoreo (health checks) y readiness (dependencias listas):
 
 - `GET /health`: siempre responde `200` si el proceso está vivo.
-  - Body ejemplo: `{ ok: true, name, uptimeSec, time, requestId }`
+    - Body ejemplo: `{ ok: true, name, uptimeSec, time, requestId }`
 - `GET /ready`: responde `200` solo cuando el backend está listo para recibir tráfico.
-  - Hoy valida (a nivel servidor):
-    - `security.isReady` (carga del modelo de seguridad)
-    - conectividad con DB (`SELECT 1`)
-  - Si alguna dependencia no está lista, responde `503 serviceUnavailable`.
+    - Hoy valida (a nivel servidor):
+        - `security.isReady` (carga del modelo de seguridad)
+        - conectividad con DB (`SELECT 1`)
+    - Si alguna dependencia no está lista, responde `503 serviceUnavailable`.
 
 Implementación:
 
@@ -69,8 +69,8 @@ Además de loguear errores, el servidor registra requests al terminar la respues
 
 - Mensaje: `METHOD /path STATUS` (ej. `GET /health 200`)
 - Contexto (`ctx`) estandarizado:
-  - `requestId`, `method`, `path`, `status`, `durationMs`
-  - y si existe sesión: `user_id`, `profile_id`
+    - `requestId`, `method`, `path`, `status`, `durationMs`
+    - y si existe sesión: `user_id`, `profile_id`
 
 Esto te permite:
 
@@ -113,10 +113,10 @@ Ejemplo con `fetch`:
 
 ```js
 fetch('http://localhost:3000/login', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  credentials: 'include',
-  body: JSON.stringify({ username, password })
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ username, password }),
 })
 ```
 
@@ -179,10 +179,10 @@ CSRF:
 
 - Éxito: `200` con `msgs[lang].success.login`
 - Errores comunes:
-  - `400 invalidParameters` + `alerts` (si falla validación)
-  - `401 sessionExists` (si ya hay sesión)
-  - `401 usernameOrPasswordIncorrect`
-  - `429 tooManyRequests` (si hay demasiados intentos en ventana de tiempo)
+    - `400 invalidParameters` + `alerts` (si falla validación)
+    - `401 sessionExists` (si ya hay sesión)
+    - `401 usernameOrPasswordIncorrect`
+    - `429 tooManyRequests` (si hay demasiados intentos en ventana de tiempo)
 
 ### Rate limiting (anti brute-force)
 
@@ -222,7 +222,7 @@ Archivo: [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.js)
 ### Request
 
 ```json
-{ "tx": 53, "params": { } }
+{ "tx": 53, "params": {} }
 ```
 
 - `tx`: número que se mapea a `(object_na, method_na)` usando `security.method` (ver [docs/es/04-database-security-model.md](04-database-security-model.md)).
@@ -267,8 +267,8 @@ Además:
 
 - Límite: 120 requests por minuto.
 - Key:
-  - si existe sesión: por `user_id`
-  - si no existe sesión: por IP
+    - si existe sesión: por `user_id`
+    - si no existe sesión: por IP
 - Cuando se excede: HTTP `429` con `msgs[lang].errors.client.tooManyRequests`.
 
 ## Ejemplos

@@ -1,5 +1,5 @@
 blank_issues_enabled: true
 contact_links:
-  - name: Security vulnerability
-    url: https://github.com/EliabParra/nodejs-backend-architecture/security/advisories/new
-    about: Please report security issues privately.
+    - name: Security vulnerability
+      url: https://github.com/EliabParra/nodejs-backend-architecture/security/advisories/new
+      about: Please report security issues privately.

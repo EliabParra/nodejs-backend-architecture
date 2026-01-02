@@ -1,12 +1,12 @@
 {
-  "source": {
-    "include": ["src", "scripts", "public/js"],
-    "includePattern": ".+\\.js$",
-    "excludePattern": "(^|/|\\\\)_|node_modules/|\\.tmp-starterpack/|docs/api/"
-  },
-  "opts": {
-    "destination": "docs/api/",
-    "recurse": true,
-    "encoding": "utf8"
-  }
+    "source": {
+        "include": ["src", "scripts", "public/js"],
+        "includePattern": ".+\\.js$",
+        "excludePattern": "(^|/|\\\\)_|node_modules/|\\.tmp-starterpack/|docs/api/"
+    },
+    "opts": {
+        "destination": "docs/api/",
+        "recurse": true,
+        "encoding": "utf8"
+    }
 }

@@ -63,11 +63,13 @@ Recommended pattern:
 
 ```js
 try {
-	const r = await db.exe('schema', 'queryName', [/* params */])
-	// use r.rows
+    const r = await db.exe('schema', 'queryName', [
+        /* params */
+    ])
+    // use r.rows
 } catch (err) {
-	// infrastructure error (DB), respond with a standard error
-	return personErrors.UnknownError() // or msgs[lang].errors.client.unknown
+    // infrastructure error (DB), respond with a standard error
+    return personErrors.UnknownError() // or msgs[lang].errors.client.unknown
 }
 ```
 

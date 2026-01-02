@@ -46,9 +46,6 @@
     "cors": {
         "enabled": true,
         "credentials": true,
-        "origins": [
-            "http://localhost:5173",
-            "http://localhost:4200"
-        ]
+        "origins": ["http://localhost:5173", "http://localhost:4200"]
     }
 }

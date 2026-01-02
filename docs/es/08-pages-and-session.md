@@ -45,7 +45,7 @@ Implementación: [src/BSS/Session.js](../../src/BSS/Session.js)
 
 - La clase `Session` orquesta login/logout y reglas de sesión.
 - El wiring de Express (express-session + store + schema/table) se aplica desde:
-  - [src/express/session/apply-session-middleware.js](../../src/express/session/apply-session-middleware.js)
+    - [src/express/session/apply-session-middleware.js](../../src/express/session/apply-session-middleware.js)
 - Criterio de sesión activa: `req.session && req.session.user_id`.
 
 Recomendación:
@@ -94,9 +94,9 @@ Notas:
 - Consulta DB con `db.exe('security', 'getUser', [username])`
 - Compara el password con `bcrypt.compare(password, user.user_pw)` (hash)
 - Si existe, setea:
-  - `req.session.user_id`
-  - `req.session.user_na`
-  - `req.session.profile_id`
+    - `req.session.user_id`
+    - `req.session.user_na`
+    - `req.session.profile_id`
 
 ### Destruir sesión
 

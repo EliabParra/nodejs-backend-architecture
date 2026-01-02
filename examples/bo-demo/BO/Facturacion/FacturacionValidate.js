@@ -13,30 +13,30 @@ Guía rápida:
 */
 
 export class FacturacionValidate {
-  static normalizeId(value) {
-    return typeof value === 'string' ? Number(value) : value
-  }
+    static normalizeId(value) {
+        return typeof value === 'string' ? Number(value) : value
+    }
 
-  static normalizeText(value) {
-    return typeof value === 'string' ? value.trim() : value
-  }
+    static normalizeText(value) {
+        return typeof value === 'string' ? value.trim() : value
+    }
 
-  static validateId(value) {
-    const num = this.normalizeId(value)
-    return v.validateInt({ value: num, label: labels.id })
-  }
+    static validateId(value) {
+        const num = this.normalizeId(value)
+        return v.validateInt({ value: num, label: labels.id })
+    }
 
-  static validateName(value, { min = 1, max = 200 } = {}) {
-    const name = this.normalizeText(value)
-    if (typeof name !== 'string') return v.validateString({ value: name, label: labels.name })
-    return v.validateLength({ value: name, label: labels.name }, min, max)
-  }
+    static validateName(value, { min = 1, max = 200 } = {}) {
+        const name = this.normalizeText(value)
+        if (typeof name !== 'string') return v.validateString({ value: name, label: labels.name })
+        return v.validateLength({ value: name, label: labels.name }, min, max)
+    }
 
-  // Ejemplo de patrón genérico: un lookup puede ser por id o por nombre.
-  // Ajusta esto según tu entidad.
-  static getLookupMode(value) {
-    if (this.validateId(value)) return 'id'
-    if (this.validateName(value)) return 'name'
-    return null
-  }
+    // Ejemplo de patrón genérico: un lookup puede ser por id o por nombre.
+    // Ajusta esto según tu entidad.
+    static getLookupMode(value) {
+        if (this.validateId(value)) return 'id'
+        if (this.validateName(value)) return 'name'
+        return null
+    }
 }

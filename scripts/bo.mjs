@@ -9,13 +9,13 @@ import { pathToFileURL } from 'node:url'
 const repoRoot = process.cwd()
 
 function isMainModule() {
-  const entry = process.argv?.[1]
-  if (!entry) return false
-  return import.meta.url === pathToFileURL(path.resolve(entry)).href
+    const entry = process.argv?.[1]
+    if (!entry) return false
+    return import.meta.url === pathToFileURL(path.resolve(entry)).href
 }
 
 function printHelp() {
-  console.log(`
+    console.log(`
 BO CLI
 
 Usage:
@@ -41,98 +41,110 @@ Options:
 Notes:
 - After changing tx/perms in DB, restart the server (Security cache loads on startup).
 - Requires DATABASE_URL / PG* env vars or config.json DB settings.
-`) 
+`)
 }
 
 function parseArgs(argv) {
-  const args = []
-  const opts = {}
-  for (let i = 0; i < argv.length; i++) {
-    const a = argv[i]
-    if (a.startsWith('--')) {
-      const key = a.slice(2)
-      const next = argv[i + 1]
-      if (next == null || next.startsWith('--')) {
-        opts[key] = true
-      } else {
-        opts[key] = next
-        i++
-      }
-    } else {
-      args.push(a)
+    const args = []
+    const opts = {}
+    for (let i = 0; i < argv.length; i++) {
+        const a = argv[i]
+        if (a.startsWith('--')) {
+            const key = a.slice(2)
+            const next = argv[i + 1]
+            if (next == null || next.startsWith('--')) {
+                opts[key] = true
+            } else {
+                opts[key] = next
+                i++
+            }
+        } else {
+            args.push(a)
+        }
     }
-  }
-  return { args, opts }
+    return { args, opts }
 }
 
 function validateObjectName(name) {
-  if (!name || typeof name !== 'string') throw new Error('ObjectName is required')
-  if (!/^[A-Z][A-Za-z0-9]*$/.test(name)) {
-    throw new Error('ObjectName must be PascalCase (e.g. Person, OrderItem)')
-  }
+    if (!name || typeof name !== 'string') throw new Error('ObjectName is required')
+    if (!/^[A-Z][A-Za-z0-9]*$/.test(name)) {
+        throw new Error('ObjectName must be PascalCase (e.g. Person, OrderItem)')
+    }
 }
 
 function parseCsv(value) {
-  if (!value) return []
-  return String(value)
-    .split(',')
-    .map(s => s.trim())
-    .filter(Boolean)
+    if (!value) return []
+    return String(value)
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean)
 }
 
 function crudMethods(objectName) {
-  return [`get${objectName}`, `create${objectName}`, `update${objectName}`, `delete${objectName}`]
+    return [`get${objectName}`, `create${objectName}`, `update${objectName}`, `delete${objectName}`]
 }
 
 function escapeTemplateBraces(s) {
-  return s.replaceAll('{', '\\{').replaceAll('}', '\\}')
+    return s.replaceAll('{', '\\{').replaceAll('}', '\\}')
 }
 
 async function writeFileSafe(filePath, content, force) {
-  await fs.mkdir(path.dirname(filePath), { recursive: true })
-  if (!force) {
-    await fs.writeFile(filePath, content, { flag: 'wx' })
-  } else {
-    await fs.writeFile(filePath, content)
-  }
+    await fs.mkdir(path.dirname(filePath), { recursive: true })
+    if (!force) {
+        await fs.writeFile(filePath, content, { flag: 'wx' })
+    } else {
+        await fs.writeFile(filePath, content)
+    }
 }
 
 function templateSuccessMsgs(objectName, methods) {
-  const es = {}
-  const en = {}
-  for (const m of methods) {
-    es[m] = `${objectName} ${m} OK`
-    en[m] = `${objectName} ${m} OK`
-  }
-  return JSON.stringify({ es, en }, null, 2) + '\n'
+    const es = {}
+    const en = {}
+    for (const m of methods) {
+        es[m] = `${objectName} ${m} OK`
+        en[m] = `${objectName} ${m} OK`
+    }
+    return JSON.stringify({ es, en }, null, 2) + '\n'
 }
 
 function templateErrorMsgs() {
-  return JSON.stringify({
-    es: {
-      notFound: { msg: 'Recurso no encontrado', code: 404 },
-      invalidParameters: { msg: 'Parámetros inválidos', code: 400 },
-      unauthorized: { msg: 'No autorizado', code: 401 },
-      unknownError: { msg: 'Error desconocido', code: 500 }
-    },
-    en: {
-      notFound: { msg: 'Resource not found', code: 404 },
-      invalidParameters: { msg: 'Invalid parameters', code: 400 },
-      unauthorized: { msg: 'Unauthorized', code: 401 },
-      unknownError: { msg: 'Unknown error', code: 500 }
-    }
-  }, null, 2) + '\n'
+    return (
+        JSON.stringify(
+            {
+                es: {
+                    notFound: { msg: 'Recurso no encontrado', code: 404 },
+                    invalidParameters: { msg: 'Parámetros inválidos', code: 400 },
+                    unauthorized: { msg: 'No autorizado', code: 401 },
+                    unknownError: { msg: 'Error desconocido', code: 500 },
+                },
+                en: {
+                    notFound: { msg: 'Resource not found', code: 404 },
+                    invalidParameters: { msg: 'Invalid parameters', code: 400 },
+                    unauthorized: { msg: 'Unauthorized', code: 401 },
+                    unknownError: { msg: 'Unknown error', code: 500 },
+                },
+            },
+            null,
+            2
+        ) + '\n'
+    )
 }
 
 function templateAlertsLabels(objectName) {
-  return JSON.stringify({
-    es: { labels: { id: 'El id', name: 'El nombre' } },
-    en: { labels: { id: 'The id', name: 'The name' } }
-  }, null, 2) + '\n'
+    return (
+        JSON.stringify(
+            {
+                es: { labels: { id: 'El id', name: 'El nombre' } },
+                en: { labels: { id: 'The id', name: 'The name' } },
+            },
+            null,
+            2
+        ) + '\n'
+    )
 }
 
 function templateErrorHandler(objectName) {
-  return `import { createRequire } from 'node:module'
+    return `import { createRequire } from 'node:module'
 const require = createRequire(import.meta.url)
 const errorMsgs = require('./${objectName.toLowerCase()}ErrorMsgs.json')[config.app.lang]
 
@@ -152,7 +164,7 @@ export class ${objectName}ErrorHandler {
 }
 
 function templateValidate(objectName) {
-  return `import { createRequire } from 'node:module'
+    return `import { createRequire } from 'node:module'
 const require = createRequire(import.meta.url)
 const labels = require('./errors/${objectName.toLowerCase()}Alerts.json')[config.app.lang].labels
 
@@ -190,7 +202,7 @@ export class ${objectName}Validate {
 }
 
 function templateRepo(objectName) {
-  return `/*
+    return `/*
 ${objectName}Repository
 
 - Acceso a datos (DB) aislado del BO.
@@ -237,12 +249,14 @@ export class ${objectName}Repository {
 }
 
 function templateBO(objectName, methods) {
-  const methodBodies = methods.map((m, idx) => {
-    const patternComment = idx === 0
-      ? `      // Patrón recomendado (aplica a todos los métodos):\n      // 1) validar/normalizar (Validate)\n      // 2) ejecutar operación (Repository/servicios)\n      // 3) retornar { code, msg, data?, alerts? }\n\n`
-      : ''
+    const methodBodies = methods
+        .map((m, idx) => {
+            const patternComment =
+                idx === 0
+                    ? `      // Patrón recomendado (aplica a todos los métodos):\n      // 1) validar/normalizar (Validate)\n      // 2) ejecutar operación (Repository/servicios)\n      // 3) retornar { code, msg, data?, alerts? }\n\n`
+                    : ''
 
-    return `  async ${m}(params) {
+            return `  async ${m}(params) {
     try {
 ${patternComment}      // TODO: valida/normaliza según tu caso
       // if (!${objectName}Validate.validateX(params)) return ${objectName}ErrorHandler.invalidParameters(v.getAlerts())
@@ -256,9 +270,10 @@ ${patternComment}      // TODO: valida/normaliza según tu caso
       return ${objectName}ErrorHandler.unknownError()
     }
   }`
-  }).join('\n\n')
+        })
+        .join('\n\n')
 
-  return `import { createRequire } from 'node:module'
+    return `import { createRequire } from 'node:module'
 const require = createRequire(import.meta.url)
 
 import { ${objectName}ErrorHandler } from './errors/${objectName}ErrorHandler.js'
@@ -276,281 +291,302 @@ ${methodBodies}
 }
 
 function parseMethodsFromBO(fileContent) {
-  const methods = new Set()
-  // Only register methods declared as: async <name>(...)
-  // This avoids accidentally picking up helper calls or nested functions.
-  const re = /\basync\s+([A-Za-z_][A-Za-z0-9_]*)\s*\(/g
-  let m
-  while ((m = re.exec(fileContent)) != null) {
-    const name = m[1]
-    if (!name) continue
-    if (['constructor'].includes(name)) continue
-    if (name.startsWith('#')) continue
-    methods.add(name)
-  }
-  return Array.from(methods)
+    const methods = new Set()
+    // Only register methods declared as: async <name>(...)
+    // This avoids accidentally picking up helper calls or nested functions.
+    const re = /\basync\s+([A-Za-z_][A-Za-z0-9_]*)\s*\(/g
+    let m
+    while ((m = re.exec(fileContent)) != null) {
+        const name = m[1]
+        if (!name) continue
+        if (['constructor'].includes(name)) continue
+        if (name.startsWith('#')) continue
+        methods.add(name)
+    }
+    return Array.from(methods)
 }
 
 async function ensureDbQueries() {
-  const required = [
-    'getNextTx',
-    'ensureObject',
-    'upsertMethodTx',
-    'listObjects',
-    'listProfiles',
-    'listMethodsByObject',
-    'listMethods',
-    'resolveMethodId',
-    'grantPermission',
-    'revokePermission',
-    'listPermissionsByProfile'
-  ]
-  const missing = required.filter(k => !queries?.security?.[k])
-  if (missing.length > 0) {
-    throw new Error(`Missing security queries: ${missing.join(', ')}`)
-  }
+    const required = [
+        'getNextTx',
+        'ensureObject',
+        'upsertMethodTx',
+        'listObjects',
+        'listProfiles',
+        'listMethodsByObject',
+        'listMethods',
+        'resolveMethodId',
+        'grantPermission',
+        'revokePermission',
+        'listPermissionsByProfile',
+    ]
+    const missing = required.filter((k) => !queries?.security?.[k])
+    if (missing.length > 0) {
+        throw new Error(`Missing security queries: ${missing.join(', ')}`)
+    }
 }
 
 async function getNextTx() {
-  const r = await db.exe('security', 'getNextTx', null)
-  return Number(r.rows?.[0]?.next_tx)
+    const r = await db.exe('security', 'getNextTx', null)
+    return Number(r.rows?.[0]?.next_tx)
 }
 
 async function upsertMethodsToDb(objectName, methods, opts) {
-  await ensureDbQueries()
+    await ensureDbQueries()
 
-  const explicitTx = parseCsv(opts.tx).map(n => Number(n))
-  if (explicitTx.length > 0 && explicitTx.length !== methods.length) {
-    throw new Error('--tx must have same amount as --methods')
-  }
+    const explicitTx = parseCsv(opts.tx).map((n) => Number(n))
+    if (explicitTx.length > 0 && explicitTx.length !== methods.length) {
+        throw new Error('--tx must have same amount as --methods')
+    }
 
-  let txStart = opts.txStart != null ? Number(opts.txStart) : undefined
-  if (!Number.isFinite(txStart)) txStart = undefined
+    let txStart = opts.txStart != null ? Number(opts.txStart) : undefined
+    if (!Number.isFinite(txStart)) txStart = undefined
 
-  let next = txStart ?? await getNextTx()
-  const mapping = []
+    let next = txStart ?? (await getNextTx())
+    const mapping = []
 
-  for (let i = 0; i < methods.length; i++) {
-    const method = methods[i]
-    const tx = explicitTx.length > 0 ? explicitTx[i] : next++
-    mapping.push({ method, tx })
-  }
+    for (let i = 0; i < methods.length; i++) {
+        const method = methods[i]
+        const tx = explicitTx.length > 0 ? explicitTx[i] : next++
+        mapping.push({ method, tx })
+    }
 
-  if (opts.dry) {
-    console.log('DRY RUN: would upsert methods:', mapping)
+    if (opts.dry) {
+        console.log('DRY RUN: would upsert methods:', mapping)
+        return mapping
+    }
+
+    await db.exe('security', 'ensureObject', [objectName])
+
+    for (const m of mapping) {
+        await db.exe('security', 'upsertMethodTx', [objectName, m.method, m.tx])
+    }
+
     return mapping
-  }
-
-  await db.exe('security', 'ensureObject', [objectName])
-
-  for (const m of mapping) {
-    await db.exe('security', 'upsertMethodTx', [objectName, m.method, m.tx])
-  }
-
-  return mapping
 }
 
 async function cmdNew(objectName, opts) {
-  validateObjectName(objectName)
+    validateObjectName(objectName)
 
-  const methods = opts.methods ? parseCsv(opts.methods) : crudMethods(objectName)
-  if (methods.length === 0) throw new Error('No methods to create')
+    const methods = opts.methods ? parseCsv(opts.methods) : crudMethods(objectName)
+    if (methods.length === 0) throw new Error('No methods to create')
 
-  const force = Boolean(opts.force)
+    const force = Boolean(opts.force)
 
-  const baseDir = path.join(repoRoot, 'BO', objectName)
+    const baseDir = path.join(repoRoot, 'BO', objectName)
 
-  if (opts.dry) {
-    console.log(`DRY RUN: would create ${baseDir}`)
-  } else {
-    await fs.mkdir(baseDir, { recursive: true })
-  }
+    if (opts.dry) {
+        console.log(`DRY RUN: would create ${baseDir}`)
+    } else {
+        await fs.mkdir(baseDir, { recursive: true })
+    }
 
-  const files = [
-    { p: path.join(baseDir, `${objectName}BO.js`), c: templateBO(objectName, methods) },
-    { p: path.join(baseDir, `${objectName}.js`), c: templateRepo(objectName) },
-    { p: path.join(baseDir, `${objectName}Validate.js`), c: templateValidate(objectName) },
-    { p: path.join(baseDir, `${objectName.toLowerCase()}SuccessMsgs.json`), c: templateSuccessMsgs(objectName, methods) },
-    { p: path.join(baseDir, 'errors', `${objectName}ErrorHandler.js`), c: templateErrorHandler(objectName) },
-    { p: path.join(baseDir, 'errors', `${objectName.toLowerCase()}ErrorMsgs.json`), c: templateErrorMsgs() },
-    { p: path.join(baseDir, 'errors', `${objectName.toLowerCase()}Alerts.json`), c: templateAlertsLabels(objectName) }
-  ]
+    const files = [
+        { p: path.join(baseDir, `${objectName}BO.js`), c: templateBO(objectName, methods) },
+        { p: path.join(baseDir, `${objectName}.js`), c: templateRepo(objectName) },
+        { p: path.join(baseDir, `${objectName}Validate.js`), c: templateValidate(objectName) },
+        {
+            p: path.join(baseDir, `${objectName.toLowerCase()}SuccessMsgs.json`),
+            c: templateSuccessMsgs(objectName, methods),
+        },
+        {
+            p: path.join(baseDir, 'errors', `${objectName}ErrorHandler.js`),
+            c: templateErrorHandler(objectName),
+        },
+        {
+            p: path.join(baseDir, 'errors', `${objectName.toLowerCase()}ErrorMsgs.json`),
+            c: templateErrorMsgs(),
+        },
+        {
+            p: path.join(baseDir, 'errors', `${objectName.toLowerCase()}Alerts.json`),
+            c: templateAlertsLabels(objectName),
+        },
+    ]
 
-  for (const f of files) {
-    if (opts.dry) console.log('DRY RUN write', f.p)
-    else await writeFileSafe(f.p, f.c, force)
-  }
+    for (const f of files) {
+        if (opts.dry) console.log('DRY RUN write', f.p)
+        else await writeFileSafe(f.p, f.c, force)
+    }
 
-  console.log(`Created BO ${objectName} with methods: ${methods.join(', ')}`)
+    console.log(`Created BO ${objectName} with methods: ${methods.join(', ')}`)
 
-  if (opts.db) {
-    const mapping = await upsertMethodsToDb(objectName, methods, opts)
-    console.log('DB tx mapping:', mapping)
-    console.log('Restart the server to reload Security cache.')
-  }
+    if (opts.db) {
+        const mapping = await upsertMethodsToDb(objectName, methods, opts)
+        console.log('DB tx mapping:', mapping)
+        console.log('Restart the server to reload Security cache.')
+    }
 }
 
 async function cmdSync(objectName, opts) {
-  validateObjectName(objectName)
-  const boFile = path.join(repoRoot, 'BO', objectName, `${objectName}BO.js`)
-  const content = await fs.readFile(boFile, 'utf8')
-  const methods = parseMethodsFromBO(content)
-    .filter(m => !m.startsWith('_'))
+    validateObjectName(objectName)
+    const boFile = path.join(repoRoot, 'BO', objectName, `${objectName}BO.js`)
+    const content = await fs.readFile(boFile, 'utf8')
+    const methods = parseMethodsFromBO(content).filter((m) => !m.startsWith('_'))
 
-  if (methods.length === 0) throw new Error(`No methods found in ${boFile}`)
+    if (methods.length === 0) throw new Error(`No methods found in ${boFile}`)
 
-  const mapping = await upsertMethodsToDb(objectName, methods, opts)
-  console.log(`Synced ${objectName} methods:`, mapping)
-  console.log('Restart the server to reload Security cache.')
+    const mapping = await upsertMethodsToDb(objectName, methods, opts)
+    console.log(`Synced ${objectName} methods:`, mapping)
+    console.log('Restart the server to reload Security cache.')
 }
 
 async function cmdList() {
-  await ensureDbQueries()
-  const r = await db.exe('security', 'listMethods', null)
-  for (const row of r.rows ?? []) {
-    console.log(`${row.object_na}.${row.method_na}  tx=${row.tx_nu}`)
-  }
+    await ensureDbQueries()
+    const r = await db.exe('security', 'listMethods', null)
+    for (const row of r.rows ?? []) {
+        console.log(`${row.object_na}.${row.method_na}  tx=${row.tx_nu}`)
+    }
 }
 
 async function resolveMethodId(objectName, methodName) {
-  const r = await db.exe('security', 'resolveMethodId', [objectName, methodName])
-  const row = r.rows?.[0]
-  if (!row?.method_id) return null
-  return { methodId: row.method_id, tx: row.tx_nu }
+    const r = await db.exe('security', 'resolveMethodId', [objectName, methodName])
+    const row = r.rows?.[0]
+    if (!row?.method_id) return null
+    return { methodId: row.method_id, tx: row.tx_nu }
 }
 
 async function applyPerm(profileId, fqMethods, mode, opts) {
-  await ensureDbQueries()
-  const profile = Number(profileId)
-  if (!Number.isInteger(profile) || profile <= 0) throw new Error('--profile must be a positive integer')
+    await ensureDbQueries()
+    const profile = Number(profileId)
+    if (!Number.isInteger(profile) || profile <= 0)
+        throw new Error('--profile must be a positive integer')
 
-  const results = []
-  for (const fq of fqMethods) {
-    const [objectName, methodName] = String(fq).split('.')
-    if (!objectName || !methodName) throw new Error(`Invalid method format: ${fq} (use Object.method)`) 
+    const results = []
+    for (const fq of fqMethods) {
+        const [objectName, methodName] = String(fq).split('.')
+        if (!objectName || !methodName)
+            throw new Error(`Invalid method format: ${fq} (use Object.method)`)
 
-    if (opts.dry) {
-      // DRY RUN must be DB-safe: do not resolve ids, do not touch DB.
-      results.push({ action: mode, profile, objectName, methodName })
-      continue
+        if (opts.dry) {
+            // DRY RUN must be DB-safe: do not resolve ids, do not touch DB.
+            results.push({ action: mode, profile, objectName, methodName })
+            continue
+        }
+
+        const resolved = await resolveMethodId(objectName, methodName)
+        if (!resolved) throw new Error(`Method not found in DB: ${objectName}.${methodName}`)
+
+        if (mode === 'allow')
+            await db.exe('security', 'grantPermission', [profile, resolved.methodId])
+        else await db.exe('security', 'revokePermission', [profile, resolved.methodId])
+
+        results.push({ action: mode, profile, objectName, methodName, tx: resolved.tx })
     }
 
-    const resolved = await resolveMethodId(objectName, methodName)
-    if (!resolved) throw new Error(`Method not found in DB: ${objectName}.${methodName}`)
-
-    if (mode === 'allow') await db.exe('security', 'grantPermission', [profile, resolved.methodId])
-    else await db.exe('security', 'revokePermission', [profile, resolved.methodId])
-
-    results.push({ action: mode, profile, objectName, methodName, tx: resolved.tx })
-  }
-
-  return results
+    return results
 }
 
 async function cmdPerms(opts) {
-  const profile = opts.profile
-  const allow = parseCsv(opts.allow)
-  const deny = parseCsv(opts.deny)
+    const profile = opts.profile
+    const allow = parseCsv(opts.allow)
+    const deny = parseCsv(opts.deny)
 
-  if (profile && (allow.length > 0 || deny.length > 0)) {
-    const mode = allow.length > 0 ? 'allow' : 'deny'
-    const list = allow.length > 0 ? allow : deny
-    const r = await applyPerm(profile, list, mode, opts)
-    console.log(r)
-    console.log('Restart the server to reload Security cache.')
-    return
-  }
-
-  // Interactive
-  const rl = readline.createInterface({ input: process.stdin, output: process.stdout })
-  try {
-    const profiles = await db.exe('security', 'listProfiles', null)
-    const profileIds = (profiles.rows ?? []).map(r => r.profile_id)
-    console.log('Profiles:', profileIds.join(', '))
-    const p = await rl.question('Profile id: ')
-
-    const objects = await db.exe('security', 'listObjects', null)
-    const objectNames = (objects.rows ?? []).map(r => r.object_na)
-    console.log('Objects:', objectNames.join(', '))
-    const o = await rl.question('Object (exact): ')
-
-    const methods = await db.exe('security', 'listMethodsByObject', [o])
-    const rows = methods.rows ?? []
-    if (rows.length === 0) {
-      console.log('No methods for object. Use: npm run bo -- sync ' + o)
-      return
+    if (profile && (allow.length > 0 || deny.length > 0)) {
+        const mode = allow.length > 0 ? 'allow' : 'deny'
+        const list = allow.length > 0 ? allow : deny
+        const r = await applyPerm(profile, list, mode, opts)
+        console.log(r)
+        console.log('Restart the server to reload Security cache.')
+        return
     }
 
-    rows.forEach((r, idx) => {
-      console.log(`[${idx + 1}] ${r.object_na}.${r.method_na}  tx=${r.tx_nu}`)
-    })
+    // Interactive
+    const rl = readline.createInterface({ input: process.stdin, output: process.stdout })
+    try {
+        const profiles = await db.exe('security', 'listProfiles', null)
+        const profileIds = (profiles.rows ?? []).map((r) => r.profile_id)
+        console.log('Profiles:', profileIds.join(', '))
+        const p = await rl.question('Profile id: ')
 
-    const action = (await rl.question('Action (allow/deny): ')).trim().toLowerCase() === 'deny' ? 'deny' : 'allow'
-    const pick = await rl.question('Select methods (e.g. 1,2,5): ')
-    const idxs = parseCsv(pick).map(n => Number(n)).filter(n => Number.isInteger(n) && n >= 1 && n <= rows.length)
-    const selected = idxs.map(i => `${rows[i - 1].object_na}.${rows[i - 1].method_na}`)
+        const objects = await db.exe('security', 'listObjects', null)
+        const objectNames = (objects.rows ?? []).map((r) => r.object_na)
+        console.log('Objects:', objectNames.join(', '))
+        const o = await rl.question('Object (exact): ')
 
-    const r = await applyPerm(p, selected, action, opts)
-    console.log('Done:', r)
-    console.log('Restart the server to reload Security cache.')
-  } finally {
-    rl.close()
-  }
+        const methods = await db.exe('security', 'listMethodsByObject', [o])
+        const rows = methods.rows ?? []
+        if (rows.length === 0) {
+            console.log('No methods for object. Use: npm run bo -- sync ' + o)
+            return
+        }
+
+        rows.forEach((r, idx) => {
+            console.log(`[${idx + 1}] ${r.object_na}.${r.method_na}  tx=${r.tx_nu}`)
+        })
+
+        const action =
+            (await rl.question('Action (allow/deny): ')).trim().toLowerCase() === 'deny'
+                ? 'deny'
+                : 'allow'
+        const pick = await rl.question('Select methods (e.g. 1,2,5): ')
+        const idxs = parseCsv(pick)
+            .map((n) => Number(n))
+            .filter((n) => Number.isInteger(n) && n >= 1 && n <= rows.length)
+        const selected = idxs.map((i) => `${rows[i - 1].object_na}.${rows[i - 1].method_na}`)
+
+        const r = await applyPerm(p, selected, action, opts)
+        console.log('Done:', r)
+        console.log('Restart the server to reload Security cache.')
+    } finally {
+        rl.close()
+    }
 }
 
 async function main() {
-  const { args, opts } = parseArgs(process.argv.slice(2))
-  const cmd = args[0]
+    const { args, opts } = parseArgs(process.argv.slice(2))
+    const cmd = args[0]
 
-  if (!cmd || cmd === 'help' || cmd === '--help' || cmd === '-h') {
-    printHelp()
-    return
-  }
-
-  try {
-    if (cmd === 'new') {
-      await cmdNew(args[1], opts)
-      return
-    }
-    if (cmd === 'sync') {
-      await cmdSync(args[1], opts)
-      return
-    }
-    if (cmd === 'list') {
-      await cmdList()
-      return
-    }
-    if (cmd === 'perms') {
-      await cmdPerms(opts)
-      return
+    if (!cmd || cmd === 'help' || cmd === '--help' || cmd === '-h') {
+        printHelp()
+        return
     }
 
-    console.error('Unknown command:', cmd)
-    printHelp()
-    process.exitCode = 1
-  } catch (err) {
-    console.error('ERROR:', err?.message ?? err)
-    process.exitCode = 1
-  } finally {
-    try { await db?.pool?.end?.() } catch { }
-  }
+    try {
+        if (cmd === 'new') {
+            await cmdNew(args[1], opts)
+            return
+        }
+        if (cmd === 'sync') {
+            await cmdSync(args[1], opts)
+            return
+        }
+        if (cmd === 'list') {
+            await cmdList()
+            return
+        }
+        if (cmd === 'perms') {
+            await cmdPerms(opts)
+            return
+        }
+
+        console.error('Unknown command:', cmd)
+        printHelp()
+        process.exitCode = 1
+    } catch (err) {
+        console.error('ERROR:', err?.message ?? err)
+        process.exitCode = 1
+    } finally {
+        try {
+            await db?.pool?.end?.()
+        } catch {}
+    }
 }
 
 export {
-  parseArgs,
-  validateObjectName,
-  parseCsv,
-  crudMethods,
-  templateSuccessMsgs,
-  templateErrorMsgs,
-  templateAlertsLabels,
-  templateErrorHandler,
-  templateValidate,
-  templateRepo,
-  templateBO,
-  parseMethodsFromBO
+    parseArgs,
+    validateObjectName,
+    parseCsv,
+    crudMethods,
+    templateSuccessMsgs,
+    templateErrorMsgs,
+    templateAlertsLabels,
+    templateErrorHandler,
+    templateValidate,
+    templateRepo,
+    templateBO,
+    parseMethodsFromBO,
 }
 
 if (isMainModule()) {
-  await main()
+    await main()
 }

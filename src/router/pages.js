@@ -13,7 +13,7 @@ export function buildPagesRouter({ session }) {
         next()
     }
 
-    routes.forEach(r => {
+    routes.forEach((r) => {
         const handler = (req, res) => {
             try {
                 const viewPath = path.join(pagesPath, 'pages', `${r.view}.html`)

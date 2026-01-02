@@ -1,7 +1,9 @@
 function getFrontendMode() {
-	const raw = String(config?.app?.frontendMode ?? 'pages').trim().toLowerCase()
-	if (raw === 'pages' || raw === 'spa' || raw === 'none') return raw
-	return 'pages'
+    const raw = String(config?.app?.frontendMode ?? 'pages')
+        .trim()
+        .toLowerCase()
+    if (raw === 'pages' || raw === 'spa' || raw === 'none') return raw
+    return 'pages'
 }
 
 /**
@@ -12,18 +14,18 @@ function getFrontendMode() {
  * - spa mode should be registered in the "postApi" stage (so API routes are not shadowed by SPA fallback)
  */
 export async function registerFrontendHosting(app, { session, stage }) {
-	const mode = getFrontendMode()
+    const mode = getFrontendMode()
 
-	if (mode === 'none') return
+    if (mode === 'none') return
 
-	if (stage === 'preApi' && mode === 'pages') {
-		const { registerPagesHosting } = await import('./pages.adapter.js')
-		await registerPagesHosting(app, { session })
-		return
-	}
+    if (stage === 'preApi' && mode === 'pages') {
+        const { registerPagesHosting } = await import('./pages.adapter.js')
+        await registerPagesHosting(app, { session })
+        return
+    }
 
-	if (stage === 'postApi' && mode === 'spa') {
-		const { registerSpaHosting } = await import('./spa.adapter.js')
-		await registerSpaHosting(app)
-	}
+    if (stage === 'postApi' && mode === 'spa') {
+        const { registerSpaHosting } = await import('./spa.adapter.js')
+        await registerSpaHosting(app)
+    }
 }

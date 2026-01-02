@@ -1,8 +1,8 @@
-import bcrypt from "bcryptjs"
+import bcrypt from 'bcryptjs'
 
-import { applySessionMiddleware } from "../express/session/apply-session-middleware.js"
-import { auditBestEffort } from "./helpers/audit-log.js"
-import { validateLoginSchema } from "./helpers/http-validators.js"
+import { applySessionMiddleware } from '../express/session/apply-session-middleware.js'
+import { auditBestEffort } from './helpers/audit-log.js'
+import { validateLoginSchema } from './helpers/http-validators.js'
 
 /**
  * Session/auth orchestrator.
@@ -31,26 +31,33 @@ export default class Session {
                 return res.status(this.clientErrors.invalidParameters.code).send({
                     msg: this.clientErrors.invalidParameters.msg,
                     code: this.clientErrors.invalidParameters.code,
-                    alerts
+                    alerts,
                 })
             }
 
             if (this.sessionExists(req)) {
                 return res.status(this.clientErrors.sessionExists.code).send({
                     msg: this.clientErrors.sessionExists.msg,
-                    code: this.clientErrors.sessionExists.code
+                    code: this.clientErrors.sessionExists.code,
                 })
             }
 
             const result = await db.exe('security', 'getUser', [req.body.username])
             if (!result?.rows || result.rows.length === 0) {
-                return res.status(this.clientErrors.usernameOrPasswordIncorrect.code).send(this.clientErrors.usernameOrPasswordIncorrect)
+                return res
+                    .status(this.clientErrors.usernameOrPasswordIncorrect.code)
+                    .send(this.clientErrors.usernameOrPasswordIncorrect)
             }
 
             const user = result.rows[0]
             const storedHash = user.user_pw
-            const ok = typeof storedHash === 'string' && await bcrypt.compare(req.body.password, storedHash)
-            if (!ok) return res.status(this.clientErrors.usernameOrPasswordIncorrect.code).send(this.clientErrors.usernameOrPasswordIncorrect)
+            const ok =
+                typeof storedHash === 'string' &&
+                (await bcrypt.compare(req.body.password, storedHash))
+            if (!ok)
+                return res
+                    .status(this.clientErrors.usernameOrPasswordIncorrect.code)
+                    .send(this.clientErrors.usernameOrPasswordIncorrect)
 
             req.session.user_id = user.user_id
             req.session.user_na = user.user_na
@@ -59,18 +66,20 @@ export default class Session {
             // Best-effort audit/logging fields (do not fail login if this fails)
             try {
                 await db.exe('security', 'updateUserLastLogin', [user.user_id])
-            } catch { }
+            } catch {}
             await auditBestEffort(req, {
                 action: 'login',
                 user_id: user.user_id,
                 profile_id: user.profile_id,
-                details: { user_na: user.user_na }
+                details: { user_na: user.user_na },
             })
 
             return res.status(this.successMsgs.login.code).send(this.successMsgs.login)
         } catch (err) {
             const status = this.clientErrors.unknown.code
-            try { res.locals.__errorLogged = true } catch { }
+            try {
+                res.locals.__errorLogged = true
+            } catch {}
             log.show({
                 type: log.TYPE_ERROR,
                 msg: `${this.serverErrors.serverError.msg}, Session.createSession: ${err.message}`,
@@ -81,12 +90,17 @@ export default class Session {
                     status,
                     user_id: req.session?.user_id,
                     profile_id: req.session?.profile_id,
-                    durationMs: typeof req.requestStartMs === 'number' ? (Date.now() - req.requestStartMs) : undefined
-                }
+                    durationMs:
+                        typeof req.requestStartMs === 'number'
+                            ? Date.now() - req.requestStartMs
+                            : undefined,
+                },
             })
             res.status(status).send(this.clientErrors.unknown)
         }
     }
 
-    destroySession(req) { req.session.destroy() }
+    destroySession(req) {
+        req.session.destroy()
+    }
 }

@@ -1,16 +1,16 @@
 {
-  "es": {
-    "getInvoice": "Facturacion getInvoice OK",
-    "listInvoices": "Facturacion listInvoices OK",
-    "createInvoice": "Facturacion createInvoice OK",
-    "payInvoice": "Facturacion payInvoice OK",
-    "cancelInvoice": "Facturacion cancelInvoice OK"
-  },
-  "en": {
-    "getInvoice": "Facturacion getInvoice OK",
-    "listInvoices": "Facturacion listInvoices OK",
-    "createInvoice": "Facturacion createInvoice OK",
-    "payInvoice": "Facturacion payInvoice OK",
-    "cancelInvoice": "Facturacion cancelInvoice OK"
-  }
+    "es": {
+        "getInvoice": "Facturacion getInvoice OK",
+        "listInvoices": "Facturacion listInvoices OK",
+        "createInvoice": "Facturacion createInvoice OK",
+        "payInvoice": "Facturacion payInvoice OK",
+        "cancelInvoice": "Facturacion cancelInvoice OK"
+    },
+    "en": {
+        "getInvoice": "Facturacion getInvoice OK",
+        "listInvoices": "Facturacion listInvoices OK",
+        "createInvoice": "Facturacion createInvoice OK",
+        "payInvoice": "Facturacion payInvoice OK",
+        "cancelInvoice": "Facturacion cancelInvoice OK"
+    }
 }

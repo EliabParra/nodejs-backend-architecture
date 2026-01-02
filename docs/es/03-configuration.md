@@ -22,34 +22,34 @@ En el repo, [src/config/config.json](../../src/config/config.json) deja valores 
 Variables soportadas:
 
 - App: `APP_NAME`, `APP_PORT`, `APP_HOST`, `APP_LANG`
-  - `APP_NAME`: nombre lógico del servicio (aparece en `/health`).
+    - `APP_NAME`: nombre lógico del servicio (aparece en `/health`).
 - Frontend hosting (opcional):
-  - `APP_FRONTEND_MODE`: `pages` | `spa` | `none`
-    - `pages`: el backend sirve HTML desde `public/pages` (modo legacy, como el curso original)
-    - `spa`: el backend sirve un build SPA y hace fallback a `index.html` (el frontend maneja rutas)
-    - `none`: el backend no sirve páginas (solo API) (**default**, para estar desacoplado)
-  - `SPA_DIST_PATH` (solo modo `spa`): ruta al output del frontend (carpeta que contiene `index.html`)
+    - `APP_FRONTEND_MODE`: `pages` | `spa` | `none`
+        - `pages`: el backend sirve HTML desde `public/pages` (modo legacy, como el curso original)
+        - `spa`: el backend sirve un build SPA y hace fallback a `index.html` (el frontend maneja rutas)
+        - `none`: el backend no sirve páginas (solo API) (**default**, para estar desacoplado)
+    - `SPA_DIST_PATH` (solo modo `spa`): ruta al output del frontend (carpeta que contiene `index.html`)
 - Postgres: `DATABASE_URL` o `PGHOST`, `PGPORT`, `PGDATABASE`, `PGUSER`, `PGPASSWORD`, `PGSSL`
 - Sesión (rotación): `SESSION_SECRET` o `SESSION_SECRETS` (separado por comas)
-  - Ejemplo: `SESSION_SECRETS=secret_actual,secret_anterior`
+    - Ejemplo: `SESSION_SECRETS=secret_actual,secret_anterior`
 - Session store (opcional): `SESSION_SCHEMA`, `SESSION_TABLE`
-  - Útil si quieres que la tabla de sesión viva en otro schema (ej. `security`).
+    - Útil si quieres que la tabla de sesión viva en otro schema (ej. `security`).
 - Cookies (opcional): `SESSION_COOKIE_SECURE`, `SESSION_COOKIE_SAMESITE`, `SESSION_COOKIE_MAXAGE_MS`
 
 Variables extra (producción / reverse proxy):
 
 - `APP_TRUST_PROXY`: configura `app.set('trust proxy', ...)` en Express (útil detrás de un proxy/LB).
-  - Valores comunes: `1` (un proxy), `true` (confiar en todos; úsalo con cuidado).
+    - Valores comunes: `1` (un proxy), `true` (confiar en todos; úsalo con cuidado).
 - CORS por env (opcional):
-  - `CORS_ENABLED=true|false`
-  - `CORS_CREDENTIALS=true|false`
-  - `CORS_ORIGINS=https://mi-frontend.com,https://admin.mi-frontend.com`
+    - `CORS_ENABLED=true|false`
+    - `CORS_CREDENTIALS=true|false`
+    - `CORS_ORIGINS=https://mi-frontend.com,https://admin.mi-frontend.com`
 
 Logging (opcional):
 
 - `LOG_FORMAT=text|json`
-  - `text` (default): formato humano (colores) como el curso.
-  - `json`: una línea JSON por evento (recomendado para producción / agregadores de logs).
+    - `text` (default): formato humano (colores) como el curso.
+    - `json`: una línea JSON por evento (recomendado para producción / agregadores de logs).
 
 ## config.json
 
@@ -88,12 +88,12 @@ Nota (CSRF): para requests `POST` debes enviar el header `X-CSRF-Token` (ver [do
 ### Cookies + CORS en producción (guía rápida)
 
 - Si el frontend y backend están en **dominios distintos** y usas sesión por cookie:
-  - en el frontend: `credentials: 'include'` / `withCredentials: true`
-  - en el backend: `cors.credentials=true` y `cors.origins` con allowlist del/los dominios reales
-  - cookie:
-    - `SESSION_COOKIE_SECURE=true` (HTTPS)
-    - `SESSION_COOKIE_SAMESITE=none` (cross-site)
-  - detrás de proxy/LB: define `APP_TRUST_PROXY=1` (o el valor apropiado) para que Express detecte HTTPS y soporte cookies `secure`.
+    - en el frontend: `credentials: 'include'` / `withCredentials: true`
+    - en el backend: `cors.credentials=true` y `cors.origins` con allowlist del/los dominios reales
+    - cookie:
+        - `SESSION_COOKIE_SECURE=true` (HTTPS)
+        - `SESSION_COOKIE_SAMESITE=none` (cross-site)
+    - detrás de proxy/LB: define `APP_TRUST_PROXY=1` (o el valor apropiado) para que Express detecte HTTPS y soporte cookies `secure`.
 
 - Si frontend y backend están en el **mismo dominio** (mismo “site”): normalmente `SESSION_COOKIE_SAMESITE=lax` es suficiente.
 
@@ -128,8 +128,8 @@ Para `spa`, el backend NO asume ninguna carpeta por defecto (para mantenerse des
 - `FRONTEND_PATH`: ruta al repo del frontend (debe tener `package.json`).
 - `FRONTEND_SCRIPT` (default `start`): qué script ejecutar en el frontend.
 - `FRONTEND_ARGS` (opcional): args extra para el script del frontend.
-  - Se pasan como: `npm run <FRONTEND_SCRIPT> -- <FRONTEND_ARGS>`
-  - Ejemplo (Angular, evitar conflicto de puerto 4200): `FRONTEND_ARGS=--port 4201`
+    - Se pasan como: `npm run <FRONTEND_SCRIPT> -- <FRONTEND_ARGS>`
+    - Ejemplo (Angular, evitar conflicto de puerto 4200): `FRONTEND_ARGS=--port 4201`
 - `BACKEND_SCRIPT` (default `dev`): qué script ejecutar en el backend.
 - `BACKEND_ARGS` (opcional): args extra para el script del backend (mismo patrón con `--`).
 - `FULL_KEEP_ALIVE=true|false` (opcional): si `true`, no apaga el otro proceso cuando uno termina (útil en algunos flujos de dev).
@@ -156,10 +156,10 @@ Estructura:
 
 ```json
 {
-  "<schema>": {
-    "<queryName>": "SQL ...",
-    "...": "..."
-  }
+    "<schema>": {
+        "<queryName>": "SQL ...",
+        "...": "..."
+    }
 }
 ```
 

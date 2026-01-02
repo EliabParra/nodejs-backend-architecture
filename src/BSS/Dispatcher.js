@@ -1,28 +1,30 @@
-import Session from "./Session.js"
-import express from "express"
-import { registerFrontendHosting } from "../frontend-adapters/index.js"
+import Session from './Session.js'
+import express from 'express'
+import { registerFrontendHosting } from '../frontend-adapters/index.js'
 
-import { applyHelmet } from "../express/middleware/helmet.js"
-import { applyRequestId } from "../express/middleware/request-id.js"
-import { applyRequestLogger } from "../express/middleware/request-logger.js"
-import { applyCorsIfEnabled } from "../express/middleware/cors.js"
-import { applyBodyParsers } from "../express/middleware/body-parsers.js"
-import { jsonBodySyntaxErrorHandler } from "../express/middleware/json-syntax-error.js"
-import { csrfProtection, csrfTokenHandler } from "../express/middleware/csrf.js"
-import { createLoginRateLimiter, createToProccessRateLimiter } from "../express/rate-limit/limiters.js"
-import { createHealthHandler } from "../express/handlers/health.js"
-import { createReadyHandler } from "../express/handlers/ready.js"
-import { createFinalErrorHandler } from "../express/middleware/final-error-handler.js"
+import { applyHelmet } from '../express/middleware/helmet.js'
+import { applyRequestId } from '../express/middleware/request-id.js'
+import { applyRequestLogger } from '../express/middleware/request-logger.js'
+import { applyCorsIfEnabled } from '../express/middleware/cors.js'
+import { applyBodyParsers } from '../express/middleware/body-parsers.js'
+import { jsonBodySyntaxErrorHandler } from '../express/middleware/json-syntax-error.js'
+import { csrfProtection, csrfTokenHandler } from '../express/middleware/csrf.js'
+import {
+    createLoginRateLimiter,
+    createToProccessRateLimiter,
+} from '../express/rate-limit/limiters.js'
+import { createHealthHandler } from '../express/handlers/health.js'
+import { createReadyHandler } from '../express/handlers/ready.js'
+import { createFinalErrorHandler } from '../express/middleware/final-error-handler.js'
 
 import {
     validateLoginSchema,
     validateLogoutSchema,
-    validateToProccessSchema
-} from "./helpers/http-validators.js"
+    validateToProccessSchema,
+} from './helpers/http-validators.js'
 
-import { auditBestEffort } from "./helpers/audit-log.js"
-import { sendInvalidParameters } from "./helpers/http-responses.js"
-
+import { auditBestEffort } from './helpers/audit-log.js'
+import { sendInvalidParameters } from './helpers/http-responses.js'
 
 /**
  * Express API orchestrator.
@@ -70,23 +72,34 @@ export default class Dispatcher {
         // API routes (always)
         this.app.get('/health', createHealthHandler({ name: config?.app?.name ?? 'app' }))
         this.app.get('/ready', createReadyHandler({ clientErrors: this.clientErrors }))
-        this.app.get("/csrf", csrfTokenHandler)
-        this.app.post("/toProccess", this.toProccessRateLimiter, csrfProtection, this.toProccess.bind(this))
-        this.app.post("/login", this.loginRateLimiter, csrfProtection, this.login.bind(this))
-        this.app.post("/logout", csrfProtection, this.logout.bind(this))
+        this.app.get('/csrf', csrfTokenHandler)
+        this.app.post(
+            '/toProccess',
+            this.toProccessRateLimiter,
+            csrfProtection,
+            this.toProccess.bind(this)
+        )
+        this.app.post('/login', this.loginRateLimiter, csrfProtection, this.login.bind(this))
+        this.app.post('/logout', csrfProtection, this.logout.bind(this))
 
         // Optional SPA hosting is registered after API routes to avoid shadowing them.
         await registerFrontendHosting(this.app, { session: this.session, stage: 'postApi' })
 
         // Final error handler: keep API contract stable (no default HTML errors)
-        this.app.use(createFinalErrorHandler({ clientErrors: this.clientErrors, serverErrors: this.serverErrors }))
+        this.app.use(
+            createFinalErrorHandler({
+                clientErrors: this.clientErrors,
+                serverErrors: this.serverErrors,
+            })
+        )
 
         this.initialized = true
     }
 
     async toProccess(req, res) {
         try {
-            if (!this.session.sessionExists(req)) return res.status(this.clientErrors.login.code).send(this.clientErrors.login)
+            if (!this.session.sessionExists(req))
+                return res.status(this.clientErrors.login.code).send(this.clientErrors.login)
 
             const schemaAlerts = validateToProccessSchema(req.body)
             if (schemaAlerts.length > 0) {
@@ -97,18 +110,21 @@ export default class Dispatcher {
                 try {
                     await security.ready
                 } catch {
-                    return res.status(this.clientErrors.serviceUnavailable.code).send(this.clientErrors.serviceUnavailable)
+                    return res
+                        .status(this.clientErrors.serviceUnavailable.code)
+                        .send(this.clientErrors.serviceUnavailable)
                 }
             }
 
             const txData = security.getDataTx(req.body.tx)
 
-            if (!txData) throw new Error(this.serverErrors.txNotFound.msg.replace('{tx}', req.body.tx))
+            if (!txData)
+                throw new Error(this.serverErrors.txNotFound.msg.replace('{tx}', req.body.tx))
             const data = {
                 profile_id: req.session.profile_id,
                 method_na: txData.method_na,
                 object_na: txData.object_na,
-                params: req.body.params
+                params: req.body.params,
             }
 
             if (!security.getPermissions(data)) {
@@ -117,10 +133,12 @@ export default class Dispatcher {
                     object_na: data.object_na,
                     method_na: data.method_na,
                     tx: req.body?.tx,
-                    details: { reason: 'permissionDenied' }
+                    details: { reason: 'permissionDenied' },
                 })
 
-                return res.status(this.clientErrors.permissionDenied.code).send(this.clientErrors.permissionDenied)
+                return res
+                    .status(this.clientErrors.permissionDenied.code)
+                    .send(this.clientErrors.permissionDenied)
             }
 
             const response = await security.executeMethod(data)
@@ -130,13 +148,15 @@ export default class Dispatcher {
                 object_na: data.object_na,
                 method_na: data.method_na,
                 tx: req.body?.tx,
-                details: { responseCode: response?.code }
+                details: { responseCode: response?.code },
             })
 
             res.status(response.code).send(response)
         } catch (err) {
             const status = this.clientErrors.unknown.code
-            try { res.locals.__errorLogged = true } catch { }
+            try {
+                res.locals.__errorLogged = true
+            } catch {}
 
             const tx = req.body?.tx
             const txData = tx != null ? security.getDataTx(tx) : null
@@ -145,7 +165,7 @@ export default class Dispatcher {
                 object_na: txData?.object_na,
                 method_na: txData?.method_na,
                 tx,
-                details: { error: String(err?.message || err) }
+                details: { error: String(err?.message || err) },
             })
 
             log.show({
@@ -157,12 +177,21 @@ export default class Dispatcher {
                     path: req.originalUrl,
                     status,
                     tx: req.body?.tx,
-                    object_na: req.body?.tx != null ? security.getDataTx(req.body.tx)?.object_na : undefined,
-                    method_na: req.body?.tx != null ? security.getDataTx(req.body.tx)?.method_na : undefined,
+                    object_na:
+                        req.body?.tx != null
+                            ? security.getDataTx(req.body.tx)?.object_na
+                            : undefined,
+                    method_na:
+                        req.body?.tx != null
+                            ? security.getDataTx(req.body.tx)?.method_na
+                            : undefined,
                     user_id: req.session?.user_id,
                     profile_id: req.session?.profile_id,
-                    durationMs: typeof req.requestStartMs === 'number' ? (Date.now() - req.requestStartMs) : undefined
-                }
+                    durationMs:
+                        typeof req.requestStartMs === 'number'
+                            ? Date.now() - req.requestStartMs
+                            : undefined,
+                },
             })
             res.status(status).send(this.clientErrors.unknown)
         }
@@ -177,7 +206,9 @@ export default class Dispatcher {
             await this.session.createSession(req, res)
         } catch (err) {
             const status = this.clientErrors.unknown.code
-            try { res.locals.__errorLogged = true } catch { }
+            try {
+                res.locals.__errorLogged = true
+            } catch {}
             log.show({
                 type: log.TYPE_ERROR,
                 msg: `${this.serverErrors.serverError.msg}, /login: ${err.message}`,
@@ -186,10 +217,13 @@ export default class Dispatcher {
                     method: req.method,
                     path: req.originalUrl,
                     status,
-                    durationMs: typeof req.requestStartMs === 'number' ? (Date.now() - req.requestStartMs) : undefined,
+                    durationMs:
+                        typeof req.requestStartMs === 'number'
+                            ? Date.now() - req.requestStartMs
+                            : undefined,
                     user_id: req.session?.user_id,
-                    profile_id: req.session?.profile_id
-                }
+                    profile_id: req.session?.profile_id,
+                },
             })
             res.status(status).send(this.clientErrors.unknown)
         }
@@ -209,7 +243,9 @@ export default class Dispatcher {
             } else return res.status(this.clientErrors.login.code).send(this.clientErrors.login)
         } catch (err) {
             const status = this.clientErrors.unknown.code
-            try { res.locals.__errorLogged = true } catch { }
+            try {
+                res.locals.__errorLogged = true
+            } catch {}
             log.show({
                 type: log.TYPE_ERROR,
                 msg: `${this.serverErrors.serverError.msg}, /logout: ${err.message}`,
@@ -218,10 +254,13 @@ export default class Dispatcher {
                     method: req.method,
                     path: req.originalUrl,
                     status,
-                    durationMs: typeof req.requestStartMs === 'number' ? (Date.now() - req.requestStartMs) : undefined,
+                    durationMs:
+                        typeof req.requestStartMs === 'number'
+                            ? Date.now() - req.requestStartMs
+                            : undefined,
                     user_id: req.session?.user_id,
-                    profile_id: req.session?.profile_id
-                }
+                    profile_id: req.session?.profile_id,
+                },
             })
             res.status(status).send(this.clientErrors.unknown)
         }
@@ -229,10 +268,15 @@ export default class Dispatcher {
 
     serverOn() {
         if (!this.initialized) {
-            throw new Error('Dispatcher not initialized. Call await dispatcher.init() before serverOn().')
+            throw new Error(
+                'Dispatcher not initialized. Call await dispatcher.init() before serverOn().'
+            )
         }
         this.server = this.app.listen(config.app.port, () =>
-            log.show({ type: log.TYPE_INFO, msg: `Server running on http://${config.app.host}:${config.app.port}` })
+            log.show({
+                type: log.TYPE_INFO,
+                msg: `Server running on http://${config.app.host}:${config.app.port}`,
+            })
         )
         return this.server
     }
@@ -244,7 +288,9 @@ export default class Dispatcher {
                 this.server.close((err) => (err ? reject(err) : resolve()))
             })
         } finally {
-            try { await db?.pool?.end?.() } catch { }
+            try {
+                await db?.pool?.end?.()
+            } catch {}
         }
     }
 }

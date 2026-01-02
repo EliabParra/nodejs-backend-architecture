@@ -1,14 +1,14 @@
 {
-  "es": {
-    "labels": {
-      "id": "El id",
-      "name": "El nombre"
+    "es": {
+        "labels": {
+            "id": "El id",
+            "name": "El nombre"
+        }
+    },
+    "en": {
+        "labels": {
+            "id": "The id",
+            "name": "The name"
+        }
     }
-  },
-  "en": {
-    "labels": {
-      "id": "The id",
-      "name": "The name"
-    }
-  }
 }

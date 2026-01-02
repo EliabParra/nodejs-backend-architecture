@@ -11,6 +11,6 @@ export const routes = [
         name: 'home',
         path: '/',
         view: 'index',
-        validateIsAuth: false
-    }
+        validateIsAuth: false,
+    },
 ]

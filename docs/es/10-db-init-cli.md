@@ -6,7 +6,7 @@ En esta arquitectura, el backend **depende** del schema `security` (tx + permiso
 
 1. Configura tu conexión a Postgres por `.env` (`DATABASE_URL` o `PG*`).
 2. Ejecuta:
-   - `npm run db:init`
+    - `npm run db:init`
 
 ## Qué crea
 
@@ -14,12 +14,12 @@ El script [scripts/db-init.mjs](../../scripts/db-init.mjs) crea, si no existen:
 
 - Schema `security`
 - Tablas mínimas requeridas por [src/config/queries.json](../../src/config/queries.json):
-  - `security.profile`
-  - `security."user"`
-  - `security.user_profile`
-  - `security.object`
-  - `security.method`
-  - `security.permission_method`
+    - `security.profile`
+    - `security."user"`
+    - `security.user_profile`
+    - `security.object`
+    - `security.method`
+    - `security.permission_method`
 
 También crea la tabla de sesión para `connect-pg-simple`:
 
@@ -48,9 +48,9 @@ Además, el script puede **auto-registrar** BOs ya existentes en `BO/`:
 - Detecta carpetas `BO/<ObjectName>/` que tengan `BO/<ObjectName>/<ObjectName>BO.js`.
 - Extrae métodos declarados como `async <method_na>(...)` (ignora los que empiezan con `_`).
 - Inserta/actualiza:
-  - `security.object(object_na)`
-  - `security.method(object_id, method_na, tx_nu)`
-  - `security.permission_method(profile_id, method_id)`
+    - `security.object(object_na)`
+    - `security.method(object_id, method_na, tx_nu)`
+    - `security.permission_method(profile_id, method_id)`
 
 Por default (en modo TTY) se ejecuta y concede permisos a `profile_id` (por default `1`).
 
@@ -107,8 +107,8 @@ Cuando existe `security.audit_log`, el backend hace inserts best-effort (no romp
 - `login`: inserta `action=login` y actualiza `last_login_at`.
 - `logout`: inserta `action=logout`.
 - `/toProccess`:
-  - `tx_exec` (cuando ejecuta el BO)
-  - `tx_denied` (permissionDenied)
-  - `tx_error` (error inesperado)
+    - `tx_exec` (cuando ejecuta el BO)
+    - `tx_denied` (permissionDenied)
+    - `tx_error` (error inesperado)
 
 Campos típicos: `request_id`, `user_id`, `profile_id`, `tx_nu`, `object_na`, `method_na`, `meta`.

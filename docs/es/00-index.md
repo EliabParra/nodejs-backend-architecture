@@ -29,9 +29,9 @@ Un backend de referencia que muestra un patrón de arquitectura (dispatcher tran
 - **Globals (service locator)**: [src/globals.js](../../src/globals.js)
 - **Dispatcher (Express + endpoints)**: [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.js)
 - **Express plumbing (middlewares/handlers/session wiring)**: `src/express/`
-	- Middlewares: [src/express/middleware/](../../src/express/middleware/)
-	- Handlers: [src/express/handlers/](../../src/express/handlers/)
-	- Session wiring: [src/express/session/apply-session-middleware.js](../../src/express/session/apply-session-middleware.js)
+    - Middlewares: [src/express/middleware/](../../src/express/middleware/)
+    - Handlers: [src/express/handlers/](../../src/express/handlers/)
+    - Session wiring: [src/express/session/apply-session-middleware.js](../../src/express/session/apply-session-middleware.js)
 - **Seguridad (tx + permisos + BO dinámico)**: [src/BSS/Security.js](../../src/BSS/Security.js)
 - **Sesión (express-session)**: [src/BSS/Session.js](../../src/BSS/Session.js)
 - **DB**: [src/BSS/DBComponent.js](../../src/BSS/DBComponent.js)
@@ -57,8 +57,8 @@ Un backend de referencia que muestra un patrón de arquitectura (dispatcher tran
 
 ## Glosario
 
-- **BSS** (*Basic Subsystem*): servicios transversales en `src/BSS/` (DB, seguridad, sesión, logging, validación, dispatcher).
-- **BO** (*Business Object*): módulos de negocio en `BO/` (por entidad/feature). Se cargan dinámicamente desde `Security`.
+- **BSS** (_Basic Subsystem_): servicios transversales en `src/BSS/` (DB, seguridad, sesión, logging, validación, dispatcher).
+- **BO** (_Business Object_): módulos de negocio en `BO/` (por entidad/feature). Se cargan dinámicamente desde `Security`.
 - **tx**: número de transacción enviado por el cliente (`body.tx`) para resolver qué método ejecutar.
 - **object_na**: nombre lógico del objeto BO (p.ej. `<ObjectName>`). Se usa para ubicar archivos y para permisos.
 - **method_na**: nombre del método a invocar (p.ej. `<methodName>`).

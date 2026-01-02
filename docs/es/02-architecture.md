@@ -8,22 +8,22 @@
 - **Capa HTTP/Express (plumbing)**: `src/express/` (middlewares, handlers, session wiring)
 - **BSS (servicios transversales)**: `src/BSS/` (DB, session, security, validator, log)
 - **BO (negocio)**: `BO/` (ej. `BO/ObjectName/`).
-   - BOs demo completos viven en `examples/bo-demo/BO/`.
+    - BOs demo completos viven en `examples/bo-demo/BO/`.
 - **Config**: `src/config/` (config runtime, mensajes, queries SQL)
 
 ## Bootstrap (arranque)
 
 1. [src/index.js](../../src/index.js)
-   - Importa [src/globals.js](../../src/globals.js)
-   - Crea `new Dispatcher()`, ejecuta `await dispatcher.init()` y luego llama `serverOn()`
+    - Importa [src/globals.js](../../src/globals.js)
+    - Crea `new Dispatcher()`, ejecuta `await dispatcher.init()` y luego llama `serverOn()`
 
 2. [src/globals.js](../../src/globals.js)
-   - Carga JSON via `require` (config, queries, messages)
-   - Crea singletons globales:
-     - `globalThis.v` (Validator)
-     - `globalThis.log` (Log)
-     - `globalThis.db` (DBComponent)
-     - `globalThis.security` (Security)
+    - Carga JSON via `require` (config, queries, messages)
+    - Crea singletons globales:
+        - `globalThis.v` (Validator)
+        - `globalThis.log` (Log)
+        - `globalThis.db` (DBComponent)
+        - `globalThis.security` (Security)
 
 **Importante**: tu arquitectura usa `globalThis` como “service locator”. Por diseño actual, BO/BSS consumen `config`, `msgs`, `queries`, `db`, `v`, `log`, `security` como globals.
 
@@ -33,23 +33,22 @@ Nota: por consistencia con el diseño del repo, algunos módulos de `src/express
 
 ### Endpoint
 
-
 ### Secuencia (alto nivel)
 
 1. **Verificar sesión**
-   - `Session.sessionExists(req)` en [src/BSS/Session.js](../../src/BSS/Session.js)
+    - `Session.sessionExists(req)` en [src/BSS/Session.js](../../src/BSS/Session.js)
 2. **Esperar inicialización de seguridad (race-free)**
-   - `Security` precarga `txMap` y permisos desde DB.
-   - `/toProccess` espera `security.ready` antes de usar `txMap` para evitar que llegue un request mientras el cache aún está vacío.
-2. **Resolver tx → (object_na, method_na)**
-   - `security.getDataTx(body.tx)` usando `txMap` precargado en [src/BSS/Security.js](../../src/BSS/Security.js)
-3. **Validar permisos**
-   - `security.getPermissions({ profile_id, method_na, object_na })` contra `permission` precargado
-4. **Ejecutar BO**
-   - `security.executeMethod({ object_na, method_na, params })`
-   - Import dinámico del BO: `../../BO/<object_na>/<object_na>BO.js` (ver `config.bo.path` en [src/config/config.json](../../src/config/config.json))
-5. **Responder**
-   - `res.status(response.code).send(response)`
+    - `Security` precarga `txMap` y permisos desde DB.
+    - `/toProccess` espera `security.ready` antes de usar `txMap` para evitar que llegue un request mientras el cache aún está vacío.
+3. **Resolver tx → (object_na, method_na)**
+    - `security.getDataTx(body.tx)` usando `txMap` precargado en [src/BSS/Security.js](../../src/BSS/Security.js)
+4. **Validar permisos**
+    - `security.getPermissions({ profile_id, method_na, object_na })` contra `permission` precargado
+5. **Ejecutar BO**
+    - `security.executeMethod({ object_na, method_na, params })`
+    - Import dinámico del BO: `../../BO/<object_na>/<object_na>BO.js` (ver `config.bo.path` en [src/config/config.json](../../src/config/config.json))
+6. **Responder**
+    - `res.status(response.code).send(response)`
 
 ### Diagrama rápido
 

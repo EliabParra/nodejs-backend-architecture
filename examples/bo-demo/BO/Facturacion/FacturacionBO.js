@@ -17,103 +17,138 @@ Reglas del framework:
 */
 
 export class FacturacionBO {
-  async getInvoice(params) {
-    try {
-      // Patrón recomendado:
-      // 1) validar + normalizar (en Validate)
-      // 2) ejecutar repositorio (DB) en Repository
-      // 3) retornar { code, msg, data?, alerts? } siguiendo el contrato
+    async getInvoice(params) {
+        try {
+            // Patrón recomendado:
+            // 1) validar + normalizar (en Validate)
+            // 2) ejecutar repositorio (DB) en Repository
+            // 3) retornar { code, msg, data?, alerts? } siguiendo el contrato
 
-      // TODO: implementa validación según tu caso
-      // if (!FacturacionValidate.validateX(params)) return FacturacionErrorHandler.invalidParameters(v.getAlerts())
+            // TODO: implementa validación según tu caso
+            // if (!FacturacionValidate.validateX(params)) return FacturacionErrorHandler.invalidParameters(v.getAlerts())
 
-      // TODO: implementa tu operación real (DB/servicios/etc.)
-      // const result = await FacturacionRepository.someOperation(params)
+            // TODO: implementa tu operación real (DB/servicios/etc.)
+            // const result = await FacturacionRepository.someOperation(params)
 
-      return { code: 200, msg: successMsgs.getInvoice ?? 'Facturacion getInvoice OK', data: params ?? null }
-    } catch (err) {
-      log.show({ type: log.TYPE_ERROR, msg: `Error del servidor, FacturacionBO.getInvoice: ${err?.message || err}` })
-      return FacturacionErrorHandler.unknownError()
+            return {
+                code: 200,
+                msg: successMsgs.getInvoice ?? 'Facturacion getInvoice OK',
+                data: params ?? null,
+            }
+        } catch (err) {
+            log.show({
+                type: log.TYPE_ERROR,
+                msg: `Error del servidor, FacturacionBO.getInvoice: ${err?.message || err}`,
+            })
+            return FacturacionErrorHandler.unknownError()
+        }
     }
-  }
 
-  async listInvoices(params) {
-    try {
-      // Patrón recomendado:
-      // 1) validar + normalizar (en Validate)
-      // 2) ejecutar repositorio (DB) en Repository
-      // 3) retornar { code, msg, data?, alerts? } siguiendo el contrato
+    async listInvoices(params) {
+        try {
+            // Patrón recomendado:
+            // 1) validar + normalizar (en Validate)
+            // 2) ejecutar repositorio (DB) en Repository
+            // 3) retornar { code, msg, data?, alerts? } siguiendo el contrato
 
-      // TODO: implementa validación según tu caso
-      // if (!FacturacionValidate.validateX(params)) return FacturacionErrorHandler.invalidParameters(v.getAlerts())
+            // TODO: implementa validación según tu caso
+            // if (!FacturacionValidate.validateX(params)) return FacturacionErrorHandler.invalidParameters(v.getAlerts())
 
-      // TODO: implementa tu operación real (DB/servicios/etc.)
-      // const result = await FacturacionRepository.someOperation(params)
+            // TODO: implementa tu operación real (DB/servicios/etc.)
+            // const result = await FacturacionRepository.someOperation(params)
 
-      return { code: 200, msg: successMsgs.listInvoices ?? 'Facturacion listInvoices OK', data: params ?? null }
-    } catch (err) {
-      log.show({ type: log.TYPE_ERROR, msg: `Error del servidor, FacturacionBO.listInvoices: ${err?.message || err}` })
-      return FacturacionErrorHandler.unknownError()
+            return {
+                code: 200,
+                msg: successMsgs.listInvoices ?? 'Facturacion listInvoices OK',
+                data: params ?? null,
+            }
+        } catch (err) {
+            log.show({
+                type: log.TYPE_ERROR,
+                msg: `Error del servidor, FacturacionBO.listInvoices: ${err?.message || err}`,
+            })
+            return FacturacionErrorHandler.unknownError()
+        }
     }
-  }
 
-  async createInvoice(params) {
-    try {
-      // Patrón recomendado:
-      // 1) validar + normalizar (en Validate)
-      // 2) ejecutar repositorio (DB) en Repository
-      // 3) retornar { code, msg, data?, alerts? } siguiendo el contrato
+    async createInvoice(params) {
+        try {
+            // Patrón recomendado:
+            // 1) validar + normalizar (en Validate)
+            // 2) ejecutar repositorio (DB) en Repository
+            // 3) retornar { code, msg, data?, alerts? } siguiendo el contrato
 
-      // TODO: implementa validación según tu caso
-      // if (!FacturacionValidate.validateX(params)) return FacturacionErrorHandler.invalidParameters(v.getAlerts())
+            // TODO: implementa validación según tu caso
+            // if (!FacturacionValidate.validateX(params)) return FacturacionErrorHandler.invalidParameters(v.getAlerts())
 
-      // TODO: implementa tu operación real (DB/servicios/etc.)
-      // const result = await FacturacionRepository.someOperation(params)
+            // TODO: implementa tu operación real (DB/servicios/etc.)
+            // const result = await FacturacionRepository.someOperation(params)
 
-      return { code: 200, msg: successMsgs.createInvoice ?? 'Facturacion createInvoice OK', data: params ?? null }
-    } catch (err) {
-      log.show({ type: log.TYPE_ERROR, msg: `Error del servidor, FacturacionBO.createInvoice: ${err?.message || err}` })
-      return FacturacionErrorHandler.unknownError()
+            return {
+                code: 200,
+                msg: successMsgs.createInvoice ?? 'Facturacion createInvoice OK',
+                data: params ?? null,
+            }
+        } catch (err) {
+            log.show({
+                type: log.TYPE_ERROR,
+                msg: `Error del servidor, FacturacionBO.createInvoice: ${err?.message || err}`,
+            })
+            return FacturacionErrorHandler.unknownError()
+        }
     }
-  }
 
-  async payInvoice(params) {
-    try {
-      // Patrón recomendado:
-      // 1) validar + normalizar (en Validate)
-      // 2) ejecutar repositorio (DB) en Repository
-      // 3) retornar { code, msg, data?, alerts? } siguiendo el contrato
+    async payInvoice(params) {
+        try {
+            // Patrón recomendado:
+            // 1) validar + normalizar (en Validate)
+            // 2) ejecutar repositorio (DB) en Repository
+            // 3) retornar { code, msg, data?, alerts? } siguiendo el contrato
 
-      // TODO: implementa validación según tu caso
-      // if (!FacturacionValidate.validateX(params)) return FacturacionErrorHandler.invalidParameters(v.getAlerts())
+            // TODO: implementa validación según tu caso
+            // if (!FacturacionValidate.validateX(params)) return FacturacionErrorHandler.invalidParameters(v.getAlerts())
 
-      // TODO: implementa tu operación real (DB/servicios/etc.)
-      // const result = await FacturacionRepository.someOperation(params)
+            // TODO: implementa tu operación real (DB/servicios/etc.)
+            // const result = await FacturacionRepository.someOperation(params)
 
-      return { code: 200, msg: successMsgs.payInvoice ?? 'Facturacion payInvoice OK', data: params ?? null }
-    } catch (err) {
-      log.show({ type: log.TYPE_ERROR, msg: `Error del servidor, FacturacionBO.payInvoice: ${err?.message || err}` })
-      return FacturacionErrorHandler.unknownError()
+            return {
+                code: 200,
+                msg: successMsgs.payInvoice ?? 'Facturacion payInvoice OK',
+                data: params ?? null,
+            }
+        } catch (err) {
+            log.show({
+                type: log.TYPE_ERROR,
+                msg: `Error del servidor, FacturacionBO.payInvoice: ${err?.message || err}`,
+            })
+            return FacturacionErrorHandler.unknownError()
+        }
     }
-  }
 
-  async cancelInvoice(params) {
-    try {
-      // Patrón recomendado:
-      // 1) validar + normalizar (en Validate)
-      // 2) ejecutar repositorio (DB) en Repository
-      // 3) retornar { code, msg, data?, alerts? } siguiendo el contrato
+    async cancelInvoice(params) {
+        try {
+            // Patrón recomendado:
+            // 1) validar + normalizar (en Validate)
+            // 2) ejecutar repositorio (DB) en Repository
+            // 3) retornar { code, msg, data?, alerts? } siguiendo el contrato
 
-      // TODO: implementa validación según tu caso
-      // if (!FacturacionValidate.validateX(params)) return FacturacionErrorHandler.invalidParameters(v.getAlerts())
+            // TODO: implementa validación según tu caso
+            // if (!FacturacionValidate.validateX(params)) return FacturacionErrorHandler.invalidParameters(v.getAlerts())
 
-      // TODO: implementa tu operación real (DB/servicios/etc.)
-      // const result = await FacturacionRepository.someOperation(params)
+            // TODO: implementa tu operación real (DB/servicios/etc.)
+            // const result = await FacturacionRepository.someOperation(params)
 
-      return { code: 200, msg: successMsgs.cancelInvoice ?? 'Facturacion cancelInvoice OK', data: params ?? null }
-    } catch (err) {
-      log.show({ type: log.TYPE_ERROR, msg: `Error del servidor, FacturacionBO.cancelInvoice: ${err?.message || err}` })
-      return FacturacionErrorHandler.unknownError()
+            return {
+                code: 200,
+                msg: successMsgs.cancelInvoice ?? 'Facturacion cancelInvoice OK',
+                data: params ?? null,
+            }
+        } catch (err) {
+            log.show({
+                type: log.TYPE_ERROR,
+                msg: `Error del servidor, FacturacionBO.cancelInvoice: ${err?.message || err}`,
+            })
+            return FacturacionErrorHandler.unknownError()
+        }
     }
-  }
 }

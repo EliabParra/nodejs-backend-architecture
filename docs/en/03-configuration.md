@@ -22,34 +22,34 @@ In this repo, [src/config/config.json](../../src/config/config.json) keeps "plac
 Supported variables:
 
 - App: `APP_NAME`, `APP_PORT`, `APP_HOST`, `APP_LANG`
-  - `APP_NAME`: logical service name (shown in `/health`).
+    - `APP_NAME`: logical service name (shown in `/health`).
 - Frontend hosting (optional):
-  - `APP_FRONTEND_MODE`: `pages` | `spa` | `none`
-    - `pages`: backend serves HTML from `public/pages` (legacy mode)
-    - `spa`: backend serves a SPA build and falls back to `index.html` (frontend owns routes)
-    - `none`: backend serves no pages (API-only) (**default**, to stay decoupled)
-  - `SPA_DIST_PATH` (spa mode only): path to frontend output (folder containing `index.html`)
+    - `APP_FRONTEND_MODE`: `pages` | `spa` | `none`
+        - `pages`: backend serves HTML from `public/pages` (legacy mode)
+        - `spa`: backend serves a SPA build and falls back to `index.html` (frontend owns routes)
+        - `none`: backend serves no pages (API-only) (**default**, to stay decoupled)
+    - `SPA_DIST_PATH` (spa mode only): path to frontend output (folder containing `index.html`)
 - Postgres: `DATABASE_URL` or `PGHOST`, `PGPORT`, `PGDATABASE`, `PGUSER`, `PGPASSWORD`, `PGSSL`
 - Session (rotation): `SESSION_SECRET` or `SESSION_SECRETS` (comma-separated)
-  - Example: `SESSION_SECRETS=current_secret,previous_secret`
+    - Example: `SESSION_SECRETS=current_secret,previous_secret`
 - Session store (optional): `SESSION_SCHEMA`, `SESSION_TABLE`
-  - Useful if you want the session table to live under another schema (e.g. `security`).
+    - Useful if you want the session table to live under another schema (e.g. `security`).
 - Cookies (optional): `SESSION_COOKIE_SECURE`, `SESSION_COOKIE_SAMESITE`, `SESSION_COOKIE_MAXAGE_MS`
 
 Extra variables (production / reverse proxy):
 
 - `APP_TRUST_PROXY`: configures Express `app.set('trust proxy', ...)` (useful behind a proxy/LB).
-  - Common values: `1` (one proxy), `true` (trust all; use with care).
+    - Common values: `1` (one proxy), `true` (trust all; use with care).
 - CORS via env (optional):
-  - `CORS_ENABLED=true|false`
-  - `CORS_CREDENTIALS=true|false`
-  - `CORS_ORIGINS=https://my-frontend.example,https://admin.my-frontend.example`
+    - `CORS_ENABLED=true|false`
+    - `CORS_CREDENTIALS=true|false`
+    - `CORS_ORIGINS=https://my-frontend.example,https://admin.my-frontend.example`
 
 Logging (optional):
 
 - `LOG_FORMAT=text|json`
-  - `text` (default): human-friendly colored logs.
-  - `json`: one-line JSON per event (recommended for production log aggregation).
+    - `text` (default): human-friendly colored logs.
+    - `json`: one-line JSON per event (recommended for production log aggregation).
 
 ## config.json
 
@@ -88,12 +88,12 @@ Note (CSRF): for `POST` requests you must send the `X-CSRF-Token` header (see [d
 ### Cookies + CORS in production (quick guide)
 
 - If frontend and backend are on **different domains** and you use cookie-based sessions:
-  - frontend: `credentials: 'include'` / `withCredentials: true`
-  - backend: `cors.credentials=true` and `cors.origins` must allowlist the real frontend domain(s)
-  - cookie:
-    - `SESSION_COOKIE_SECURE=true` (HTTPS)
-    - `SESSION_COOKIE_SAMESITE=none` (cross-site)
-  - behind a proxy/LB: set `APP_TRUST_PROXY=1` (or appropriate value) so Express can detect HTTPS and support `secure` cookies.
+    - frontend: `credentials: 'include'` / `withCredentials: true`
+    - backend: `cors.credentials=true` and `cors.origins` must allowlist the real frontend domain(s)
+    - cookie:
+        - `SESSION_COOKIE_SECURE=true` (HTTPS)
+        - `SESSION_COOKIE_SAMESITE=none` (cross-site)
+    - behind a proxy/LB: set `APP_TRUST_PROXY=1` (or appropriate value) so Express can detect HTTPS and support `secure` cookies.
 
 - If frontend and backend share the **same domain** (same “site”), `SESSION_COOKIE_SAMESITE=lax` is usually enough.
 
@@ -128,8 +128,8 @@ For `spa`, the backend deliberately has NO default dist folder (to stay decouple
 - `FRONTEND_PATH`: path to the frontend repo (must contain `package.json`).
 - `FRONTEND_SCRIPT` (default `start`): which npm script to run in the frontend.
 - `FRONTEND_ARGS` (optional): extra args passed to the frontend script.
-  - Passed as: `npm run <FRONTEND_SCRIPT> -- <FRONTEND_ARGS>`
-  - Example (Angular, avoid port 4200 conflicts): `FRONTEND_ARGS=--port 4201`
+    - Passed as: `npm run <FRONTEND_SCRIPT> -- <FRONTEND_ARGS>`
+    - Example (Angular, avoid port 4200 conflicts): `FRONTEND_ARGS=--port 4201`
 - `BACKEND_SCRIPT` (default `dev`): which npm script to run in the backend.
 - `BACKEND_ARGS` (optional): extra args passed to the backend script (same `--` pattern).
 - `FULL_KEEP_ALIVE=true|false` (optional): when `true`, don't auto-shutdown the other process when one exits.
@@ -156,9 +156,9 @@ Shape:
 
 ```json
 {
-  "<schema>": {
-    "<queryName>": "SQL ..."
-  }
+    "<schema>": {
+        "<queryName>": "SQL ..."
+    }
 }
 ```
 

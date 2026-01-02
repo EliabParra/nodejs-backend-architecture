@@ -20,12 +20,19 @@ export class PersonRepository {
     }
 
     static async create({ person_na, person_ln }) {
-        await db.exeNamed('enterprise', 'createPerson', { person_na, person_ln }, ['person_na', 'person_ln'])
+        await db.exeNamed('enterprise', 'createPerson', { person_na, person_ln }, [
+            'person_na',
+            'person_ln',
+        ])
         return true
     }
 
     static async update({ person_id, person_na, person_ln }) {
-        await db.exeNamed('enterprise', 'updatePerson', { person_id, person_na, person_ln }, ['person_id', 'person_na', 'person_ln'])
+        await db.exeNamed('enterprise', 'updatePerson', { person_id, person_na, person_ln }, [
+            'person_id',
+            'person_na',
+            'person_ln',
+        ])
         return true
     }
 

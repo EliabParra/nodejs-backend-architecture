@@ -18,8 +18,8 @@
 El login ya **no compara contraseña en texto plano**. En `security.user.user_pw` debes guardar un **hash bcrypt**.
 
 - Generar hash:
-	- `npm run hashpw -- "MiPasswordSegura123"`
-	- (opcional) rounds: `npm run hashpw -- "MiPasswordSegura123" 10`
+    - `npm run hashpw -- "MiPasswordSegura123"`
+    - (opcional) rounds: `npm run hashpw -- "MiPasswordSegura123" 10`
 
 Luego guarda ese hash como `user_pw` en tu tabla `security.user`.
 
@@ -37,24 +37,24 @@ Objetivo: tener **backend** y **frontend SPA** corriendo en puertos distintos, a
 Esto evita problemas de cookies/CORS en dev, porque el browser solo habla con el dev server del frontend y este proxy-ea al backend.
 
 1. Backend (API-only):
-	- En `.env`: `APP_FRONTEND_MODE=none`
-	- Ejecuta: `npm run dev` (puerto `APP_PORT`, por default `3000`)
+    - En `.env`: `APP_FRONTEND_MODE=none`
+    - Ejecuta: `npm run dev` (puerto `APP_PORT`, por default `3000`)
 2. Frontend (Angular ejemplo):
-	- Ejecuta en el repo del frontend: `npm start`
-	- El script ya usa `ng serve --proxy-config proxy.conf.json`.
-	- Asegúrate de que el frontend llame al backend con rutas relativas: `/csrf`, `/login`, `/logout`, `/toProccess`.
+    - Ejecuta en el repo del frontend: `npm start`
+    - El script ya usa `ng serve --proxy-config proxy.conf.json`.
+    - Asegúrate de que el frontend llame al backend con rutas relativas: `/csrf`, `/login`, `/logout`, `/toProccess`.
 
 ### Alternativa: CORS directo (frontend llama a http://localhost:3000)
 
 Útil si quieres probar el setup “real” cross-origin (por ejemplo, para ver cookies y headers tal como en producción).
 
 1. Backend:
-	- `cors.enabled=true`, `cors.credentials=true`
-	- agrega `http://localhost:4200` (o tu puerto) a `cors.origins`
+    - `cors.enabled=true`, `cors.credentials=true`
+    - agrega `http://localhost:4200` (o tu puerto) a `cors.origins`
 2. Frontend:
-	- Llama a `http://localhost:3000/...`
-	- Envía cookies con `credentials: 'include'`
-	- Para `POST`, envía `X-CSRF-Token` (ver [05-api-contract.md](05-api-contract.md))
+    - Llama a `http://localhost:3000/...`
+    - Envía cookies con `credentials: 'include'`
+    - Para `POST`, envía `X-CSRF-Token` (ver [05-api-contract.md](05-api-contract.md))
 
 ## Deployment (producción)
 
@@ -82,8 +82,8 @@ Ver detalle en [05-api-contract.md](05-api-contract.md).
 
 1. Compila tu frontend (en el repo del frontend): `npm run build`.
 2. En el backend:
-	- `APP_FRONTEND_MODE=spa`
-	- `SPA_DIST_PATH=<carpeta que contiene index.html>`
+    - `APP_FRONTEND_MODE=spa`
+    - `SPA_DIST_PATH=<carpeta que contiene index.html>`
 3. Inicia el backend con `npm start`.
 
 El backend servirá assets estáticos del build y hará fallback a `index.html` para rutas del SPA.

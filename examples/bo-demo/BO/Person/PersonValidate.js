@@ -17,11 +17,14 @@ export class PersonValidate {
     static validate({ person_id, person_na, person_ln }) {
         if (!person_id) return this.validateNameAndLastName({ person_na, person_ln })
         const pid = this.normalizeId(person_id)
-        return v.validateAll([
-            { value: pid, label: labels.person_id },
-            { value: person_na, min: 3, max: 30, label: labels.person_na },
-            { value: person_ln, min: 3, max: 30, label: labels.person_ln }
-        ], ['int', 'length', 'length'])
+        return v.validateAll(
+            [
+                { value: pid, label: labels.person_id },
+                { value: person_na, min: 3, max: 30, label: labels.person_na },
+                { value: person_ln, min: 3, max: 30, label: labels.person_ln },
+            ],
+            ['int', 'length', 'length']
+        )
     }
 
     static getLookupValue(input) {
@@ -40,7 +43,11 @@ export class PersonValidate {
         if (v.validateInt({ value: num, label: labels.person_id })) return this.LOOKUP_ID
 
         const name = this.normalizeName(raw)
-        if (typeof name === 'string' && v.validateLength({ value: name, label: labels.person_na }, 3, 30)) return this.LOOKUP_NAME
+        if (
+            typeof name === 'string' &&
+            v.validateLength({ value: name, label: labels.person_na }, 3, 30)
+        )
+            return this.LOOKUP_NAME
 
         return null
     }
@@ -58,9 +65,12 @@ export class PersonValidate {
         return v.validateLength({ value: ln, label: labels.person_ln }, 3, 30)
     }
     static validateNameAndLastName({ person_na, person_ln }) {
-        return v.validateAll([
-            { value: person_na, min: 3, max: 30, label: labels.person_na },
-            { value: person_ln, min: 3, max: 30, label: labels.person_ln }
-        ], ['length', 'length'])
+        return v.validateAll(
+            [
+                { value: person_na, min: 3, max: 30, label: labels.person_na },
+                { value: person_ln, min: 3, max: 30, label: labels.person_ln },
+            ],
+            ['length', 'length']
+        )
     }
 }

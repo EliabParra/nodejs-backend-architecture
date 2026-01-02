@@ -8,22 +8,23 @@
 - **HTTP/Express layer (plumbing)**: `src/express/` (middlewares, handlers, session wiring)
 - **BSS (cross-cutting services)**: `src/BSS/` (DB, session, security, validator, log)
 - **BO (business)**: `BO/` (e.g. `BO/ObjectName/`).
-  - Full demo BOs live under `examples/bo-demo/BO/`.
+    - Full demo BOs live under `examples/bo-demo/BO/`.
 - **Config**: `src/config/` (runtime config, messages, SQL queries)
 
 ## Bootstrap
 
 1. [src/index.js](../../src/index.js)
-   - Imports [src/globals.js](../../src/globals.js)
-  - Creates `new Dispatcher()`, runs `await dispatcher.init()`, then calls `serverOn()`
+    - Imports [src/globals.js](../../src/globals.js)
+
+- Creates `new Dispatcher()`, runs `await dispatcher.init()`, then calls `serverOn()`
 
 2. [src/globals.js](../../src/globals.js)
-   - Loads JSON via `require` (config, queries, messages)
-   - Creates global singletons:
-     - `globalThis.v` (Validator)
-     - `globalThis.log` (Log)
-     - `globalThis.db` (DBComponent)
-     - `globalThis.security` (Security)
+    - Loads JSON via `require` (config, queries, messages)
+    - Creates global singletons:
+        - `globalThis.v` (Validator)
+        - `globalThis.log` (Log)
+        - `globalThis.db` (DBComponent)
+        - `globalThis.security` (Security)
 
 **Important**: the current architecture uses `globalThis` as a service locator. BO/BSS modules read `config`, `msgs`, `queries`, `db`, `v`, `log`, `security` from globals.
 
@@ -39,8 +40,10 @@ Note: for consistency with the repository style, some `src/express/` modules als
 
 1. **Session check**: `Session.sessionExists(req)` ([src/BSS/Session.js](../../src/BSS/Session.js))
 2. **Wait for security initialization (race-free)**
-  - `Security` preloads `txMap` and permissions from the DB.
-  - `/toProccess` awaits `security.ready` before using `txMap`, avoiding requests hitting an empty cache during startup.
+
+- `Security` preloads `txMap` and permissions from the DB.
+- `/toProccess` awaits `security.ready` before using `txMap`, avoiding requests hitting an empty cache during startup.
+
 2. **Resolve tx → (object_na, method_na)**: `security.getDataTx(body.tx)` ([src/BSS/Security.js](../../src/BSS/Security.js))
 3. **Permissions**: `security.getPermissions({ profile_id, method_na, object_na })`
 4. **Execute BO**: `security.executeMethod({ object_na, method_na, params })`

@@ -29,9 +29,9 @@ A reference backend that demonstrates the architecture pattern (transaction disp
 - **Globals (service locator)**: [src/globals.js](../../src/globals.js)
 - **Dispatcher (Express + endpoints)**: [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.js)
 - **Express plumbing (middlewares/handlers/session wiring)**: `src/express/`
-	- Middlewares: [src/express/middleware/](../../src/express/middleware/)
-	- Handlers: [src/express/handlers/](../../src/express/handlers/)
-	- Session wiring: [src/express/session/apply-session-middleware.js](../../src/express/session/apply-session-middleware.js)
+    - Middlewares: [src/express/middleware/](../../src/express/middleware/)
+    - Handlers: [src/express/handlers/](../../src/express/handlers/)
+    - Session wiring: [src/express/session/apply-session-middleware.js](../../src/express/session/apply-session-middleware.js)
 - **Security (tx + permissions + dynamic BO)**: [src/BSS/Security.js](../../src/BSS/Security.js)
 - **Session (express-session)**: [src/BSS/Session.js](../../src/BSS/Session.js)
 - **DB**: [src/BSS/DBComponent.js](../../src/BSS/DBComponent.js)
@@ -57,8 +57,8 @@ A reference backend that demonstrates the architecture pattern (transaction disp
 
 ## Glossary
 
-- **BSS** (*Basic Subsystem*): cross-cutting services under `src/BSS/` (DB, security, session, logging, validation, dispatcher).
-- **BO** (*Business Object*): business modules under `BO/` (per entity/feature), dynamically loaded by `Security`.
+- **BSS** (_Basic Subsystem_): cross-cutting services under `src/BSS/` (DB, security, session, logging, validation, dispatcher).
+- **BO** (_Business Object_): business modules under `BO/` (per entity/feature), dynamically loaded by `Security`.
 - **tx**: transaction number sent by the client (`body.tx`) to decide what to execute.
 - **object_na**: logical BO name (e.g. `<ObjectName>`), used for file lookup and permissions.
 - **method_na**: method name to invoke (e.g. `<methodName>`).

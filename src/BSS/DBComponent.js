@@ -29,7 +29,7 @@ function prepareNamedParams(sql, paramsObj, orderKeys, opts = {}) {
     const options = {
         strict: true,
         enforceSqlArity: true,
-        ...opts
+        ...opts,
     }
 
     if (!isPlainObject(paramsObj)) {
@@ -39,25 +39,27 @@ function prepareNamedParams(sql, paramsObj, orderKeys, opts = {}) {
         throw new Error('exeNamed orderKeys must be a non-empty array')
     }
 
-    const missing = orderKeys.filter(k => !(k in paramsObj))
+    const missing = orderKeys.filter((k) => !(k in paramsObj))
     if (missing.length > 0) {
         throw new Error(`Missing params: ${missing.join(', ')}`)
     }
 
     if (options.strict) {
         const allowed = new Set(orderKeys)
-        const extras = Object.keys(paramsObj).filter(k => !allowed.has(k))
+        const extras = Object.keys(paramsObj).filter((k) => !allowed.has(k))
         if (extras.length > 0) {
             throw new Error(`Unexpected params: ${extras.join(', ')}`)
         }
     }
 
-    const paramsArray = orderKeys.map(k => paramsObj[k])
+    const paramsArray = orderKeys.map((k) => paramsObj[k])
 
     if (options.enforceSqlArity) {
         const expected = sqlMaxParamIndex(sql)
         if (expected !== paramsArray.length) {
-            throw new Error(`Params/orderKeys length (${paramsArray.length}) does not match SQL placeholder count (${expected})`)
+            throw new Error(
+                `Params/orderKeys length (${paramsArray.length}) does not match SQL placeholder count (${expected})`
+            )
         }
     }
 
@@ -86,7 +88,9 @@ export default class DBComponent {
             err.cause = e
             throw err
         } finally {
-            try { client?.release?.() } catch { }
+            try {
+                client?.release?.()
+            } catch {}
         }
     }
 
@@ -109,7 +113,9 @@ export default class DBComponent {
             err.cause = e
             throw err
         } finally {
-            try { client?.release?.() } catch { }
+            try {
+                client?.release?.()
+            } catch {}
         }
     }
 }

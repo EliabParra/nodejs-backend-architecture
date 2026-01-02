@@ -6,7 +6,7 @@ In this architecture, the backend **depends** on the `security` schema (tx + per
 
 1. Configure your Postgres connection via `.env` (`DATABASE_URL` or `PG*`).
 2. Run:
-   - `npm run db:init`
+    - `npm run db:init`
 
 ## What it creates
 
@@ -14,12 +14,12 @@ The script [scripts/db-init.mjs](../../scripts/db-init.mjs) creates (if missing)
 
 - `security` schema
 - Minimum tables required by [src/config/queries.json](../../src/config/queries.json):
-  - `security.profile`
-  - `security."user"`
-  - `security.user_profile`
-  - `security.object`
-  - `security.method`
-  - `security.permission_method`
+    - `security.profile`
+    - `security."user"`
+    - `security.user_profile`
+    - `security.object`
+    - `security.method`
+    - `security.permission_method`
 
 It also creates the session table used by `connect-pg-simple`:
 
@@ -48,9 +48,9 @@ The script can also **auto-register** existing BOs under `BO/`:
 - Finds folders `BO/<ObjectName>/` containing `BO/<ObjectName>/<ObjectName>BO.js`.
 - Extracts methods declared as `async <method_na>(...)` (ignores methods starting with `_`).
 - Upserts:
-  - `security.object(object_na)`
-  - `security.method(object_id, method_na, tx_nu)`
-  - `security.permission_method(profile_id, method_id)`
+    - `security.object(object_na)`
+    - `security.method(object_id, method_na, tx_nu)`
+    - `security.permission_method(profile_id, method_id)`
 
 By default (in TTY mode) it runs and grants permissions to `profile_id` (default `1`).
 
@@ -107,8 +107,8 @@ When `security.audit_log` exists, the backend performs best-effort inserts (it w
 - `login`: inserts `action=login` and updates `last_login_at`.
 - `logout`: inserts `action=logout`.
 - `/toProccess`:
-  - `tx_exec` (BO executed)
-  - `tx_denied` (permissionDenied)
-  - `tx_error` (unexpected error)
+    - `tx_exec` (BO executed)
+    - `tx_denied` (permissionDenied)
+    - `tx_error` (unexpected error)
 
 Typical fields: `request_id`, `user_id`, `profile_id`, `tx_nu`, `object_na`, `method_na`, `meta`.

@@ -126,12 +126,12 @@ It lists `profile_id`, `object_na`, available methods, and lets you select.
 ## Recommended workflow (real project)
 
 1. Create the BO structure:
-   - `npm run bo -- new Order --methods getOrder,createOrder,updateOrder,deleteOrder`
+    - `npm run bo -- new Order --methods getOrder,createOrder,updateOrder,deleteOrder`
 2. Implement real DB queries in the repository (replace `TODO_*` placeholders).
 3. Map methods to DB (tx):
-   - `npm run bo -- sync Order --txStart 200`
+    - `npm run bo -- sync Order --txStart 200`
 4. Assign profile permissions:
-   - `npm run bo -- perms --profile 2 --allow Order.getOrder,Order.createOrder`
+    - `npm run bo -- perms --profile 2 --allow Order.getOrder,Order.createOrder`
 5. Restart the server to reload `Security` cache.
 
 ## Important considerations
