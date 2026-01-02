@@ -60,6 +60,7 @@ declare global {
     const config: AppConfig
     const log: AppLog
     const db: AppDb
+    const queries: any
     const msgs: any
     const v: any
     const security: AppSecurity
