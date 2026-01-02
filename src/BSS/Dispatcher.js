@@ -187,7 +187,7 @@ export default class Dispatcher {
                     tx: req.body?.tx,
                     profile_id: effectiveProfileId,
                     details: { reason: 'permissionDenied' },
-                })
+                }, this.ctx)
 
                 return res
                     .status(this.clientErrors.permissionDenied.code)
@@ -203,7 +203,7 @@ export default class Dispatcher {
                 tx: req.body?.tx,
                 profile_id: effectiveProfileId,
                 details: { responseCode: response?.code },
-            })
+            }, this.ctx)
 
             res.status(response.code).send(response)
         } catch (err) {
@@ -222,7 +222,7 @@ export default class Dispatcher {
                 tx,
                 profile_id: effectiveProfileId,
                 details: { error: String(err?.message || err) },
-            })
+            }, this.ctx)
 
             log.show({
                 type: log.TYPE_ERROR,
@@ -330,7 +330,7 @@ export default class Dispatcher {
                 return sendInvalidParameters(res, this.clientErrors.invalidParameters, schemaAlerts)
             }
             if (this.session.sessionExists(req)) {
-                await auditBestEffort(req, { action: 'logout', details: {} })
+                await auditBestEffort(req, { action: 'logout', details: {} }, this.ctx)
 
                 this.session.destroySession(req)
                 return res.status(this.successMsgs.logout.code).send(this.successMsgs.logout)

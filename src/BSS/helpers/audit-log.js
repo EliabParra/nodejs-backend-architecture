@@ -26,11 +26,13 @@ export async function auditBestEffort(
         user_id = req?.session?.user_id ?? null,
         profile_id = req?.session?.profile_id ?? null,
         details = {},
-    }
+    },
+    ctx
 ) {
     try {
+        const effectiveDb = ctx?.db ?? db
         const safeDetails = redactSecrets(details ?? {})
-        await db.exe('security', 'insertAuditLog', [
+        await effectiveDb.exe('security', 'insertAuditLog', [
             req?.requestId,
             user_id,
             profile_id,
