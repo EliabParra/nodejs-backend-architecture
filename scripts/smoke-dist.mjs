@@ -2,6 +2,8 @@
 // Keeps it side-effect free: only imports modules.
 
 async function main() {
+    await import(new URL('../dist/src/helpers/sanitize.js', import.meta.url))
+
     // Importing this module should not require runtime globals yet
     // (they're only accessed when calling the exported functions).
     await import(new URL('../dist/src/BSS/helpers/http-validators.js', import.meta.url))

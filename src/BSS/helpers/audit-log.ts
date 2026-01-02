@@ -34,7 +34,7 @@ export async function auditBestEffort(
     } = args ?? ({} as AuditArgs)
 
     try {
-        const effectiveDb = (ctx as any)?.db ?? (globalThis as any).db
+        const effectiveDb = (ctx as any)?.db ?? db
         const safeDetails = redactSecrets((details ?? {}) as Record<string, unknown>)
 
         await effectiveDb.exe('security', 'insertAuditLog', [
