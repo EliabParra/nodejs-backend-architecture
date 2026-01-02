@@ -15,6 +15,7 @@
         "test:watch": "node --import ./test/setup.mjs --test --watch",
         "test:coverage": "c8 --reporter=text --reporter=text-summary --reporter=lcov node --import ./test/setup.mjs --test",
         "build": "node scripts/build-dist.mjs",
+        "smoke:dist": "npm run build && node scripts/smoke-dist.mjs",
         "start": "node src/index.js",
         "start:dist": "cd dist && node src/index.js",
         "dev": "nodemon src/index.js",
