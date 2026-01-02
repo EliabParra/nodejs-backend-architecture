@@ -1,9 +1,14 @@
 export default class Security {
-    constructor() {
+    /** @param {AppContext=} ctx */
+    constructor(ctx) {
+        this.ctx = ctx
+        const effectiveConfig = this.ctx?.config ?? config
+        const effectiveMsgs = this.ctx?.msgs ?? msgs
+
         this.permission = new Map()
         this.txMap = new Map()
         this.instances = new Map()
-        this.serverErrors = msgs[config.app.lang].errors.server
+        this.serverErrors = effectiveMsgs[effectiveConfig.app.lang].errors.server
 
         this.isReady = false
         this.initError = null
@@ -13,14 +18,15 @@ export default class Security {
     }
 
     async init() {
+        const effectiveLog = this.ctx?.log ?? log
         try {
             await Promise.all([this.loadPermissions(), this.loadDataTx()])
             this.isReady = true
             return true
         } catch (err) {
             this.initError = err
-            log.show({
-                type: log.TYPE_ERROR,
+            effectiveLog.show({
+                type: effectiveLog.TYPE_ERROR,
                 msg: `${this.serverErrors.serverError.msg}, Security.init: ${err?.message || err}`,
             })
             throw err
@@ -28,8 +34,10 @@ export default class Security {
     }
 
     async loadPermissions() {
+        const effectiveDb = this.ctx?.db ?? db
+        const effectiveLog = this.ctx?.log ?? log
         try {
-            const r = await db.exe('security', 'loadPermissions', null)
+            const r = await effectiveDb.exe('security', 'loadPermissions', null)
             if (!r || !r.rows) throw new Error('loadPermissions returned null')
             r.rows.forEach((el) => {
                 const key = `${el.profile_id}_${el.method_na}_${el.object_na}`
@@ -37,8 +45,8 @@ export default class Security {
             })
             return true
         } catch (err) {
-            log.show({
-                type: log.TYPE_ERROR,
+            effectiveLog.show({
+                type: effectiveLog.TYPE_ERROR,
                 msg: `${this.serverErrors.serverError.msg}, Security.loadPermissions: ${err?.message || err}`,
             })
             throw err
@@ -52,8 +60,10 @@ export default class Security {
     }
 
     async loadDataTx() {
+        const effectiveDb = this.ctx?.db ?? db
+        const effectiveLog = this.ctx?.log ?? log
         try {
-            const r = await db.exe('security', 'loadDataTx', null)
+            const r = await effectiveDb.exe('security', 'loadDataTx', null)
             if (!r || !r.rows) throw new Error('loadDataTx returned null')
             r.rows.forEach((el) => {
                 const key = el.tx_nu
@@ -62,8 +72,8 @@ export default class Security {
             })
             return true
         } catch (err) {
-            log.show({
-                type: log.TYPE_ERROR,
+            effectiveLog.show({
+                type: effectiveLog.TYPE_ERROR,
                 msg: `${this.serverErrors.serverError.msg}, Security.loadDataTx: ${err?.message || err}`,
             })
             throw err
@@ -76,21 +86,23 @@ export default class Security {
     }
 
     async executeMethod(jsonData) {
+        const effectiveConfig = this.ctx?.config ?? config
+        const effectiveLog = this.ctx?.log ?? log
         try {
             const key = `${jsonData.object_na}_${jsonData.method_na}`
             if (this.instances.has(key)) {
                 const instance = this.instances.get(key)
                 return await instance[jsonData.method_na](jsonData.params)
             } else {
-                const modulePath = `${config.bo.path}${jsonData.object_na}/${jsonData.object_na}BO.js`
+                const modulePath = `${effectiveConfig.bo.path}${jsonData.object_na}/${jsonData.object_na}BO.js`
                 const c = await import(modulePath)
                 const instance = new c[`${jsonData.object_na}BO`]()
                 this.instances.set(key, instance)
                 return await instance[jsonData.method_na](jsonData.params)
             }
         } catch (err) {
-            log.show({
-                type: log.TYPE_ERROR,
+            effectiveLog.show({
+                type: effectiveLog.TYPE_ERROR,
                 msg: `${this.serverErrors.serverError.msg}, Security.executeMethod: ${err?.message || err}`,
                 ctx: {
                     object_na: jsonData?.object_na,
@@ -100,7 +112,7 @@ export default class Security {
                             ? `${jsonData.object_na}_${jsonData.method_na}`
                             : undefined,
                     modulePath: jsonData?.object_na
-                        ? `${config.bo.path}${jsonData.object_na}/${jsonData.object_na}BO.js`
+                        ? `${effectiveConfig.bo.path}${jsonData.object_na}/${jsonData.object_na}BO.js`
                         : undefined,
                 },
             })

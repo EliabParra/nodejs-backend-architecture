@@ -1,10 +1,11 @@
 import './globals.js'
 import Security from './BSS/Security.js'
 import Dispatcher from './BSS/Dispatcher.js'
+import { createAppContext } from './context/app-context.js'
 
 // Security is created only for the server runtime.
 // This keeps CLI scripts (that import globals) from doing DB work on import.
-globalThis.security = new Security()
+globalThis.security = new Security(createAppContext())
 
 const dispatcher = new Dispatcher()
 await dispatcher.init()
