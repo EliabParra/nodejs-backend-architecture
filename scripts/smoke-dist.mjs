@@ -13,6 +13,7 @@ async function main() {
     await import(new URL('../dist/src/BSS/helpers/http-responses.js', import.meta.url))
 
     await import(new URL('../dist/src/BSS/Dispatcher.js', import.meta.url))
+    await import(new URL('../dist/src/BSS/Security.js', import.meta.url))
 
     console.log('dist smoke: ok')
 }
