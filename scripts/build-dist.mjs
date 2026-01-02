@@ -9,7 +9,7 @@ async function run(command, args) {
     await new Promise((resolve, reject) => {
         const child = spawn(command, args, {
             stdio: 'inherit',
-            shell: process.platform === 'win32',
+            shell: false,
             cwd: repoRoot,
         })
         child.on('error', reject)
@@ -18,6 +18,11 @@ async function run(command, args) {
             else reject(new Error(`${command} ${args.join(' ')} failed with code ${code}`))
         })
     })
+}
+
+function resolveTscScript() {
+    // Use the JS entrypoint so this works on Windows without `shell: true`.
+    return path.join(repoRoot, 'node_modules', 'typescript', 'bin', 'tsc')
 }
 
 async function copyFileIfExists(from, to) {
@@ -44,7 +49,7 @@ async function copyDirIfExists(fromDir, toDir) {
 async function main() {
     await fs.rm(distDir, { recursive: true, force: true })
 
-    await run('npx', ['tsc', '-p', 'tsconfig.build.json'])
+    await run(process.execPath, [resolveTscScript(), '-p', 'tsconfig.build.json'])
 
     await copyFileIfExists(path.join(repoRoot, 'package.json'), path.join(distDir, 'package.json'))
     await copyFileIfExists(

@@ -8,6 +8,7 @@
         "format": "prettier --write .",
         "format:check": "prettier --check .",
         "typecheck": "tsc -p tsconfig.json --noEmit",
+        "typecheck:js": "tsc -p tsconfig.check.json --noEmit",
         "test": "node --import ./test/setup.mjs --test",
         "test:http": "node --import ./test/setup.mjs --test test/*.http.test.mjs",
         "test:cli": "node --import ./test/setup.mjs --test test/*cli*.test.mjs",

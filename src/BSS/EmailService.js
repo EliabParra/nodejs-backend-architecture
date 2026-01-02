@@ -1,5 +1,19 @@
 import nodemailer from 'nodemailer'
 
+/**
+ * @typedef {{
+ *  mode?: string,
+ *  from?: string,
+ *  logIncludeSecrets?: boolean,
+ *  smtpHost?: string,
+ *  smtpPort?: number,
+ *  smtpSecure?: boolean,
+ *  smtpUser?: string,
+ *  smtpPass?: string,
+ * }} EmailConfig
+ */
+
+/** @param {EmailConfig} emailCfg */
 function isConfiguredForSmtp(emailCfg) {
     return Boolean(
         emailCfg &&
@@ -10,6 +24,7 @@ function isConfiguredForSmtp(emailCfg) {
     )
 }
 
+/** @param {string} email */
 function maskEmail(email) {
     const s = String(email ?? '').trim()
     const at = s.indexOf('@')
@@ -20,6 +35,7 @@ function maskEmail(email) {
     return `${head}***@${domain}`
 }
 
+/** @param {EmailConfig} emailCfg */
 function buildTransport(emailCfg) {
     return nodemailer.createTransport({
         host: emailCfg.smtpHost,
@@ -34,6 +50,7 @@ function buildTransport(emailCfg) {
 
 export default class EmailService {
     constructor() {
+        /** @type {EmailConfig} */
         this.cfg = config.email ?? {}
         this.mode = String(this.cfg.mode ?? 'log')
             .trim()
@@ -42,16 +59,19 @@ export default class EmailService {
         this.logIncludeSecrets =
             Boolean(this.cfg.logIncludeSecrets) || process.env.NODE_ENV === 'test'
 
+        /** @type {import('nodemailer').Transporter | null} */
         this._transport = null
         if (this.mode === 'smtp' && isConfiguredForSmtp(this.cfg)) {
             this._transport = buildTransport(this.cfg)
         }
     }
 
+    /** @param {string} email */
     maskEmail(email) {
         return maskEmail(email)
     }
 
+    /** @param {{ to: string, token: string, code: string, appName?: string }} args */
     async sendLoginChallenge({ to, token, code, appName }) {
         const subject = `${appName ?? 'App'} - Verificación de inicio de sesión`
         const text = `Tu inicio de sesión requiere verificación.\n\nToken: ${token}\nCódigo: ${code}\n\nSi no fuiste tú, ignora este mensaje.`
@@ -74,6 +94,7 @@ export default class EmailService {
         return { ok: true, mode: 'smtp' }
     }
 
+    /** @param {{ to: string, token: string, code: string, appName?: string }} args */
     async sendPasswordReset({ to, token, code, appName }) {
         const subject = `${appName ?? 'App'} - Restablecer contraseña`
         const text = `Solicitud para restablecer contraseña.\n\nToken: ${token}\nCódigo: ${code}\n\nSi no fuiste tú, ignora este mensaje.`
@@ -96,6 +117,7 @@ export default class EmailService {
         return { ok: true, mode: 'smtp' }
     }
 
+    /** @param {{ to: string, token: string, code: string, appName?: string }} args */
     async sendEmailVerification({ to, token, code, appName }) {
         const subject = `${appName ?? 'App'} - Verificar email`
         const text = `Verificación de email requerida.
