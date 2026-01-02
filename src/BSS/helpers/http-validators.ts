@@ -100,3 +100,56 @@ export function validateLoginVerifySchema(body: unknown): string[] {
 
     return alerts
 }
+
+export type ToProccessBody = {
+    tx: number
+    params?: string | number | Record<string, unknown> | null
+}
+
+export type LoginBody = {
+    username: string
+    password: string
+}
+
+export type LoginVerifyBody = {
+    token: string
+    code: string
+}
+
+export type LogoutBody = Record<string, unknown> | null | undefined
+
+export function parseToProccessBody(
+    body: unknown
+): { ok: true; body: ToProccessBody } | { ok: false; alerts: string[] } {
+    const alerts = validateToProccessSchema(body)
+    if (alerts.length > 0) return { ok: false, alerts }
+    const b = body as { tx: number; params?: any }
+    return { ok: true, body: { tx: b.tx, params: b.params } }
+}
+
+export function parseLoginBody(
+    body: unknown,
+    opts: { minPasswordLen?: number } = {}
+): { ok: true; body: LoginBody } | { ok: false; alerts: string[] } {
+    const alerts = validateLoginSchema(body, opts)
+    if (alerts.length > 0) return { ok: false, alerts }
+    const b = body as { username: string; password: string }
+    return { ok: true, body: { username: b.username, password: b.password } }
+}
+
+export function parseLoginVerifyBody(
+    body: unknown
+): { ok: true; body: LoginVerifyBody } | { ok: false; alerts: string[] } {
+    const alerts = validateLoginVerifySchema(body)
+    if (alerts.length > 0) return { ok: false, alerts }
+    const b = body as { token: string; code: string }
+    return { ok: true, body: { token: b.token, code: b.code } }
+}
+
+export function parseLogoutBody(
+    body: unknown
+): { ok: true; body: LogoutBody } | { ok: false; alerts: string[] } {
+    const alerts = validateLogoutSchema(body)
+    if (alerts.length > 0) return { ok: false, alerts }
+    return { ok: true, body: (body ?? null) as LogoutBody }
+}

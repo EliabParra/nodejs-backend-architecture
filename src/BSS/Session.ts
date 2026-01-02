@@ -4,7 +4,7 @@ import { createHash, randomBytes } from 'node:crypto'
 import { applySessionMiddleware } from '../express/session/apply-session-middleware.js'
 import { auditBestEffort } from './helpers/audit-log.js'
 import { redactSecretsInString } from '../helpers/sanitize.js'
-import { validateLoginSchema } from './helpers/http-validators.js'
+import { isPlainObject, parseLoginBody } from './helpers/http-validators.js'
 import EmailService from './EmailService.js'
 
 type EmailServiceLike = {
@@ -19,11 +19,6 @@ type EmailServiceLike = {
 
 function sha256Hex(value: unknown) {
     return createHash('sha256').update(String(value), 'utf8').digest('hex')
-}
-
-function asRecord(value: unknown): Record<string, unknown> {
-    if (value && typeof value === 'object') return value as Record<string, unknown>
-    return {}
 }
 
 function getCookie(req: AppRequest, name: string) {
@@ -97,13 +92,12 @@ export default class Session {
 
     async createSession(req: AppRequest, res: AppResponse) {
         try {
-            const alerts = validateLoginSchema(req.body, { minPasswordLen: 8 })
-
-            if (alerts.length > 0) {
+            const parsed = parseLoginBody(req.body, { minPasswordLen: 8 })
+            if (parsed.ok === false) {
                 return res.status(this.clientErrors.invalidParameters.code).send({
                     msg: this.clientErrors.invalidParameters.msg,
                     code: this.clientErrors.invalidParameters.code,
-                    alerts,
+                    alerts: parsed.alerts,
                 })
             }
 
@@ -114,7 +108,7 @@ export default class Session {
                 })
             }
 
-            const body = asRecord(req.body)
+            const body = parsed.body
             const identifier = body.username
             const queryName = this.loginId === 'username' ? 'getUserByUsername' : 'getUserByEmail'
             const result = await db.exe('security', queryName, [identifier])
@@ -127,8 +121,7 @@ export default class Session {
             const user = result.rows[0]
             const storedHash = user.user_pw
             const ok =
-                typeof storedHash === 'string' &&
-                (await bcrypt.compare(String(body.password), storedHash))
+                typeof storedHash === 'string' && (await bcrypt.compare(body.password, storedHash))
             if (!ok)
                 return res
                     .status(this.clientErrors.usernameOrPasswordIncorrect.code)
@@ -279,9 +272,9 @@ export default class Session {
                     .send(this.clientErrors.sessionExists)
             }
 
-            const body = asRecord(req.body)
-            const token = body.token
-            const code = body.code
+            const body = isPlainObject(req.body) ? req.body : null
+            const token = body?.token
+            const code = body?.code
             if (typeof token !== 'string' || typeof code !== 'string') {
                 return res
                     .status(this.clientErrors.invalidParameters.code)

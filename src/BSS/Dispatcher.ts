@@ -20,6 +20,8 @@ import { createReadyHandler } from '../express/handlers/ready.js'
 import { createFinalErrorHandler } from '../express/middleware/final-error-handler.js'
 
 import {
+    isPlainObject,
+    parseToProccessBody,
     validateLoginSchema,
     validateLoginVerifySchema,
     validateLogoutSchema,
@@ -29,11 +31,6 @@ import {
 import { auditBestEffort } from './helpers/audit-log.js'
 import { sendInvalidParameters } from './helpers/http-responses.js'
 import { redactSecretsInString } from '../helpers/sanitize.js'
-
-function asRecord(value: unknown): Record<string, unknown> {
-    if (value && typeof value === 'object') return value as Record<string, unknown>
-    return {}
-}
 
 /**
  * Express API orchestrator.
@@ -147,9 +144,13 @@ export default class Dispatcher {
                 return res.status(this.clientErrors.login.code).send(this.clientErrors.login)
             }
 
-            const schemaAlerts = validateToProccessSchema(req.body)
-            if (schemaAlerts.length > 0) {
-                return sendInvalidParameters(res, this.clientErrors.invalidParameters, schemaAlerts)
+            const parsed = parseToProccessBody(req.body)
+            if (parsed.ok === false) {
+                return sendInvalidParameters(
+                    res,
+                    this.clientErrors.invalidParameters,
+                    parsed.alerts
+                )
             }
 
             if (!effectiveSecurity.isReady) {
@@ -162,7 +163,7 @@ export default class Dispatcher {
                 }
             }
 
-            const body = asRecord(req.body)
+            const body = parsed.body
             const tx = body.tx
             const txData = tx != null ? effectiveSecurity.getDataTx(tx) : null
 
@@ -182,7 +183,12 @@ export default class Dispatcher {
                     method === 'verifyPasswordReset' ||
                     method === 'resetPassword'
                 ) {
-                    const baseParams = asRecord(body.params)
+                    const baseParams =
+                        body.params &&
+                        typeof body.params === 'object' &&
+                        !Array.isArray(body.params)
+                            ? body.params
+                            : {}
                     effectiveParams = {
                         ...baseParams,
                         _request: {
@@ -240,8 +246,7 @@ export default class Dispatcher {
                 res.locals.__errorLogged = true
             } catch {}
 
-            const body = asRecord(req.body)
-            const tx = body.tx
+            const tx = isPlainObject(req.body) ? req.body.tx : undefined
             const effectiveSecurity = this.ctx?.security ?? security
             const txData = tx != null ? effectiveSecurity.getDataTx(tx) : null
             await auditBestEffort(
