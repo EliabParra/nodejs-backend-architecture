@@ -12,7 +12,10 @@ type RedactOptions = {
     maxStringLength?: number
 }
 
-export function redactSecrets(value: unknown, { maxDepth = 6, maxStringLength = 2000 }: RedactOptions = {}) {
+export function redactSecrets(
+    value: unknown,
+    { maxDepth = 6, maxStringLength = 2000 }: RedactOptions = {}
+) {
     function walk(v: unknown, depth: number): unknown {
         if (depth > maxDepth) return '[Truncated]'
         if (v == null) return v
