@@ -178,11 +178,47 @@ CSRF:
 ### Response
 
 - Éxito: `200` con `msgs[lang].success.login`
+- Verificación requerida (2 pasos en dispositivo nuevo, opcional): `202` con `msgs[lang].success.loginVerificationRequired`
+    - Incluye: `challengeToken` y `sentTo` (email enmascarado)
 - Errores comunes:
     - `400 invalidParameters` + `alerts` (si falla validación)
     - `401 sessionExists` (si ya hay sesión)
     - `401 usernameOrPasswordIncorrect`
+    - `403 emailNotVerified` (cuando `AUTH_REQUIRE_EMAIL_VERIFICATION=1`)
+    - `409 emailRequired` (cuando `AUTH_REQUIRE_EMAIL_VERIFICATION=1` y el usuario no tiene email)
     - `429 tooManyRequests` (si hay demasiados intentos en ventana de tiempo)
+
+Notas:
+
+- Puedes configurar si `username` se interpreta como email o usuario con `AUTH_LOGIN_ID`.
+- El `202` ocurre solo cuando `AUTH_LOGIN_2STEP_NEW_DEVICE=1` y el dispositivo no es de confianza.
+
+## POST /login/verify
+
+Archivo: [src/BSS/Session.js](../../src/BSS/Session.js)
+
+Completa el desafío de login de 2 pasos iniciado por `POST /login`.
+
+### Request
+
+```json
+{ "token": "<challengeToken>", "code": "<código-6-dígitos>" }
+```
+
+CSRF:
+
+- Requiere `X-CSRF-Token` (ver sección CSRF).
+
+### Response
+
+- Éxito: `200` con `msgs[lang].success.login`
+    - También crea la sesión y emite una cookie HttpOnly de dispositivo para confiar este browser.
+- Errores comunes:
+    - `400 invalidParameters` + `alerts`
+    - `401 sessionExists`
+    - `401 invalidToken` / `401 expiredToken`
+    - `403 emailNotVerified` (cuando `AUTH_REQUIRE_EMAIL_VERIFICATION=1`)
+    - `429 tooManyRequests` (demasiados intentos)
 
 ### Rate limiting (anti brute-force)
 
@@ -245,13 +281,16 @@ Si el body llega como JSON inválido, también se responde `400 invalidParameter
 
 ### Reglas
 
-1. Debe existir sesión (`req.session.user_id`).
-2. Debe existir el `tx`.
-3. Debe haber permiso para el `profile_id` actual.
+1. Si existe sesión, el request se ejecuta con `req.session.profile_id`.
+2. Si NO existe sesión, el servidor puede ejecutar opcionalmente como **perfil público** cuando `AUTH_PUBLIC_PROFILE_ID` está configurado.
+    - Esto habilita flujos anónimos (p. ej. registro/reset) manteniendo control por permisos.
+3. Debe existir el `tx`.
+4. Debe existir permiso para el `profile_id` efectivo.
 
-Además:
+CSRF:
 
-- Requiere `X-CSRF-Token`.
+- Autenticado: requiere `X-CSRF-Token`.
+- Anónimo (perfil público): CSRF no se exige (se preserva el comportamiento histórico cuando no hay sesión autenticada).
 
 ### Response
 

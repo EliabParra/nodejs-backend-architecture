@@ -36,6 +36,17 @@ Supported variables:
     - Useful if you want the session table to live under another schema (e.g. `security`).
 - Cookies (optional): `SESSION_COOKIE_SECURE`, `SESSION_COOKIE_SAMESITE`, `SESSION_COOKIE_MAXAGE_MS`
 
+- Auth (optional): `AUTH_LOGIN_ID`, `AUTH_LOGIN_2STEP_NEW_DEVICE`, `AUTH_PUBLIC_PROFILE_ID`, `AUTH_SESSION_PROFILE_ID`, `AUTH_REQUIRE_EMAIL_VERIFICATION`
+    - `AUTH_LOGIN_ID`: `email` | `username` (default comes from `config.auth.loginId`).
+    - `AUTH_LOGIN_2STEP_NEW_DEVICE`: `1|0` (when `1`, `/login` may return `202` and require `POST /login/verify`).
+    - `AUTH_PUBLIC_PROFILE_ID`: enables anonymous `/toProccess` by executing as that profile (public permissions still apply).
+    - `AUTH_SESSION_PROFILE_ID`: sets the profile assigned on registration (default comes from `config.auth.sessionProfileId`).
+    - `AUTH_REQUIRE_EMAIL_VERIFICATION`: `1|0` (when `1`, users must verify email before login).
+
+- Email (optional): `EMAIL_MODE`, `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_SECURE`, `SMTP_FROM`
+    - `EMAIL_MODE`: `log` | `smtp`.
+    - SMTP vars apply when `EMAIL_MODE=smtp`.
+
 Extra variables (production / reverse proxy):
 
 - `APP_TRUST_PROXY`: configures Express `app.set('trust proxy', ...)` (useful behind a proxy/LB).

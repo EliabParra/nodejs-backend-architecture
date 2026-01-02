@@ -54,6 +54,7 @@ Un backend de referencia que muestra un patrón de arquitectura (dispatcher tran
 10. [DB init CLI (schema `security`)](10-db-init-cli.md)
 11. [Frontend clients y requests](11-frontend-clients-and-requests.md)
 12. [Ejemplos incluidos (opcional)](12-examples.md)
+13. [Autenticación (módulo Auth)](13-autenticacion.md)
 
 ## Glosario
 

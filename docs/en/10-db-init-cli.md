@@ -77,6 +77,17 @@ Admin user:
 - `--adminPassword <pw>` (required if not in TTY)
 - `--profileId <id>` (default `1`)
 
+Profiles (optional, used by Auth flows):
+
+- `--seedProfiles`: if no profiles exist, seed minimal profiles (public + session) (default in TTY)
+- `--publicProfileId <id>` (default `2`): profile id used for anonymous `/toProccess` (public)
+- `--sessionProfileId <id>` (default `1`): profile id used for authenticated sessions
+
+Auth public permissions (optional):
+
+- `--seedPublicAuthPerms`: when registering BOs, also grant the public profile permissions for Auth public methods
+    - This is what enables anonymous `/toProccess` registration / email verification / password reset under `AUTH_PUBLIC_PROFILE_ID`.
+
 Optional fields:
 
 - `--includeEmail`: adds `security.user.user_em` (nullable + unique)
@@ -85,6 +96,25 @@ BO auto-registration:
 
 - `--registerBo`: force auto-registration (default in TTY).
 - `--txStart <n>`: starting tx for new methods.
+
+Auth module (optional):
+
+- `--auth`: create Auth support tables (password reset + one-time codes)
+- `--authUsername`: keep username as a supported identifier (default: true)
+    - When false, `security.user.user_na` becomes optional (nullable).
+- `--authLoginId <value>`: `email|username` (default: `email`)
+- `--authLogin2StepNewDevice`: enable 2-step login only for new devices
+
+Environment equivalents (for db-init):
+
+- `AUTH_ENABLE=1` (same as `--auth`)
+- `AUTH_USERNAME=1|0` (same as `--authUsername`)
+- `AUTH_LOGIN_ID=email|username`
+- `AUTH_LOGIN_2STEP_NEW_DEVICE=1|0`
+- `AUTH_SEED_PROFILES=1|0`
+- `AUTH_PUBLIC_PROFILE_ID=<id>`
+- `AUTH_SESSION_PROFILE_ID=<id>`
+- `AUTH_SEED_PUBLIC_AUTH_PERMS=1|0`
 
 ## Configuring where the session table lives
 

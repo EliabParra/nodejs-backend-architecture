@@ -54,6 +54,7 @@ A reference backend that demonstrates the architecture pattern (transaction disp
 10. [DB init CLI (`security` schema)](10-db-init-cli.md)
 11. [Frontend clients and requests](11-frontend-clients-and-requests.md)
 12. [Included examples (optional)](12-examples.md)
+13. [Authentication (Auth module)](13-authentication.md)
 
 ## Glossary
 

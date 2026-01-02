@@ -178,11 +178,47 @@ CSRF:
 ### Response
 
 - Success: `200` with `msgs[lang].success.login`
+- Verification required (new device 2-step, optional): `202` with `msgs[lang].success.loginVerificationRequired`
+    - Includes: `challengeToken` and `sentTo` (masked email)
 - Common errors:
     - `400 invalidParameters` + `alerts`
     - `401 sessionExists`
     - `401 usernameOrPasswordIncorrect`
+    - `403 emailNotVerified` (when `AUTH_REQUIRE_EMAIL_VERIFICATION=1`)
+    - `409 emailRequired` (when `AUTH_REQUIRE_EMAIL_VERIFICATION=1` and the user has no email)
     - `429 tooManyRequests` (too many attempts within the time window)
+
+Notes:
+
+- The server can be configured to accept `username` as either an email or a username via `AUTH_LOGIN_ID`.
+- The `202` flow happens only when `AUTH_LOGIN_2STEP_NEW_DEVICE=1` and the device is not yet trusted.
+
+## POST /login/verify
+
+Implementation: [src/BSS/Session.js](../../src/BSS/Session.js)
+
+Completes the optional 2-step login challenge started by `POST /login`.
+
+### Request
+
+```json
+{ "token": "<challengeToken>", "code": "<6-digit-code>" }
+```
+
+CSRF:
+
+- Requires `X-CSRF-Token` (see CSRF section).
+
+### Response
+
+- Success: `200` with `msgs[lang].success.login`
+    - Also creates the session and issues an HttpOnly device cookie to trust this browser.
+- Common errors:
+    - `400 invalidParameters` + `alerts`
+    - `401 sessionExists`
+    - `401 invalidToken` / `401 expiredToken`
+    - `403 emailNotVerified` (when `AUTH_REQUIRE_EMAIL_VERIFICATION=1`)
+    - `429 tooManyRequests` (too many attempts)
 
 ### Rate limiting (anti brute-force)
 
@@ -245,13 +281,16 @@ If the body is invalid JSON, it also returns `400 invalidParameters` + `alerts`.
 
 ### Rules
 
-1. A session must exist (`req.session.user_id`).
-2. The `tx` must exist.
-3. The current `profile_id` must have permission.
+1. If a session exists, the request executes under `req.session.profile_id`.
+2. If no session exists, the server can optionally execute as a **public profile** when `AUTH_PUBLIC_PROFILE_ID` is configured.
+    - This enables anonymous flows (e.g. Auth registration/reset) while still enforcing permissions.
+3. The `tx` must exist.
+4. The effective `profile_id` must have permission.
 
-Also:
+CSRF:
 
-- Requires `X-CSRF-Token`.
+- When authenticated: requires `X-CSRF-Token`.
+- When anonymous (public profile): CSRF is not enforced (the server preserves the historical 401 behavior when there is no authenticated session).
 
 ### Response
 

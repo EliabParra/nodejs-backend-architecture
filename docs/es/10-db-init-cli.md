@@ -77,6 +77,17 @@ Usuario admin:
 - `--adminPassword <pw>` (si no estás en TTY)
 - `--profileId <id>` (default `1`)
 
+Perfiles (opcional, usado por flujos Auth):
+
+- `--seedProfiles`: si no existen perfiles, crea perfiles mínimos (public + session) (default en TTY)
+- `--publicProfileId <id>` (default `2`): id de perfil usado para `/toProccess` anónimo (public)
+- `--sessionProfileId <id>` (default `1`): id de perfil usado para sesiones autenticadas
+
+Permisos públicos de Auth (opcional):
+
+- `--seedPublicAuthPerms`: al registrar BOs, también concede al perfil público permisos para métodos públicos de Auth
+    - Esto es lo que habilita el `/toProccess` anónimo para registro / verificación de email / reset de password bajo `AUTH_PUBLIC_PROFILE_ID`.
+
 Campos opcionales:
 
 - `--includeEmail`: agrega `security.user.user_em` (nullable + unique)
@@ -85,6 +96,25 @@ Auto-registro BOs:
 
 - `--registerBo`: fuerza auto-registro (por defecto en TTY).
 - `--txStart <n>`: define el tx inicial para métodos nuevos.
+
+Módulo Auth (opcional):
+
+- `--auth`: crea tablas de soporte de Auth (password reset + one-time codes)
+- `--authUsername`: mantiene `username` como identificador soportado (default: true)
+    - Si es false, `security.user.user_na` pasa a ser opcional (nullable).
+- `--authLoginId <value>`: `email|username` (default: `email`)
+- `--authLogin2StepNewDevice`: habilita login 2-step solo para dispositivos nuevos
+
+Equivalentes por environment (para db-init):
+
+- `AUTH_ENABLE=1` (igual a `--auth`)
+- `AUTH_USERNAME=1|0` (igual a `--authUsername`)
+- `AUTH_LOGIN_ID=email|username`
+- `AUTH_LOGIN_2STEP_NEW_DEVICE=1|0`
+- `AUTH_SEED_PROFILES=1|0`
+- `AUTH_PUBLIC_PROFILE_ID=<id>`
+- `AUTH_SESSION_PROFILE_ID=<id>`
+- `AUTH_SEED_PUBLIC_AUTH_PERMS=1|0`
 
 ## Configurar dónde vive la tabla de sesión
 

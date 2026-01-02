@@ -97,6 +97,7 @@ npm run bo -- sync Order --txStart 100
 Empieza aquí:
 
 - Índice ES: [docs/es/00-index.md](docs/es/00-index.md)
+- Auth (ES): [docs/es/13-autenticacion.md](docs/es/13-autenticacion.md)
 - Tutorial Frontend (ES): [docs/es/11-frontend-clients-and-requests.md](docs/es/11-frontend-clients-and-requests.md)
 - Ejemplos (ES): [docs/es/12-examples.md](docs/es/12-examples.md)
 

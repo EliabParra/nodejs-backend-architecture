@@ -99,6 +99,7 @@ npm run bo -- sync Order --txStart 100
 Start here:
 
 - English index: [docs/en/00-index.md](docs/en/00-index.md)
+- Auth (EN): [docs/en/13-authentication.md](docs/en/13-authentication.md)
 - Frontend tutorial (EN): [docs/en/11-frontend-clients-and-requests.md](docs/en/11-frontend-clients-and-requests.md)
 - Examples (EN): [docs/en/12-examples.md](docs/en/12-examples.md)
 
