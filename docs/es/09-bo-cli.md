@@ -6,7 +6,7 @@ Este repo incluye un CLI para:
 - Registrar automáticamente en DB el `object_na`, `method_na` y el `tx_nu` (mapping de transacciones).
 - Asignar/quitar permisos a perfiles (tabla `security.permission_method`).
 
-El CLI vive en [scripts/bo.mjs](../../scripts/bo.mjs) y se ejecuta con `npm run bo`.
+El CLI vive en [scripts/bo.ts](../../scripts/bo.ts) y se ejecuta con `npm run bo`.
 
 ## Requisitos
 

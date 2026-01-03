@@ -10,7 +10,7 @@ In this architecture, the backend **depends** on the `security` schema (tx + per
 
 ## What it creates
 
-The script [scripts/db-init.mjs](../../scripts/db-init.mjs) creates (if missing):
+The script [scripts/db-init.ts](../../scripts/db-init.ts) creates (if missing):
 
 - `security` schema
 - Minimum tables required by [src/config/queries.json](../../src/config/queries.json):

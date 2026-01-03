@@ -10,7 +10,7 @@ En esta arquitectura, el backend **depende** del schema `security` (tx + permiso
 
 ## Qué crea
 
-El script [scripts/db-init.mjs](../../scripts/db-init.mjs) crea, si no existen:
+El script [scripts/db-init.ts](../../scripts/db-init.ts) crea, si no existen:
 
 - Schema `security`
 - Tablas mínimas requeridas por [src/config/queries.json](../../src/config/queries.json):
