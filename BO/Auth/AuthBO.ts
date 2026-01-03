@@ -9,34 +9,82 @@ import { AuthValidate } from './AuthValidate.js'
 import { AuthRepository } from './Auth.js'
 import EmailService from '../../src/BSS/EmailService.js'
 
-const successMsgs = require('./authSuccessMsgs.json')[config.app.lang]
+type ApiResponse = {
+    code: number
+    msg: string
+    alerts?: string[]
+    data?: Record<string, unknown> | null
+}
+
+const successMsgs = require('./authSuccessMsgs.json')[config.app.lang] as Record<string, string>
 const email = new EmailService()
 
-function sha256Hex(value) {
-    return createHash('sha256').update(String(value), 'utf8').digest('hex')
+function sha256Hex(value: string): string {
+    return createHash('sha256').update(value, 'utf8').digest('hex')
 }
 
-function isEmail(value) {
-    return typeof value === 'string' && value.includes('@')
+function isEmail(value: string): boolean {
+    return value.includes('@')
 }
 
-function parseJsonMeta(value) {
+function asRecord(value: unknown): Record<string, unknown> | null {
+    if (value == null) return null
+    if (typeof value !== 'object') return null
+    return value as Record<string, unknown>
+}
+
+function getString(
+    obj: Record<string, unknown> | null | undefined,
+    key: string
+): string | undefined {
+    const value = obj?.[key]
+    return typeof value === 'string' ? value : undefined
+}
+
+function getNumber(
+    obj: Record<string, unknown> | null | undefined,
+    key: string
+): number | undefined {
+    const value = obj?.[key]
+    if (typeof value === 'number') return value
+    if (typeof value === 'string') {
+        const num = Number(value)
+        return Number.isFinite(num) ? num : undefined
+    }
+    return undefined
+}
+
+function parseJsonMeta(
+    value: string | Record<string, unknown> | null | undefined
+): Record<string, unknown> | null {
     if (value == null) return null
     if (typeof value === 'object') return value
     if (typeof value !== 'string') return null
     try {
-        return JSON.parse(value)
+        const parsed = JSON.parse(value) as unknown
+        return asRecord(parsed)
     } catch {
         return null
     }
 }
 
+function getRequestContext(params: Record<string, unknown> | null | undefined): {
+    ip: string | null
+    userAgent: string | null
+} {
+    const req = asRecord(params?.['_request'])
+    return {
+        ip: getString(req, 'ip') ?? null,
+        userAgent: getString(req, 'userAgent') ?? null,
+    }
+}
+
 export class AuthBO {
-    async register(params) {
+    async register(params: Record<string, unknown> | null | undefined): Promise<ApiResponse> {
         try {
-            const emailAddr = params?.email
-            const username = params?.username
-            const password = params?.password
+            const emailAddr = getString(params, 'email')
+            const username = getString(params, 'username')
+            const password = getString(params, 'password')
 
             if (
                 !AuthValidate.validateEmail(emailAddr) ||
@@ -86,8 +134,7 @@ export class AuthBO {
             const tokenHash = sha256Hex(token)
             const codeHash = sha256Hex(code)
 
-            const requestIp = params?._request?.ip ?? null
-            const requestUserAgent = params?._request?.userAgent ?? null
+            const { ip: requestIp, userAgent: requestUserAgent } = getRequestContext(params)
 
             await AuthRepository.insertOneTimeCode({
                 userId,
@@ -121,9 +168,11 @@ export class AuthBO {
         }
     }
 
-    async requestEmailVerification(params) {
+    async requestEmailVerification(
+        params: Record<string, unknown> | null | undefined
+    ): Promise<ApiResponse> {
         try {
-            const emailAddr = params?.email
+            const emailAddr = getString(params, 'email')
             if (!AuthValidate.validateEmail(emailAddr)) {
                 return AuthErrorHandler.invalidParameters(v.getAlerts())
             }
@@ -152,8 +201,7 @@ export class AuthBO {
             const tokenHash = sha256Hex(token)
             const codeHash = sha256Hex(code)
 
-            const requestIp = params?._request?.ip ?? null
-            const requestUserAgent = params?._request?.userAgent ?? null
+            const { ip: requestIp, userAgent: requestUserAgent } = getRequestContext(params)
 
             await AuthRepository.insertOneTimeCode({
                 userId: user.user_id,
@@ -187,11 +235,14 @@ export class AuthBO {
         }
     }
 
-    async verifyEmail(params) {
+    async verifyEmail(params: Record<string, unknown> | null | undefined): Promise<ApiResponse> {
         try {
-            const token = params?.token
-            const code = params?.code
+            const token = getString(params, 'token')
+            const code = getString(params, 'code')
             if (!AuthValidate.validateToken(token) || !AuthValidate.validateCode(code)) {
+                return AuthErrorHandler.invalidParameters(v.getAlerts())
+            }
+            if (!token || !code) {
                 return AuthErrorHandler.invalidParameters(v.getAlerts())
             }
 
@@ -229,9 +280,9 @@ export class AuthBO {
             }
 
             const meta = parseJsonMeta(otp.meta) ?? {}
-            const maxAttempts = Number(
-                meta?.maxAttempts ?? config?.auth?.emailVerificationMaxAttempts ?? 5
-            )
+            const maxAttempts =
+                getNumber(meta, 'maxAttempts') ??
+                Number(config?.auth?.emailVerificationMaxAttempts ?? 5)
             const attempts = Number(otp.attempt_count ?? 0)
             if (Number.isFinite(maxAttempts) && attempts >= maxAttempts) {
                 return AuthErrorHandler.tooManyRequests()
@@ -255,20 +306,22 @@ export class AuthBO {
         }
     }
 
-    async requestPasswordReset(params) {
+    async requestPasswordReset(
+        params: Record<string, unknown> | null | undefined
+    ): Promise<ApiResponse> {
         try {
-            const identifier = params?.identifier
+            const identifier = getString(params, 'identifier')
             if (!AuthValidate.validateIdentifier(identifier)) {
                 return AuthErrorHandler.invalidParameters(v.getAlerts())
             }
 
-            const requestIp = params?._request?.ip ?? null
-            const requestUserAgent = params?._request?.userAgent ?? null
+            const { ip: requestIp, userAgent: requestUserAgent } = getRequestContext(params)
 
             // Avoid account enumeration: always return success.
             let user = null
-            if (isEmail(identifier)) user = await AuthRepository.getUserByEmail(identifier)
-            else user = await AuthRepository.getUserByUsername(identifier)
+            if (identifier && isEmail(identifier))
+                user = await AuthRepository.getUserByEmail(identifier)
+            else if (identifier) user = await AuthRepository.getUserByUsername(identifier)
 
             if (!user || !user.user_em) {
                 return { code: 200, msg: successMsgs.requestPasswordReset ?? 'OK' }
@@ -334,11 +387,16 @@ export class AuthBO {
         }
     }
 
-    async verifyPasswordReset(params) {
+    async verifyPasswordReset(
+        params: Record<string, unknown> | null | undefined
+    ): Promise<ApiResponse> {
         try {
-            const token = params?.token
-            const code = params?.code
+            const token = getString(params, 'token')
+            const code = getString(params, 'code')
             if (!AuthValidate.validateToken(token) || !AuthValidate.validateCode(code)) {
+                return AuthErrorHandler.invalidParameters(v.getAlerts())
+            }
+            if (!token || !code) {
                 return AuthErrorHandler.invalidParameters(v.getAlerts())
             }
 
@@ -388,17 +446,20 @@ export class AuthBO {
         }
     }
 
-    async resetPassword(params) {
+    async resetPassword(params: Record<string, unknown> | null | undefined): Promise<ApiResponse> {
         try {
-            const token = params?.token
-            const code = params?.code
-            const newPassword = params?.newPassword
+            const token = getString(params, 'token')
+            const code = getString(params, 'code')
+            const newPassword = getString(params, 'newPassword')
 
             if (
                 !AuthValidate.validateToken(token) ||
                 !AuthValidate.validateCode(code) ||
                 !AuthValidate.validateNewPassword(newPassword, { min: 8, max: 200 })
             ) {
+                return AuthErrorHandler.invalidParameters(v.getAlerts())
+            }
+            if (!token || !code) {
                 return AuthErrorHandler.invalidParameters(v.getAlerts())
             }
 

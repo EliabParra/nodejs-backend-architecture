@@ -120,6 +120,23 @@ export default class Security {
     async executeMethod(jsonData: { object_na: unknown; method_na: unknown; params: any }) {
         const effectiveConfig = this.ctx?.config ?? config
         const effectiveLog = this.ctx?.log ?? log
+
+        function isModuleNotFound(err: any): boolean {
+            const code = err?.code
+            if (code === 'ERR_MODULE_NOT_FOUND') return true
+            // Best-effort fallback for environments that don't set `code`.
+            const msg = String(err?.message ?? '')
+            return msg.includes('Cannot find module') || msg.includes('ERR_MODULE_NOT_FOUND')
+        }
+
+        async function importBoModule(modulePathJs: string, modulePathTs: string) {
+            try {
+                return await import(modulePathJs)
+            } catch (err: any) {
+                if (!isModuleNotFound(err)) throw err
+                return await import(modulePathTs)
+            }
+        }
         try {
             const key = this.instanceKey(jsonData.object_na, jsonData.method_na)
             if (this.instances.has(key)) {
@@ -127,8 +144,10 @@ export default class Security {
                 return await instance[String(jsonData.method_na)](jsonData.params)
             } else {
                 const objectName = String(jsonData.object_na)
-                const modulePath = `${effectiveConfig.bo.path}${objectName}/${objectName}BO.js`
-                const c: any = await import(modulePath)
+                const basePath = `${effectiveConfig.bo.path}${objectName}/${objectName}BO`
+                const modulePathJs = `${basePath}.js`
+                const modulePathTs = `${basePath}.ts`
+                const c: any = await importBoModule(modulePathJs, modulePathTs)
                 const instance = new c[`${objectName}BO`]()
                 this.instances.set(key, instance)
                 return await instance[String(jsonData.method_na)](jsonData.params)
@@ -147,7 +166,7 @@ export default class Security {
                     modulePath: jsonData?.object_na
                         ? `${effectiveConfig.bo.path}${String(jsonData.object_na)}/${String(
                               jsonData.object_na
-                          )}BO.js`
+                          )}BO.js (fallback .ts)`
                         : undefined,
                 },
             })

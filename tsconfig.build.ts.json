@@ -7,6 +7,6 @@
         "allowJs": false,
         "checkJs": false
     },
-    "include": ["src/**/*.ts", "src/types/**/*.d.ts"],
+    "include": ["src/**/*.ts", "src/types/**/*.d.ts", "BO/**/*.ts"],
     "exclude": ["node_modules", "dist", "test", "docs"]
 }

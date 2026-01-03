@@ -292,7 +292,9 @@ async function discoverBOs(repoRoot) {
     for (const ent of entries) {
         if (!ent.isDirectory()) continue
         const objectName = ent.name
-        const boFile = path.join(boRoot, objectName, `${objectName}BO.js`)
+        const boFileTs = path.join(boRoot, objectName, `${objectName}BO.ts`)
+        const boFileJs = path.join(boRoot, objectName, `${objectName}BO.js`)
+        const boFile = (await fileExists(boFileTs)) ? boFileTs : boFileJs
         if (!(await fileExists(boFile))) continue
         const content = await fs.readFile(boFile, 'utf8')
         const methods = parseAsyncMethodsFromBO(content)

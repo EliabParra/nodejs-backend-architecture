@@ -117,18 +117,17 @@ async function writeFileSafe(filePath: string, content: string, force: boolean):
     }
 
     await writeOne(filePath, content)
+}
 
-    // If this is a TS source file, also emit a runnable .js sibling.
-    // This keeps BO runtime compatible (Security imports *.js), while making the template source TS.
-    if (filePath.endsWith('.ts') && !filePath.endsWith('.d.ts')) {
-        const jsPath = filePath.slice(0, -3) + '.js'
-        const out = ts.transpileModule(String(content), {
-            compilerOptions: {
-                target: ts.ScriptTarget.ES2022,
-                module: ts.ModuleKind.ES2022,
-            },
-        })
-        await writeOne(jsPath, out.outputText)
+async function resolveBoSourceFile(objectName: string): Promise<string> {
+    const baseDir = path.join(repoRoot, 'BO', objectName)
+    const tsPath = path.join(baseDir, `${objectName}BO.ts`)
+    const jsPath = path.join(baseDir, `${objectName}BO.js`)
+    try {
+        await fs.access(tsPath)
+        return tsPath
+    } catch {
+        return jsPath
     }
 }
 
@@ -165,7 +164,7 @@ function templateErrorMsgs() {
     )
 }
 
-function templateAlertsLabels(objectName) {
+function templateAlertsLabels(objectName: string) {
     return (
         JSON.stringify(
             {
@@ -178,48 +177,52 @@ function templateAlertsLabels(objectName) {
     )
 }
 
-function templateErrorHandler(objectName) {
+function templateErrorHandler(objectName: string) {
     return `import { createRequire } from 'node:module'
 const require = createRequire(import.meta.url)
-const errorMsgs = require('./${objectName.toLowerCase()}ErrorMsgs.json')[config.app.lang]
+
+type ApiError = { code: number; msg: string; alerts?: string[] }
+type ErrorMsgs = Record<string, ApiError>
+
+const errorMsgs = require('./${objectName.toLowerCase()}ErrorMsgs.json')[config.app.lang] as ErrorMsgs
 
 export class ${objectName}ErrorHandler {
-  static notFound() { return errorMsgs.notFound }
+    static notFound(): ApiError { return errorMsgs.notFound }
 
-  static invalidParameters(alerts) {
+    static invalidParameters(alerts?: string[]): ApiError {
     const { code, msg } = errorMsgs.invalidParameters
     return { code, msg, alerts: alerts ?? [] }
   }
 
-  static unauthorized() { return errorMsgs.unauthorized }
+    static unauthorized(): ApiError { return errorMsgs.unauthorized }
 
-  static unknownError() { return errorMsgs.unknownError }
+    static unknownError(): ApiError { return errorMsgs.unknownError }
 }
 `
 }
 
-function templateValidate(objectName) {
+function templateValidate(objectName: string) {
     return `import { createRequire } from 'node:module'
 const require = createRequire(import.meta.url)
-const labels = require('./errors/${objectName.toLowerCase()}Alerts.json')[config.app.lang].labels
+const labels = require('./errors/${objectName.toLowerCase()}Alerts.json')[config.app.lang].labels as Record<string, string>
 
 /* ${objectName}Validate: validación/normalización reutilizable */
 
 export class ${objectName}Validate {
-  static normalizeId(value) {
+    static normalizeId(value: unknown): unknown {
     return typeof value === 'string' ? Number(value) : value
   }
 
-  static normalizeText(value) {
+    static normalizeText(value: unknown): unknown {
     return typeof value === 'string' ? value.trim() : value
   }
 
-  static validateId(value) {
+    static validateId(value: unknown): boolean {
     const num = this.normalizeId(value)
     return v.validateInt({ value: num, label: labels.id })
   }
 
-  static validateName(value, { min = 1, max = 200 } = {}) {
+    static validateName(value: unknown, { min = 1, max = 200 }: { min?: number; max?: number } = {}): boolean {
     const name = this.normalizeText(value)
     if (typeof name !== 'string') return v.validateString({ value: name, label: labels.name })
     return v.validateLength({ value: name, label: labels.name }, min, max)
@@ -227,16 +230,16 @@ export class ${objectName}Validate {
 
   // Ejemplo de patrón genérico: un lookup puede ser por id o por nombre.
   // Ajusta esto según tu entidad.
-  static getLookupMode(value) {
-    if (this.validateId(value)) return 'id'
-    if (this.validateName(value)) return 'name'
+    static getLookupMode(value: unknown): 'id' | 'name' | null {
+        if (this.validateId(value)) return 'id'
+        if (this.validateName(value)) return 'name'
     return null
   }
 }
 `
 }
 
-function templateRepo(objectName) {
+function templateRepo(objectName: string) {
     return `/*
 ${objectName}Repository
 
@@ -245,7 +248,7 @@ ${objectName}Repository
 */
 
 export class ${objectName} {
-  constructor(params) {
+    constructor(params: Record<string, unknown>) {
     Object.assign(this, params)
   }
 }
@@ -253,29 +256,29 @@ export class ${objectName} {
 export class ${objectName}Repository {
   // Reemplaza 'domain' y 'TODO_*' con tu schema/queries reales.
 
-  static async getById(id) {
+    static async getById(id: number): Promise<${objectName} | null> {
     const r = await db.exe('domain', 'TODO_getById', [id])
     if (!r?.rows || r.rows.length === 0) return null
     return new ${objectName}(r.rows[0])
   }
 
-  static async getByName(name) {
+    static async getByName(name: string): Promise<${objectName} | null> {
     const r = await db.exe('domain', 'TODO_getByName', [name])
     if (!r?.rows || r.rows.length === 0) return null
     return new ${objectName}(r.rows[0])
   }
 
-  static async create(params) {
+    static async create(params: Record<string, unknown>): Promise<boolean> {
     await db.exe('domain', 'TODO_create', [params])
     return true
   }
 
-  static async update(params) {
+    static async update(params: Record<string, unknown>): Promise<boolean> {
     await db.exe('domain', 'TODO_update', [params])
     return true
   }
 
-  static async delete(params) {
+    static async delete(params: Record<string, unknown>): Promise<boolean> {
     await db.exe('domain', 'TODO_delete', [params])
     return true
   }
@@ -283,7 +286,7 @@ export class ${objectName}Repository {
 `
 }
 
-function templateBO(objectName, methods) {
+function templateBO(objectName: string, methods: string[]) {
     const methodBodies = methods
         .map((m, idx) => {
             const patternComment =
@@ -291,7 +294,7 @@ function templateBO(objectName, methods) {
                     ? `      // Patrón recomendado (aplica a todos los métodos):\n      // 1) validar/normalizar (Validate)\n      // 2) ejecutar operación (Repository/servicios)\n      // 3) retornar { code, msg, data?, alerts? }\n\n`
                     : ''
 
-            return `  async ${m}(params) {
+            return `  async ${m}(params: Record<string, unknown> | null | undefined): Promise<ApiResponse> {
     try {
 ${patternComment}      // TODO: valida/normaliza según tu caso
       // if (!${objectName}Validate.validateX(params)) return ${objectName}ErrorHandler.invalidParameters(v.getAlerts())
@@ -299,7 +302,7 @@ ${patternComment}      // TODO: valida/normaliza según tu caso
       // TODO: implementa tu operación real
       // const result = await ${objectName}Repository.someOperation(params)
 
-      return { code: 200, msg: successMsgs.${m} ?? '${escapeTemplateBraces(`${objectName} ${m} OK`)}', data: params ?? null }
+            return { code: 200, msg: successMsgs.${m} ?? '${escapeTemplateBraces(`${objectName} ${m} OK`)}', data: params ?? null }
     } catch (err) {
       log.show({ type: log.TYPE_ERROR, msg: \`${msgs[config.app.lang].errors.server.serverError.msg}, ${objectName}BO.${m}: \${err?.message || err}\` })
       return ${objectName}ErrorHandler.unknownError()
@@ -311,11 +314,13 @@ ${patternComment}      // TODO: valida/normaliza según tu caso
     return `import { createRequire } from 'node:module'
 const require = createRequire(import.meta.url)
 
+type ApiResponse = { code: number; msg: string; data?: Record<string, unknown> | null; alerts?: string[] }
+
 import { ${objectName}ErrorHandler } from './errors/${objectName}ErrorHandler.js'
 import { ${objectName}Validate } from './${objectName}Validate.js'
 import { ${objectName}Repository } from './${objectName}.js'
 
-const successMsgs = require('./${objectName.toLowerCase()}SuccessMsgs.json')[config.app.lang]
+const successMsgs = require('./${objectName.toLowerCase()}SuccessMsgs.json')[config.app.lang] as Record<string, string>
 
 /* ${objectName}BO: métodos async se registran; helpers internos pueden iniciar con "_". En sync se ignoran y no se registran en DB. */
 
@@ -409,18 +414,29 @@ function templateAuthAlertsLabels() {
 function templateAuthErrorHandler() {
     return `import { createRequire } from 'node:module'
 const require = createRequire(import.meta.url)
-const errorMsgs = require('./authErrorMsgs.json')[config.app.lang]
+
+type ApiError = { code: number; msg: string; alerts?: string[] }
+type AuthErrorKey =
+    | 'invalidParameters'
+    | 'invalidToken'
+    | 'expiredToken'
+    | 'tooManyRequests'
+    | 'alreadyRegistered'
+    | 'emailNotVerified'
+    | 'unknownError'
+
+const errorMsgs = require('./authErrorMsgs.json')[config.app.lang] as Record<AuthErrorKey, ApiError>
 
 export class AuthErrorHandler {
-    static invalidParameters(alerts) {
+    static invalidParameters(alerts?: string[]): ApiError {
         const { code, msg } = errorMsgs.invalidParameters
         return { code, msg, alerts: alerts ?? [] }
     }
 
-    static invalidToken() { return errorMsgs.invalidToken }
-    static expiredToken() { return errorMsgs.expiredToken }
-    static tooManyRequests() { return errorMsgs.tooManyRequests }
-    static unknownError() { return errorMsgs.unknownError }
+    static invalidToken(): ApiError { return errorMsgs.invalidToken }
+    static expiredToken(): ApiError { return errorMsgs.expiredToken }
+    static tooManyRequests(): ApiError { return errorMsgs.tooManyRequests }
+    static unknownError(): ApiError { return errorMsgs.unknownError }
 }
 `
 }
@@ -428,40 +444,50 @@ export class AuthErrorHandler {
 function templateAuthValidate() {
     return `import { createRequire } from 'node:module'
 const require = createRequire(import.meta.url)
-const labels = require('./errors/authAlerts.json')[config.app.lang].labels
+type AuthLabels = {
+    identifier: string
+    email: string
+    token: string
+    code: string
+    newPassword: string
+}
+
+const labels = require('./errors/authAlerts.json')[config.app.lang].labels as AuthLabels
 
 export class AuthValidate {
-    static normalizeText(value) {
-        return typeof value === 'string' ? value.trim() : value
+    static normalizeText(value: string | null | undefined): string | undefined {
+        if (typeof value !== 'string') return undefined
+        const trimmed = value.trim()
+        return trimmed.length > 0 ? trimmed : undefined
     }
 
-    static validateIdentifier(value) {
+    static validateIdentifier(value: string | null | undefined): boolean {
         const id = this.normalizeText(value)
-        if (typeof id !== 'string') return v.validateString({ value: id, label: labels.identifier })
+        if (!id) return v.validateString({ value: id, label: labels.identifier })
         return v.validateLength({ value: id, label: labels.identifier }, 3, 320)
     }
 
-    static validateEmail(value) {
+    static validateEmail(value: string | null | undefined): boolean {
         const email = this.normalizeText(value)
-        if (typeof email !== 'string') return v.validateString({ value: email, label: labels.email })
+        if (!email) return v.validateString({ value: email, label: labels.email })
         return v.validateEmail({ value: email, label: labels.email })
     }
 
-    static validateToken(value) {
+    static validateToken(value: string | null | undefined): boolean {
         const token = this.normalizeText(value)
-        if (typeof token !== 'string') return v.validateString({ value: token, label: labels.token })
+        if (!token) return v.validateString({ value: token, label: labels.token })
         return v.validateLength({ value: token, label: labels.token }, 16, 256)
     }
 
-    static validateCode(value) {
+    static validateCode(value: string | null | undefined): boolean {
         const code = this.normalizeText(value)
-        if (typeof code !== 'string') return v.validateString({ value: code, label: labels.code })
+        if (!code) return v.validateString({ value: code, label: labels.code })
         return v.validateLength({ value: code, label: labels.code }, 4, 12)
     }
 
-    static validateNewPassword(value, { min = 8, max = 200 } = {}) {
+    static validateNewPassword(value: string | null | undefined, { min = 8, max = 200 }: { min?: number; max?: number } = {}): boolean {
         const pw = this.normalizeText(value)
-        if (typeof pw !== 'string') return v.validateString({ value: pw, label: labels.newPassword })
+        if (!pw) return v.validateString({ value: pw, label: labels.newPassword })
         return v.validateLength({ value: pw, label: labels.newPassword }, min, max)
     }
 }
@@ -475,19 +501,23 @@ Auth Repository
 - Isola acceso a DB para el BO.
 */
 
+type UserRow = { user_id: number; user_em?: string | null }
+type PasswordResetRow = { reset_id: number; user_id: number; expires_at?: string | Date | null; used_at?: string | Date | null; attempt_count?: number | null }
+type OneTimeCodeRow = { code_id: number; user_id: number; attempt_count?: number | null }
+
 export class AuthRepository {
-    static async getUserByEmail(email) {
-        const r = await db.exe('security', 'getUserByEmail', [email])
-        return r?.rows?.[0] ?? null
+    static async getUserByEmail(email: string): Promise<UserRow | null> {
+        const r = (await db.exe('security', 'getUserByEmail', [email])) as { rows?: UserRow[] }
+        return r.rows?.[0] ?? null
     }
 
-    static async getUserByUsername(username) {
-        const r = await db.exe('security', 'getUserByUsername', [username])
-        return r?.rows?.[0] ?? null
+    static async getUserByUsername(username: string): Promise<UserRow | null> {
+        const r = (await db.exe('security', 'getUserByUsername', [username])) as { rows?: UserRow[] }
+        return r.rows?.[0] ?? null
     }
 
-    static async insertPasswordReset({ userId, tokenHash, sentTo, expiresSeconds, ip, userAgent }) {
-        return await db.exe('security', 'insertPasswordReset', [
+    static async insertPasswordReset({ userId, tokenHash, sentTo, expiresSeconds, ip, userAgent }: { userId: number; tokenHash: string; sentTo: string; expiresSeconds: number; ip?: string | null; userAgent?: string | null }): Promise<void> {
+        await db.exe('security', 'insertPasswordReset', [
             userId,
             tokenHash,
             sentTo,
@@ -497,22 +527,22 @@ export class AuthRepository {
         ])
     }
 
-    static async getPasswordResetByTokenHash(tokenHash) {
-        const r = await db.exe('security', 'getPasswordResetByTokenHash', [tokenHash])
-        return r?.rows?.[0] ?? null
+    static async getPasswordResetByTokenHash(tokenHash: string): Promise<PasswordResetRow | null> {
+        const r = (await db.exe('security', 'getPasswordResetByTokenHash', [tokenHash])) as { rows?: PasswordResetRow[] }
+        return r.rows?.[0] ?? null
     }
 
-    static async incrementPasswordResetAttempt(resetId) {
+    static async incrementPasswordResetAttempt(resetId: number): Promise<boolean> {
         await db.exe('security', 'incrementPasswordResetAttempt', [resetId])
         return true
     }
 
-    static async markPasswordResetUsed(resetId) {
+    static async markPasswordResetUsed(resetId: number): Promise<boolean> {
         await db.exe('security', 'markPasswordResetUsed', [resetId])
         return true
     }
 
-    static async insertOneTimeCode({ userId, purpose, codeHash, expiresSeconds, meta }) {
+    static async insertOneTimeCode({ userId, purpose, codeHash, expiresSeconds, meta }: { userId: number; purpose: string; codeHash: string; expiresSeconds: number; meta?: Record<string, unknown> }): Promise<boolean> {
         await db.exe('security', 'insertOneTimeCode', [
             userId,
             purpose,
@@ -523,22 +553,22 @@ export class AuthRepository {
         return true
     }
 
-    static async getValidOneTimeCode({ userId, purpose, codeHash }) {
-        const r = await db.exe('security', 'getValidOneTimeCodeForPurpose', [userId, purpose, codeHash])
-        return r?.rows?.[0] ?? null
+    static async getValidOneTimeCode({ userId, purpose, codeHash }: { userId: number; purpose: string; codeHash: string }): Promise<OneTimeCodeRow | null> {
+        const r = (await db.exe('security', 'getValidOneTimeCodeForPurpose', [userId, purpose, codeHash])) as { rows?: OneTimeCodeRow[] }
+        return r.rows?.[0] ?? null
     }
 
-    static async incrementOneTimeCodeAttempt(codeId) {
+    static async incrementOneTimeCodeAttempt(codeId: number): Promise<boolean> {
         await db.exe('security', 'incrementOneTimeCodeAttempt', [codeId])
         return true
     }
 
-    static async consumeOneTimeCode(codeId) {
+    static async consumeOneTimeCode(codeId: number): Promise<boolean> {
         await db.exe('security', 'consumeOneTimeCode', [codeId])
         return true
     }
 
-    static async updateUserPassword({ userId, passwordHash }) {
+    static async updateUserPassword({ userId, passwordHash }: { userId: number; passwordHash: string }): Promise<boolean> {
         await db.exe('security', 'updateUserPassword', [userId, passwordHash])
         return true
     }
@@ -552,6 +582,8 @@ function templateAuthBO() {
     return `import { createRequire } from 'node:module'
 const require = createRequire(import.meta.url)
 
+type ApiResponse = { code: number; msg: string; data?: Record<string, unknown> | null; alerts?: string[] }
+
 import bcrypt from 'bcryptjs'
 import { createHash, randomBytes } from 'node:crypto'
 
@@ -560,29 +592,34 @@ import { AuthValidate } from './AuthValidate.js'
 import { AuthRepository } from './Auth.js'
 import EmailService from '../../src/BSS/EmailService.js'
 
-const successMsgs = require('./authSuccessMsgs.json')[config.app.lang]
+const successMsgs = require('./authSuccessMsgs.json')[config.app.lang] as Record<string, string>
 const email = new EmailService()
 
-function sha256Hex(value) {
-    return createHash('sha256').update(String(value), 'utf8').digest('hex')
+function sha256Hex(value: string): string {
+    return createHash('sha256').update(value, 'utf8').digest('hex')
 }
 
-function isEmail(value) {
-    return typeof value === 'string' && value.includes('@')
+function isEmail(value: string): boolean {
+    return value.includes('@')
+}
+
+function getString(obj: Record<string, unknown> | null | undefined, key: string): string | undefined {
+    const v = obj?.[key]
+    return typeof v === 'string' ? v : undefined
 }
 
 export class AuthBO {
-    async requestPasswordReset(params) {
+    async requestPasswordReset(params: Record<string, unknown> | null | undefined): Promise<ApiResponse> {
         try {
-            const identifier = params?.identifier
+            const identifier = getString(params, 'identifier')
             if (!AuthValidate.validateIdentifier(identifier)) {
                 return AuthErrorHandler.invalidParameters(v.getAlerts())
             }
 
             // Avoid account enumeration: always return success.
             let user = null
-            if (isEmail(identifier)) user = await AuthRepository.getUserByEmail(identifier)
-            else user = await AuthRepository.getUserByUsername(identifier)
+            if (identifier && isEmail(identifier)) user = await AuthRepository.getUserByEmail(identifier)
+            else if (identifier) user = await AuthRepository.getUserByUsername(identifier)
 
             if (!user || !user.user_em) {
                 return { code: 200, msg: successMsgs.requestPasswordReset ?? 'OK' }
@@ -633,11 +670,14 @@ export class AuthBO {
         }
     }
 
-    async verifyPasswordReset(params) {
+    async verifyPasswordReset(params: Record<string, unknown> | null | undefined): Promise<ApiResponse> {
         try {
-            const token = params?.token
-            const code = params?.code
+            const token = getString(params, 'token')
+            const code = getString(params, 'code')
             if (!AuthValidate.validateToken(token) || !AuthValidate.validateCode(code)) {
+                return AuthErrorHandler.invalidParameters(v.getAlerts())
+            }
+            if (!token || !code) {
                 return AuthErrorHandler.invalidParameters(v.getAlerts())
             }
 
@@ -677,13 +717,16 @@ export class AuthBO {
         }
     }
 
-    async resetPassword(params) {
+    async resetPassword(params: Record<string, unknown> | null | undefined): Promise<ApiResponse> {
         try {
-            const token = params?.token
-            const code = params?.code
-            const newPassword = params?.newPassword
+            const token = getString(params, 'token')
+            const code = getString(params, 'code')
+            const newPassword = getString(params, 'newPassword')
 
             if (!AuthValidate.validateToken(token) || !AuthValidate.validateCode(code) || !AuthValidate.validateNewPassword(newPassword, { min: 8, max: 200 })) {
+                return AuthErrorHandler.invalidParameters(v.getAlerts())
+            }
+            if (!token || !code) {
                 return AuthErrorHandler.invalidParameters(v.getAlerts())
             }
 
@@ -932,7 +975,7 @@ async function cmdNew(objectName, opts) {
 
 async function cmdSync(objectName, opts) {
     validateObjectName(objectName)
-    const boFile = path.join(repoRoot, 'BO', objectName, `${objectName}BO.js`)
+    const boFile = await resolveBoSourceFile(objectName)
     const content = await fs.readFile(boFile, 'utf8')
     const methods = parseMethodsFromBO(content).filter((m) => !m.startsWith('_'))
 

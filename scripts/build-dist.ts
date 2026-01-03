@@ -35,7 +35,11 @@ async function copyFileIfExists(from: string, to: string) {
     await fs.copyFile(from, to)
 }
 
-async function copyDirIfExists(fromDir: string, toDir: string) {
+async function copyDirIfExists(
+    fromDir: string,
+    toDir: string,
+    opts?: { filter?: (src: string, dest: string) => boolean }
+) {
     try {
         await fs.access(fromDir)
     } catch {
@@ -43,14 +47,15 @@ async function copyDirIfExists(fromDir: string, toDir: string) {
     }
     await fs.rm(toDir, { recursive: true, force: true })
     await fs.mkdir(path.dirname(toDir), { recursive: true })
-    await fs.cp(fromDir, toDir, { recursive: true, force: true })
+    await fs.cp(fromDir, toDir, {
+        recursive: true,
+        force: true,
+        filter: opts?.filter,
+    })
 }
 
 async function main() {
     await fs.rm(distDir, { recursive: true, force: true })
-
-    // Compile TS sources to dist/, overwriting same-path JS when applicable.
-    await run(process.execPath, [resolveTscScript(), '-p', 'tsconfig.build.ts.json'])
 
     await copyFileIfExists(path.join(repoRoot, 'package.json'), path.join(distDir, 'package.json'))
     await copyFileIfExists(
@@ -60,7 +65,15 @@ async function main() {
 
     await copyDirIfExists(path.join(repoRoot, 'src', 'config'), path.join(distDir, 'src', 'config'))
     await copyDirIfExists(path.join(repoRoot, 'public'), path.join(distDir, 'public'))
-    await copyDirIfExists(path.join(repoRoot, 'BO'), path.join(distDir, 'BO'))
+
+    // Copy BO assets (json, etc) but exclude TS sources.
+    // BO TS sources are compiled by tsc to dist/BO/*.js.
+    await copyDirIfExists(path.join(repoRoot, 'BO'), path.join(distDir, 'BO'), {
+        filter: (src) => !src.endsWith('.ts') && !src.endsWith('.d.ts'),
+    })
+
+    // Compile TS sources to dist/ (includes src/ and BO/).
+    await run(process.execPath, [resolveTscScript(), '-p', 'tsconfig.build.ts.json'])
 }
 
 main().catch((err) => {

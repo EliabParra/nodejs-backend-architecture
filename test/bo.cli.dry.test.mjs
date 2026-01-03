@@ -45,7 +45,7 @@ test('bo CLI new --dry does not write files', async () => {
 test('bo CLI sync --dry --txStart does not touch DB', async () => {
     const objectName = `ZzBoSyncDry${Date.now()}`
     const baseDir = path.join(repoRoot, 'BO', objectName)
-    const boFile = path.join(baseDir, `${objectName}BO.js`)
+    const boFile = path.join(baseDir, `${objectName}BO.ts`)
 
     try {
         await fs.mkdir(baseDir, { recursive: true })

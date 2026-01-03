@@ -123,7 +123,7 @@ test('register requires email verification before login', async () => {
             [12, { object_na: 'Auth', method_na: 'verifyEmail' }],
         ])
 
-        const { AuthBO } = await import('../BO/Auth/AuthBO.js')
+        const { AuthBO } = await import('../BO/Auth/AuthBO.ts')
         const auth = new AuthBO()
 
         globalThis.security = {

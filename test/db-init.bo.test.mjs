@@ -25,7 +25,7 @@ test('discoverBOs finds BOs under repoRoot/BO', async () => {
         const boDir = path.join(tmp, 'BO', 'Order')
         await fs.mkdir(boDir, { recursive: true })
         await fs.writeFile(
-            path.join(boDir, 'OrderBO.js'),
+            path.join(boDir, 'OrderBO.ts'),
             `export class OrderBO {\n  async getOrder() {}\n  async createOrder() {}\n  async _internal() {}\n}`,
             'utf8'
         )
