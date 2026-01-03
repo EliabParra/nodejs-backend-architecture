@@ -82,9 +82,15 @@ export default class DBComponent {
     pool: Pool
     serverErrors: any
 
-    constructor() {
-        this.pool = new Pool(config.db as any)
+    private queries: any
+    private log: AppLog
+
+    constructor(deps: { config: AppConfig; msgs: any; queries: any; log: AppLog }) {
+        const { config, msgs, queries, log } = deps
+        this.pool = new Pool((config as any).db as any)
         this.serverErrors = (msgs as any)[(config as any).app.lang].errors.server
+        this.queries = queries
+        this.log = log
     }
 
     async exeRaw(sql: unknown, params?: unknown): Promise<QueryResult<any>> {
@@ -99,7 +105,7 @@ export default class DBComponent {
             return await client.query(sql, paramsArray as any[])
         } catch (e: any) {
             const msg = `${this.serverErrors.dbError.msg}, DBComponent.exeRaw: ${e?.message || e}`
-            log.show({ type: log.TYPE_ERROR, msg })
+            this.log.show({ type: (this.log as any).TYPE_ERROR, msg })
             const err = new Error(this.serverErrors.dbError.msg) as Error & {
                 code?: unknown
                 cause?: unknown
@@ -120,12 +126,12 @@ export default class DBComponent {
             const paramsArray = buildParamsArray(params)
 
             client = await this.pool.connect()
-            const sql = (queries as any)[schema][query]
+            const sql = (this.queries as any)[schema][query]
             const res = await client.query(sql, paramsArray as any[])
             return res
         } catch (e: any) {
             const msg = `${this.serverErrors.dbError.msg}, DBComponent.exe: ${e?.message || e}`
-            log.show({ type: log.TYPE_ERROR, msg })
+            this.log.show({ type: (this.log as any).TYPE_ERROR, msg })
             const err = new Error(this.serverErrors.dbError.msg) as Error & {
                 code?: unknown
                 cause?: unknown
@@ -151,7 +157,7 @@ export default class DBComponent {
     ): Promise<QueryResult<any>> {
         let client: PoolClient | undefined
         try {
-            const sql = (queries as any)?.[schema]?.[query]
+            const sql = (this.queries as any)?.[schema]?.[query]
             if (typeof sql !== 'string') throw new Error(`Query not found: ${schema}.${query}`)
 
             const paramsArray = prepareNamedParams(sql, paramsObj, orderKeys, opts)
@@ -159,7 +165,7 @@ export default class DBComponent {
             return await client.query(sql, paramsArray as any[])
         } catch (e: any) {
             const msg = `${this.serverErrors.dbError.msg}, DBComponent.exeNamed: ${e?.message || e}`
-            log.show({ type: log.TYPE_ERROR, msg })
+            this.log.show({ type: (this.log as any).TYPE_ERROR, msg })
             const err = new Error(this.serverErrors.dbError.msg) as Error & {
                 code?: unknown
                 cause?: unknown

@@ -1,4 +1,5 @@
-export function applyRequestLogger(app: any) {
+export function applyRequestLogger(app: any, deps: { log: AppLog }) {
+    const { log } = deps
     // Log completed responses with duration and requestId.
     // For status >= 400 we log only if it wasn't already logged (to avoid duplication).
     app.use((req: AppRequest, res: AppResponse, next: any) => {

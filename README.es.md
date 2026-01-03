@@ -24,16 +24,21 @@ Este repo es un **starter/blueprint** que te da una base sólida (modelo de segu
 - Modelo de permisos en DB (schema `security`) con CLIs para init + BO sync + permisos.
 - Bases operativas incluidas: `/health`, `/ready`, request IDs, errores JSON consistentes.
 - Hosting de frontend opcional (`none`/`pages`/`spa`) con orden seguro.
+- Runtime TypeScript-first (ESM) con `strict: true` y un seam DI-friendly (`AppContext`).
 
 ## Para quién es
 
 - Apps internas (B2B/admin) que necesitan sesiones por cookie + CSRF.
 - Equipos que quieren una base mantenible con puntos de extensión claros.
 
-## Para quién NO es (todavía)
+## TypeScript-first + DI (qué esperar)
 
-- APIs REST públicas que deban ser OpenAPI-first.
-- Proyectos que requieran TypeScript-first + DI desde el día 1.
+- **TypeScript-first**: el source-of-truth es `src/**/*.ts` y el typecheck estricto es parte del quality gate.
+- **DI-friendly** (sin container pesado): los servicios de runtime viven en globals y también se agrupan en un `AppContext` creado por `createAppContext()`.
+
+Empieza aquí:
+
+- Tipos + DI: [docs/es/14-types-y-di.md](docs/es/14-types-y-di.md)
 
 ## Quickstart (10 minutos)
 
@@ -111,13 +116,13 @@ Empieza aquí:
 | `npm run format:check`                             | Verifica formato (ideal para CI)           |
 | `npm run test:watch`                               | Corre tests en modo watch                  |
 | `npm run test:coverage`                            | Genera cobertura (c8)                      |
-| `npm run verify`                                   | Verifica DB-safe (Node test runner)        |
+| `npm run verify`                                   | Quality gate: typecheck + build + dist smoke + tests |
 | `npm run db:init`                                  | Inicializa schema `security` (idempotente) |
 | `npm run bo -- <command>`                          | CLI BO (scaffold, sync tx, permisos)       |
 | `npm run hashpw -- "<plainPassword>" [saltRounds]` | Genera hashes bcrypt                       |
 | `npm run export:starter`                           | Export limpio                              |
 
-Nota de cobertura: `c8` está configurado para enfocarse en lógica de runtime (`src/**/*.js`) y excluye wiring/entrypoints (p. ej. `src/index.ts`) y definiciones solo JSDoc (`src/jsdoc/**`).
+Nota de cobertura: `c8` está configurado para enfocarse en lógica de runtime (`src/**/*.ts`) y excluye wiring/entrypoints (p. ej. `src/index.ts`) y docs/scripts/BO.
 
 ## BO/ (tu dominio)
 

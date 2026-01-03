@@ -1,19 +1,13 @@
 import 'dotenv/config'
+
 import { createRequire } from 'node:module'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-const g = globalThis as unknown as {
-    require?: any
-    config?: any
-    queries?: any
-    msgs?: any
-    v?: any
-    log?: any
-    db?: any
-}
-
-g.require = createRequire(import.meta.url)
+import Log from '../BSS/Log.js'
+import Validator from '../BSS/Validator.js'
+import DBComponent from '../BSS/DBComponent.js'
+import Security from '../BSS/Security.js'
 
 function envBool(value: unknown) {
     if (value == null) return undefined
@@ -27,6 +21,28 @@ function envInt(value: unknown) {
     if (value == null) return undefined
     const n = Number.parseInt(String(value), 10)
     return Number.isFinite(n) ? n : undefined
+}
+
+function mergeQueries(base: any, extra: any) {
+    if (!extra || typeof extra !== 'object') return base
+    const out = { ...(base ?? {}) }
+    for (const [schema, schemaQueries] of Object.entries(extra)) {
+        if (!schemaQueries || typeof schemaQueries !== 'object') continue
+        ;(out as any)[schema] = { ...((out as any)[schema] ?? {}), ...(schemaQueries as any) }
+    }
+    return out
+}
+
+function repoPath(...parts: string[]) {
+    const srcDir = path.dirname(fileURLToPath(import.meta.url))
+    const repoRoot = path.resolve(srcDir, '..', '..')
+    return path.resolve(repoRoot, ...parts)
+}
+
+function resolveRepoRelative(p: unknown) {
+    const raw = String(p ?? '').trim()
+    if (!raw) return null
+    return path.isAbsolute(raw) ? raw : repoPath(raw)
 }
 
 function applyEnvOverrides(cfg: any) {
@@ -47,8 +63,6 @@ function applyEnvOverrides(cfg: any) {
     if (process.env.APP_LANG) cfg.app.lang = process.env.APP_LANG
     if (process.env.APP_FRONTEND_MODE) cfg.app.frontendMode = String(process.env.APP_FRONTEND_MODE)
 
-    // Reverse proxy / load balancer
-    // Express "trust proxy" setting: boolean | number | string.
     if (process.env.APP_TRUST_PROXY != null) {
         const raw = String(process.env.APP_TRUST_PROXY).trim()
         const asInt = envInt(raw)
@@ -58,8 +72,6 @@ function applyEnvOverrides(cfg: any) {
         else if (raw.length > 0) cfg.app.trustProxy = raw
     }
 
-    // Postgres / pg
-    // Supports standard PG* vars and DATABASE_URL.
     if (process.env.DATABASE_URL) cfg.db.connectionString = process.env.DATABASE_URL
     if (process.env.PGHOST) cfg.db.host = process.env.PGHOST
     if (process.env.PGPORT) {
@@ -72,8 +84,6 @@ function applyEnvOverrides(cfg: any) {
     const pgSsl = envBool(process.env.PGSSL)
     if (pgSsl != null) cfg.db.ssl = pgSsl
 
-    // Session secrets
-    // express-session supports string OR array of strings (rotation)
     if (process.env.SESSION_SECRETS) {
         const secrets = String(process.env.SESSION_SECRETS)
             .split(',')
@@ -84,15 +94,12 @@ function applyEnvOverrides(cfg: any) {
         cfg.session.secret = String(process.env.SESSION_SECRET)
     }
 
-    // Session store location (connect-pg-simple)
-    // Useful if you want the session table under a different schema (e.g. `security`).
     cfg.session.store = cfg.session.store ?? {}
     if (process.env.SESSION_SCHEMA)
         cfg.session.store.schemaName = String(process.env.SESSION_SCHEMA).trim()
     if (process.env.SESSION_TABLE)
         cfg.session.store.tableName = String(process.env.SESSION_TABLE).trim()
 
-    // Optional cookie overrides (useful behind HTTPS/proxy)
     const cookieSecure = envBool(process.env.SESSION_COOKIE_SECURE)
     if (cookieSecure != null) cfg.session.cookie.secure = cookieSecure
     if (process.env.SESSION_COOKIE_SAMESITE)
@@ -100,7 +107,6 @@ function applyEnvOverrides(cfg: any) {
     const cookieMaxAge = envInt(process.env.SESSION_COOKIE_MAXAGE_MS)
     if (cookieMaxAge != null) cfg.session.cookie.maxAge = cookieMaxAge
 
-    // CORS overrides (useful for production without editing config.json)
     const corsEnabled = envBool(process.env.CORS_ENABLED)
     if (corsEnabled != null) cfg.cors.enabled = corsEnabled
     const corsCredentials = envBool(process.env.CORS_CREDENTIALS)
@@ -113,12 +119,8 @@ function applyEnvOverrides(cfg: any) {
         if (origins.length > 0) cfg.cors.origins = origins
     }
 
-    // Logging
-    // LOG_FORMAT=text|json (json = one-line JSON per event, better for log aggregation)
     if (process.env.LOG_FORMAT) cfg.log.format = String(process.env.LOG_FORMAT).trim().toLowerCase()
 
-    // Auth (optional module)
-    // AUTH_LOGIN_ID=email|username
     if (process.env.AUTH_LOGIN_ID) {
         const v = String(process.env.AUTH_LOGIN_ID).trim().toLowerCase()
         if (v === 'email' || v === 'username') cfg.auth.loginId = v
@@ -136,8 +138,6 @@ function applyEnvOverrides(cfg: any) {
     if (requireEmailVerification != null)
         cfg.auth.requireEmailVerification = requireEmailVerification
 
-    // Email (optional)
-    // EMAIL_MODE=smtp|log
     if (process.env.EMAIL_MODE) cfg.email.mode = String(process.env.EMAIL_MODE).trim().toLowerCase()
     if (process.env.SMTP_HOST) cfg.email.smtpHost = String(process.env.SMTP_HOST).trim()
     if (process.env.SMTP_PORT) {
@@ -150,8 +150,6 @@ function applyEnvOverrides(cfg: any) {
     if (smtpSecure != null) cfg.email.smtpSecure = smtpSecure
     if (process.env.SMTP_FROM) cfg.email.from = String(process.env.SMTP_FROM)
 
-    // Normalize a minimal set of defaults so strict TS can treat these as required.
-    // (Config files already provide them, but env overrides and partial configs are supported.)
     cfg.app.lang = String(cfg.app.lang ?? 'es')
     cfg.app.host = String(cfg.app.host ?? 'localhost')
     cfg.app.name = String(cfg.app.name ?? 'app')
@@ -165,52 +163,41 @@ function applyEnvOverrides(cfg: any) {
     return cfg
 }
 
-function mergeQueries(base: any, extra: any) {
-    if (!extra || typeof extra !== 'object') return base
-    const out = { ...(base ?? {}) }
-    for (const [schema, schemaQueries] of Object.entries(extra)) {
-        if (!schemaQueries || typeof schemaQueries !== 'object') continue
-        ;(out as any)[schema] = { ...((out as any)[schema] ?? {}), ...(schemaQueries as any) }
+export async function createRuntimeContext(): Promise<AppContext> {
+    const require = createRequire(import.meta.url)
+
+    const config = applyEnvOverrides(require('../config/config.json')) as AppConfig
+
+    const baseQueries = require('../config/queries.json')
+    let queries = baseQueries
+    if (process.env.QUERIES_EXTRA_PATH) {
+        const extraPath = resolveRepoRelative(process.env.QUERIES_EXTRA_PATH)
+        if (extraPath) queries = mergeQueries(queries, require(extraPath))
     }
-    return out
+
+    const msgs = require('../config/messages.json')
+
+    const log = new Log(config)
+    const v = new Validator(config, msgs)
+    const db = new DBComponent({ config, msgs, queries, log })
+
+    const ctx: AppContext = {
+        config,
+        msgs,
+        queries,
+        log,
+        v,
+        db,
+        // set by server bootstrap
+        security: undefined as any,
+    }
+
+    return ctx
 }
 
-function repoPath(...parts: string[]) {
-    const srcDir = path.dirname(fileURLToPath(import.meta.url))
-    const repoRoot = path.resolve(srcDir, '..')
-    return path.resolve(repoRoot, ...parts)
+export async function createServerRuntime(): Promise<{ ctx: AppContext; security: Security }> {
+    const ctx = await createRuntimeContext()
+    const security = new Security(ctx)
+    ;(ctx as any).security = security
+    return { ctx, security }
 }
-
-function resolveRepoRelative(p: unknown) {
-    const raw = String(p ?? '').trim()
-    if (!raw) return null
-    return path.isAbsolute(raw) ? raw : repoPath(raw)
-}
-
-g.config = applyEnvOverrides(g.require('./config/config.json'))
-
-const baseQueries = g.require('./config/queries.json')
-let queries = baseQueries
-
-// Optional: merge additional queries (absolute path or repo-relative).
-// Example: QUERIES_EXTRA_PATH=./src/config/queries.extra.json
-if (process.env.QUERIES_EXTRA_PATH) {
-    const extraPath = resolveRepoRelative(process.env.QUERIES_EXTRA_PATH)
-    if (extraPath) queries = mergeQueries(queries, g.require(extraPath))
-}
-
-g.queries = queries
-g.msgs = g.require('./config/messages.json')
-const { default: Validator } = await import('./BSS/Validator.js')
-const { default: Log } = await import('./BSS/Log.js')
-const { default: DBComponent } = await import('./BSS/DBComponent.js')
-
-g.v = new Validator(g.config, g.msgs)
-g.log = new Log(g.config)
-g.db = new DBComponent({ config: g.config, msgs: g.msgs, queries: g.queries, log: g.log })
-
-// NOTE:
-// Do NOT instantiate Security here.
-// Security's constructor triggers async init which queries the DB.
-// That breaks CLI scripts that import globals for config/db/log (e.g. scripts/bo.ts).
-// Server startup (src/index.ts) is responsible for creating globalThis.security.

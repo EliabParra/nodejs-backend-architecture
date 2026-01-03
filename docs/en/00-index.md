@@ -22,6 +22,8 @@ A reference backend that demonstrates the architecture pattern (transaction disp
 - **API-only by default** (`APP_FRONTEND_MODE=none`).
 - This template ships **no demo domain/UI** by default.
 - Consistent JSON contract + normalized errors.
+- TypeScript-first runtime with strict typechecking.
+- DI-friendly seam via `AppContext` (no heavy container required).
 
 ## Quick map
 
@@ -53,6 +55,7 @@ A reference backend that demonstrates the architecture pattern (transaction disp
 10. [DB init CLI (`security` schema)](10-db-init-cli.md)
 11. [Frontend clients and requests](11-frontend-clients-and-requests.md)
 12. [Authentication (Auth module)](13-authentication.md)
+13. [TypeScript-first + DI (types overview)](14-types-and-di.md)
 
 ## Glossary
 

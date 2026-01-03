@@ -1,6 +1,7 @@
 import cors from 'cors'
 
-export function applyCorsIfEnabled(app: any) {
+export function applyCorsIfEnabled(app: any, deps: { config: AppConfig }) {
+    const { config } = deps
     if (!(config as any)?.cors?.enabled) return
 
     const allowedOrigins = Array.isArray((config as any).cors.origins)

@@ -9,7 +9,7 @@ import { applyRequestLogger } from '../express/middleware/request-logger.js'
 import { applyCorsIfEnabled } from '../express/middleware/cors.js'
 import { applyBodyParsers } from '../express/middleware/body-parsers.js'
 import { jsonBodySyntaxErrorHandler } from '../express/middleware/json-syntax-error.js'
-import { csrfProtection, csrfTokenHandler } from '../express/middleware/csrf.js'
+import { createCsrfProtection, createCsrfTokenHandler } from '../express/middleware/csrf.js'
 import {
     createLoginRateLimiter,
     createToProccessRateLimiter,
@@ -52,11 +52,14 @@ export default class Dispatcher {
     toProccessRateLimiter: any
     authPasswordResetRateLimiter: any
     ctx: AppContext
+    csrfTokenHandler: any
+    csrfProtection: any
 
     constructor() {
         this.ctx = createAppContext()
         const effectiveConfig = this.ctx?.config ?? config
         const effectiveMsgs = this.ctx?.msgs ?? msgs
+        const effectiveLog = this.ctx?.log ?? log
         this.app = express()
         this.server = null
         this.initialized = false
@@ -69,9 +72,15 @@ export default class Dispatcher {
 
         applyHelmet(this.app)
         applyRequestId(this.app)
-        applyRequestLogger(this.app)
-        applyCorsIfEnabled(this.app)
+        applyRequestLogger(this.app, { log: effectiveLog })
+        applyCorsIfEnabled(this.app, { config: effectiveConfig })
         applyBodyParsers(this.app)
+
+        this.csrfTokenHandler = createCsrfTokenHandler({
+            config: effectiveConfig,
+            msgs: effectiveMsgs,
+        })
+        this.csrfProtection = createCsrfProtection({ config: effectiveConfig, msgs: effectiveMsgs })
 
         this.session = new Session(this.app, this.ctx)
         this.serverErrors = effectiveMsgs[effectiveConfig.app.lang].errors.server
@@ -94,22 +103,22 @@ export default class Dispatcher {
         // API routes (always)
         this.app.get('/health', createHealthHandler({ name: effectiveConfig?.app?.name ?? 'app' }))
         this.app.get('/ready', createReadyHandler({ clientErrors: this.clientErrors }))
-        this.app.get('/csrf', csrfTokenHandler)
+        this.app.get('/csrf', this.csrfTokenHandler)
         this.app.post(
             '/toProccess',
             this.toProccessRateLimiter,
             this.authPasswordResetRateLimiter,
-            csrfProtection,
+            this.csrfProtection,
             this.toProccess.bind(this)
         )
-        this.app.post('/login', this.loginRateLimiter, csrfProtection, this.login.bind(this))
+        this.app.post('/login', this.loginRateLimiter, this.csrfProtection, this.login.bind(this))
         this.app.post(
             '/login/verify',
             this.loginRateLimiter,
-            csrfProtection,
+            this.csrfProtection,
             this.verifyLogin.bind(this)
         )
-        this.app.post('/logout', csrfProtection, this.logout.bind(this))
+        this.app.post('/logout', this.csrfProtection, this.logout.bind(this))
 
         // Optional SPA hosting is registered after API routes to avoid shadowing them.
         await registerFrontendHosting(this.app, { session: this.session, stage: 'postApi' })
@@ -143,7 +152,7 @@ export default class Dispatcher {
                 return res.status(this.clientErrors.login.code).send(this.clientErrors.login)
             }
 
-            const parsed = parseToProccessBody(req.body)
+            const parsed = parseToProccessBody(req.body, this.ctx)
             if (parsed.ok === false) {
                 return sendInvalidParameters(
                     res,
@@ -261,8 +270,9 @@ export default class Dispatcher {
                 this.ctx
             )
 
-            log.show({
-                type: log.TYPE_ERROR,
+            const effectiveLog = this.ctx?.log ?? log
+            effectiveLog.show({
+                type: effectiveLog.TYPE_ERROR,
                 msg: `${this.serverErrors.serverError.msg}, /toProccess: ${redactSecretsInString(
                     err?.message || err
                 )}`,
@@ -288,7 +298,7 @@ export default class Dispatcher {
 
     async login(req: AppRequest, res: AppResponse) {
         try {
-            const parsed = parseLoginBody(req.body)
+            const parsed = parseLoginBody(req.body, this.ctx)
             if (parsed.ok === false) {
                 return sendInvalidParameters(
                     res,
@@ -302,8 +312,9 @@ export default class Dispatcher {
             try {
                 res.locals.__errorLogged = true
             } catch {}
-            log.show({
-                type: log.TYPE_ERROR,
+            const effectiveLog = this.ctx?.log ?? log
+            effectiveLog.show({
+                type: effectiveLog.TYPE_ERROR,
                 msg: `${this.serverErrors.serverError.msg}, /login: ${redactSecretsInString(
                     err?.message || err
                 )}`,
@@ -326,7 +337,7 @@ export default class Dispatcher {
 
     async verifyLogin(req: AppRequest, res: AppResponse) {
         try {
-            const parsed = parseLoginVerifyBody(req.body)
+            const parsed = parseLoginVerifyBody(req.body, this.ctx)
             if (parsed.ok === false) {
                 return sendInvalidParameters(
                     res,
@@ -340,8 +351,9 @@ export default class Dispatcher {
             try {
                 res.locals.__errorLogged = true
             } catch {}
-            log.show({
-                type: log.TYPE_ERROR,
+            const effectiveLog = this.ctx?.log ?? log
+            effectiveLog.show({
+                type: effectiveLog.TYPE_ERROR,
                 msg: `${this.serverErrors.serverError.msg}, /login/verify: ${redactSecretsInString(
                     err?.message || err
                 )}`,
@@ -364,7 +376,7 @@ export default class Dispatcher {
 
     async logout(req: AppRequest, res: AppResponse) {
         try {
-            const parsed = parseLogoutBody(req.body)
+            const parsed = parseLogoutBody(req.body, this.ctx)
             if (parsed.ok === false) {
                 return sendInvalidParameters(
                     res,
@@ -384,8 +396,9 @@ export default class Dispatcher {
             try {
                 res.locals.__errorLogged = true
             } catch {}
-            log.show({
-                type: log.TYPE_ERROR,
+            const effectiveLog = this.ctx?.log ?? log
+            effectiveLog.show({
+                type: effectiveLog.TYPE_ERROR,
                 msg: `${this.serverErrors.serverError.msg}, /logout: ${redactSecretsInString(
                     err?.message || err
                 )}`,
@@ -413,8 +426,8 @@ export default class Dispatcher {
             )
         }
         this.server = this.app.listen(config.app.port, () =>
-            log.show({
-                type: log.TYPE_INFO,
+            (this.ctx?.log ?? log).show({
+                type: (this.ctx?.log ?? log).TYPE_INFO,
                 msg: `Server running on http://${config.app.host}:${config.app.port}`,
             })
         )
@@ -429,8 +442,10 @@ export default class Dispatcher {
             })
         } finally {
             try {
-                const pool = (db as unknown as { pool?: { end?: () => Promise<void> | void } })
-                    ?.pool
+                const effectiveDb = this.ctx?.db ?? db
+                const pool = (
+                    effectiveDb as unknown as { pool?: { end?: () => Promise<void> | void } }
+                )?.pool
                 await pool?.end?.()
             } catch {}
         }

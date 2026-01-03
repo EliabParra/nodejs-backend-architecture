@@ -28,6 +28,17 @@
 
 Nota: por consistencia con el diseño del repo, algunos módulos de `src/express/` también consumen globals (ej. `log`, `msgs`, `config`).
 
+## TypeScript-first + seam de DI (AppContext)
+
+Aunque el runtime expone servicios como globals, el codebase también soporta un seam DI-friendly:
+
+- `createAppContext()` junta dependencias en un objeto `AppContext`.
+- Servicios core pueden aceptar/usar `ctx` para evitar lecturas directas de globals.
+
+Esto mejora testabilidad y hace más simple evolucionar la arquitectura hacia “DI puro” en el tiempo.
+
+Ver: [14-types-y-di.md](14-types-y-di.md)
+
 ## Flujo del request (API transaccional)
 
 ### Endpoint

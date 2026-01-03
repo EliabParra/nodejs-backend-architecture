@@ -4,7 +4,7 @@ import request from 'supertest'
 import bcrypt from 'bcryptjs'
 
 import Dispatcher from '../src/BSS/Dispatcher.js'
-import { csrfProtection, csrfTokenHandler } from '../src/express/middleware/csrf.js'
+import { createCsrfProtection, createCsrfTokenHandler } from '../src/express/middleware/csrf.js'
 
 import { withGlobals } from './_helpers/global-state.mjs'
 
@@ -290,6 +290,15 @@ test('register requires email verification before login', async () => {
                 return { rows: [] }
             },
         }
+
+        const csrfTokenHandler = createCsrfTokenHandler({
+            config: globalThis.config,
+            msgs: globalThis.msgs,
+        })
+        const csrfProtection = createCsrfProtection({
+            config: globalThis.config,
+            msgs: globalThis.msgs,
+        })
 
         const dispatcher = new Dispatcher()
 

@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url'
 import fs from 'node:fs/promises'
 
 import Dispatcher from '../src/BSS/Dispatcher.js'
-import { csrfProtection } from '../src/express/middleware/csrf.js'
+import { createCsrfProtection } from '../src/express/middleware/csrf.js'
 
 import { withGlobals } from './_helpers/global-state.mjs'
 
@@ -163,6 +163,11 @@ test('password reset works via /toProccess without session (public profile)', as
                 return await auth[method_na](params)
             },
         }
+
+        const csrfProtection = createCsrfProtection({
+            config: globalThis.config,
+            msgs: globalThis.msgs,
+        })
 
         // DB stub for Auth BO + audit.
         const state = {

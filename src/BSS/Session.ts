@@ -5,6 +5,7 @@ import { applySessionMiddleware } from '../express/session/apply-session-middlew
 import { auditBestEffort } from './helpers/audit-log.js'
 import { redactSecretsInString } from '../helpers/sanitize.js'
 import { parseLoginBody, parseLoginVerifyBody } from './helpers/http-validators.js'
+import { createAppContext } from '../context/app-context.js'
 import EmailService from './EmailService.js'
 
 function sha256Hex(value: unknown) {
@@ -79,7 +80,8 @@ export default class Session {
 
     async createSession(req: AppRequest, res: AppResponse) {
         try {
-            const parsed = parseLoginBody(req.body, { minPasswordLen: 8 })
+            const effectiveCtx = this.ctx ?? createAppContext()
+            const parsed = parseLoginBody(req.body, effectiveCtx, { minPasswordLen: 8 })
             if (parsed.ok === false) {
                 return res.status(this.clientErrors.invalidParameters.code).send({
                     msg: this.clientErrors.invalidParameters.msg,
@@ -259,7 +261,8 @@ export default class Session {
                     .send(this.clientErrors.sessionExists)
             }
 
-            const parsed = parseLoginVerifyBody(req.body)
+            const effectiveCtx = this.ctx ?? createAppContext()
+            const parsed = parseLoginVerifyBody(req.body, effectiveCtx)
             if (parsed.ok === false) {
                 return res
                     .status(this.clientErrors.invalidParameters.code)

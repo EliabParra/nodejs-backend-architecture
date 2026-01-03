@@ -22,6 +22,8 @@ Un backend de referencia que muestra un patrón de arquitectura (dispatcher tran
 - **API-only por defecto** (`APP_FRONTEND_MODE=none`).
 - Este template **no trae demo de dominio/UI** por defecto.
 - Contrato JSON consistente + errores normalizados.
+- Runtime TypeScript-first con typecheck estricto.
+- Seam DI-friendly vía `AppContext` (sin container pesado).
 
 ## Mapa rápido
 
@@ -53,6 +55,7 @@ Un backend de referencia que muestra un patrón de arquitectura (dispatcher tran
 10. [DB init CLI (schema `security`)](10-db-init-cli.md)
 11. [Frontend clients y requests](11-frontend-clients-and-requests.md)
 12. [Autenticación (módulo Auth)](13-autenticacion.md)
+13. [TypeScript-first + DI (mapa de tipos)](14-types-y-di.md)
 
 ## Glosario
 

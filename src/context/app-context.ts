@@ -5,6 +5,7 @@ export function createAppContext(): AppContext {
         config?: AppConfig
         log?: AppLog
         db?: AppDb
+        queries?: any
         msgs?: any
         v?: any
         security?: AppSecurity
@@ -14,8 +15,9 @@ export function createAppContext(): AppContext {
         config: (g.config ?? config) as AppConfig,
         log: (g.log ?? log) as AppLog,
         db: (g.db ?? db) as AppDb,
+        queries: g.queries ?? {},
         msgs: g.msgs ?? msgs,
         v: g.v ?? v,
-        security: (g.security ?? security) as AppSecurity,
+        security: g.security,
     }
 }

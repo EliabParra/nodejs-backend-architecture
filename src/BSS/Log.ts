@@ -15,7 +15,7 @@ export default class Log {
     activation: any
     format: unknown
 
-    constructor() {
+    constructor(config: AppConfig) {
         this.TYPE_ERROR = 0
         this.TYPE_INFO = 1
         this.TYPE_DEBUG = 2

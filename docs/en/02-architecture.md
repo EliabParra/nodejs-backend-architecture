@@ -30,6 +30,17 @@
 
 Note: for consistency with the repository style, some `src/express/` modules also read globals (e.g. `log`, `msgs`, `config`).
 
+## TypeScript-first + DI seam (AppContext)
+
+Even though the runtime exposes services as globals, the codebase also supports a DI-friendly seam:
+
+- `createAppContext()` collects dependencies into an `AppContext` object.
+- Core services can accept/use `ctx` to avoid hard-coding global reads.
+
+This improves testability and makes it easier to evolve the architecture towards “pure DI” over time.
+
+See: [14-types-and-di.md](14-types-and-di.md)
+
 ## Request flow (transactional API)
 
 ### Endpoint

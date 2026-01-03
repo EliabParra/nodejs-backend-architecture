@@ -34,16 +34,13 @@ declare global {
         TYPE_ERROR: any
         TYPE_INFO: any
         show: (event: any) => any
-        [k: string]: unknown
     }
 
     type AppDb = {
         exe: (schema: string, query: string, params: any) => Promise<any>
         pool?: {
-            end?: () => Promise<any>
-            [k: string]: unknown
+            end?: () => Promise<any> | any
         }
-        [k: string]: unknown
     }
 
     type AppSecurity = {
@@ -74,7 +71,7 @@ declare global {
         queries: any
         msgs: any
         v: any
-        security: AppSecurity
+        security?: AppSecurity
     }
 
     type AppContext = {
@@ -82,7 +79,8 @@ declare global {
         log: AppLog
         db: AppDb
         msgs: any
+        queries: any
         v: any
-        security: AppSecurity
+        security?: AppSecurity
     }
 }

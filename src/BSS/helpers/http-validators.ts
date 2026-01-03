@@ -5,8 +5,9 @@ export function isPlainObject(val: unknown): val is Record<string, any> {
 /**
  * Validates the request body shape for `POST /toProccess`.
  */
-export function validateToProccessSchema(body: unknown): string[] {
+export function validateToProccessSchema(body: unknown, ctx: AppContext): string[] {
     const alerts: string[] = []
+    const { v, config, msgs } = ctx
 
     if (!isPlainObject(body)) {
         alerts.push(v.getMessage('object', { value: body, label: 'body' }))
@@ -38,9 +39,11 @@ export function validateToProccessSchema(body: unknown): string[] {
  */
 export function validateLoginSchema(
     body: unknown,
+    ctx: AppContext,
     { minPasswordLen }: { minPasswordLen?: number } = {}
 ): string[] {
     const alerts: string[] = []
+    const { v } = ctx
 
     if (!isPlainObject(body)) {
         alerts.push(v.getMessage('object', { value: body, label: 'body' }))
@@ -70,8 +73,9 @@ export function validateLoginSchema(
 /**
  * Validates the request body shape for `POST /logout`.
  */
-export function validateLogoutSchema(body: unknown): string[] {
+export function validateLogoutSchema(body: unknown, ctx: AppContext): string[] {
     const alerts: string[] = []
+    const { v } = ctx
     if (body == null) return alerts
 
     if (!isPlainObject(body)) {
@@ -84,8 +88,9 @@ export function validateLogoutSchema(body: unknown): string[] {
 /**
  * Validates the request body shape for `POST /login/verify`.
  */
-export function validateLoginVerifySchema(body: unknown): string[] {
+export function validateLoginVerifySchema(body: unknown, ctx: AppContext): string[] {
     const alerts: string[] = []
+    const { v } = ctx
 
     if (!isPlainObject(body)) {
         alerts.push(v.getMessage('object', { value: body, label: 'body' }))
@@ -120,9 +125,10 @@ export type LoginVerifyBody = {
 export type LogoutBody = Record<string, unknown> | null | undefined
 
 export function parseToProccessBody(
-    body: unknown
+    body: unknown,
+    ctx: AppContext
 ): { ok: true; body: ToProccessBody } | { ok: false; alerts: string[] } {
-    const alerts = validateToProccessSchema(body)
+    const alerts = validateToProccessSchema(body, ctx)
     if (alerts.length > 0) return { ok: false, alerts }
     const b = body as { tx: number; params?: any }
     return { ok: true, body: { tx: b.tx, params: b.params } }
@@ -130,27 +136,30 @@ export function parseToProccessBody(
 
 export function parseLoginBody(
     body: unknown,
+    ctx: AppContext,
     opts: { minPasswordLen?: number } = {}
 ): { ok: true; body: LoginBody } | { ok: false; alerts: string[] } {
-    const alerts = validateLoginSchema(body, opts)
+    const alerts = validateLoginSchema(body, ctx, opts)
     if (alerts.length > 0) return { ok: false, alerts }
     const b = body as { username: string; password: string }
     return { ok: true, body: { username: b.username, password: b.password } }
 }
 
 export function parseLoginVerifyBody(
-    body: unknown
+    body: unknown,
+    ctx: AppContext
 ): { ok: true; body: LoginVerifyBody } | { ok: false; alerts: string[] } {
-    const alerts = validateLoginVerifySchema(body)
+    const alerts = validateLoginVerifySchema(body, ctx)
     if (alerts.length > 0) return { ok: false, alerts }
     const b = body as { token: string; code: string }
     return { ok: true, body: { token: b.token, code: b.code } }
 }
 
 export function parseLogoutBody(
-    body: unknown
+    body: unknown,
+    ctx: AppContext
 ): { ok: true; body: LogoutBody } | { ok: false; alerts: string[] } {
-    const alerts = validateLogoutSchema(body)
+    const alerts = validateLogoutSchema(body, ctx)
     if (alerts.length > 0) return { ok: false, alerts }
     return { ok: true, body: (body ?? null) as LogoutBody }
 }

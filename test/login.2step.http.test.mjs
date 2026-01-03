@@ -4,7 +4,7 @@ import { createHash } from 'node:crypto'
 import request from 'supertest'
 
 import Dispatcher from '../src/BSS/Dispatcher.js'
-import { csrfProtection, csrfTokenHandler } from '../src/express/middleware/csrf.js'
+import { createCsrfProtection, createCsrfTokenHandler } from '../src/express/middleware/csrf.js'
 
 import { withGlobals } from './_helpers/global-state.mjs'
 
@@ -144,6 +144,15 @@ test('2-step login is required on new device and can be verified', async () => {
                 return { rows: [] }
             },
         }
+
+        const csrfTokenHandler = createCsrfTokenHandler({
+            config: globalThis.config,
+            msgs: globalThis.msgs,
+        })
+        const csrfProtection = createCsrfProtection({
+            config: globalThis.config,
+            msgs: globalThis.msgs,
+        })
 
         const dispatcher = new Dispatcher()
 

@@ -20,7 +20,7 @@ export default class Validator {
     alerts: string[]
     msgs: ValidatorMessages
 
-    constructor() {
+    constructor(config: AppConfig, msgs: any) {
         this.status = {}
         this.alerts = []
         const cfg = config as { app?: { lang?: unknown } } | undefined
