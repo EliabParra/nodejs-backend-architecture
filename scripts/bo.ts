@@ -302,9 +302,15 @@ ${patternComment}      // TODO: valida/normaliza según tu caso
       // TODO: implementa tu operación real
       // const result = await ${objectName}Repository.someOperation(params)
 
-            return { code: 200, msg: successMsgs.${m} ?? '${escapeTemplateBraces(`${objectName} ${m} OK`)}', data: params ?? null }
-    } catch (err) {
-      log.show({ type: log.TYPE_ERROR, msg: \`${msgs[config.app.lang].errors.server.serverError.msg}, ${objectName}BO.${m}: \${err?.message || err}\` })
+                        return { code: 200, msg: successMsgs.${m} ?? '${escapeTemplateBraces(`${objectName} ${m} OK`)}', data: params ?? null }
+        } catch (err: unknown) {
+            log.show({
+                type: log.TYPE_ERROR,
+                msg:
+                    msgs[config.app.lang].errors.server.serverError.msg +
+                    ', ${objectName}BO.${m}: ' +
+                    (err instanceof Error ? err.message : String(err)),
+            })
       return ${objectName}ErrorHandler.unknownError()
     }
   }`
