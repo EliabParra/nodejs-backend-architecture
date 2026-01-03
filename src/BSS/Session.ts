@@ -391,6 +391,8 @@ export default class Session {
     }
 
     destroySession(req: AppRequest) {
-        req.session!.destroy()
+        try {
+            req.session?.destroy?.()
+        } catch {}
     }
 }

@@ -4,7 +4,7 @@ import path from 'node:path'
 const repoRoot = path.resolve(process.cwd())
 const docsRoot = path.join(repoRoot, 'docs')
 
-async function exists(p) {
+async function exists(p: string): Promise<boolean> {
     try {
         await fs.access(p)
         return true
@@ -13,7 +13,7 @@ async function exists(p) {
     }
 }
 
-async function* walk(dir) {
+async function* walk(dir: string): AsyncGenerator<string> {
     const entries = await fs.readdir(dir, { withFileTypes: true })
     for (const entry of entries) {
         const fullPath = path.join(dir, entry.name)
@@ -25,7 +25,7 @@ async function* walk(dir) {
     }
 }
 
-function isExternalLink(href) {
+function isExternalLink(href: string): boolean {
     return (
         href.startsWith('http://') ||
         href.startsWith('https://') ||
@@ -34,18 +34,18 @@ function isExternalLink(href) {
     )
 }
 
-function stripAnchor(href) {
+function stripAnchor(href: string): string {
     const hashIndex = href.indexOf('#')
     return hashIndex === -1 ? href : href.slice(0, hashIndex)
 }
 
-function normalizeMdLinkTarget(href) {
+function normalizeMdLinkTarget(href: string): string {
     // Ignore query strings for local file targets
     const qIndex = href.indexOf('?')
     return qIndex === -1 ? href : href.slice(0, qIndex)
 }
 
-function toPosix(p) {
+function toPosix(p: string): string {
     return p.split(path.sep).join('/')
 }
 

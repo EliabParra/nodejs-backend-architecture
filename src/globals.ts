@@ -35,6 +35,7 @@ function applyEnvOverrides(cfg: any) {
     cfg.session = cfg.session ?? {}
     cfg.session.cookie = cfg.session.cookie ?? {}
     cfg.cors = cfg.cors ?? {}
+    cfg.bo = cfg.bo ?? {}
     cfg.log = cfg.log ?? {}
     cfg.auth = cfg.auth ?? {}
     cfg.email = cfg.email ?? {}
@@ -148,6 +149,18 @@ function applyEnvOverrides(cfg: any) {
     const smtpSecure = envBool(process.env.SMTP_SECURE)
     if (smtpSecure != null) cfg.email.smtpSecure = smtpSecure
     if (process.env.SMTP_FROM) cfg.email.from = String(process.env.SMTP_FROM)
+
+    // Normalize a minimal set of defaults so strict TS can treat these as required.
+    // (Config files already provide them, but env overrides and partial configs are supported.)
+    cfg.app.lang = String(cfg.app.lang ?? 'es')
+    cfg.app.host = String(cfg.app.host ?? 'localhost')
+    cfg.app.name = String(cfg.app.name ?? 'app')
+    cfg.app.frontendMode = String(cfg.app.frontendMode ?? 'none')
+
+    const port = typeof cfg.app.port === 'number' ? cfg.app.port : envInt(cfg.app.port)
+    cfg.app.port = port != null ? port : 3000
+
+    cfg.bo.path = String(cfg.bo.path ?? '../../BO/')
 
     return cfg
 }

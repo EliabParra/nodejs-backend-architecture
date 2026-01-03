@@ -8,6 +8,7 @@ import { AuthErrorHandler } from './errors/AuthErrorHandler.js'
 import { AuthValidate } from './AuthValidate.js'
 import { AuthRepository } from './Auth.js'
 import EmailService from '../../src/BSS/EmailService.js'
+import { errorMessage } from '../../src/helpers/error.js'
 
 type ApiResponse = {
     code: number
@@ -156,13 +157,13 @@ export class AuthBO {
             })
 
             return { code: 201, msg: successMsgs.register ?? 'OK' }
-        } catch (err) {
+        } catch (err: unknown) {
             log.show({
                 type: log.TYPE_ERROR,
                 msg:
                     msgs[config.app.lang].errors.server.serverError.msg +
                     ', AuthBO.register: ' +
-                    String(err?.message || err),
+                    errorMessage(err),
             })
             return AuthErrorHandler.unknownError()
         }
@@ -223,13 +224,13 @@ export class AuthBO {
             })
 
             return { code: 200, msg: successMsgs.requestEmailVerification ?? 'OK' }
-        } catch (err) {
+        } catch (err: unknown) {
             log.show({
                 type: log.TYPE_ERROR,
                 msg:
                     msgs[config.app.lang].errors.server.serverError.msg +
                     ', AuthBO.requestEmailVerification: ' +
-                    String(err?.message || err),
+                    errorMessage(err),
             })
             return AuthErrorHandler.unknownError()
         }
@@ -294,13 +295,13 @@ export class AuthBO {
             } catch {}
 
             return { code: 200, msg: successMsgs.verifyEmail ?? 'OK' }
-        } catch (err) {
+        } catch (err: unknown) {
             log.show({
                 type: log.TYPE_ERROR,
                 msg:
                     msgs[config.app.lang].errors.server.serverError.msg +
                     ', AuthBO.verifyEmail: ' +
-                    String(err?.message || err),
+                    errorMessage(err),
             })
             return AuthErrorHandler.unknownError()
         }
@@ -375,13 +376,13 @@ export class AuthBO {
             })
 
             return { code: 200, msg: successMsgs.requestPasswordReset ?? 'OK' }
-        } catch (err) {
+        } catch (err: unknown) {
             log.show({
                 type: log.TYPE_ERROR,
                 msg:
                     msgs[config.app.lang].errors.server.serverError.msg +
                     ', AuthBO.requestPasswordReset: ' +
-                    String(err?.message || err),
+                    errorMessage(err),
             })
             return AuthErrorHandler.unknownError()
         }
@@ -434,13 +435,13 @@ export class AuthBO {
             }
 
             return { code: 200, msg: successMsgs.verifyPasswordReset ?? 'OK' }
-        } catch (err) {
+        } catch (err: unknown) {
             log.show({
                 type: log.TYPE_ERROR,
                 msg:
                     msgs[config.app.lang].errors.server.serverError.msg +
                     ', AuthBO.verifyPasswordReset: ' +
-                    String(err?.message || err),
+                    errorMessage(err),
             })
             return AuthErrorHandler.unknownError()
         }
@@ -513,13 +514,13 @@ export class AuthBO {
             } catch {}
 
             return { code: 200, msg: successMsgs.resetPassword ?? 'OK' }
-        } catch (err) {
+        } catch (err: unknown) {
             log.show({
                 type: log.TYPE_ERROR,
                 msg:
                     msgs[config.app.lang].errors.server.serverError.msg +
                     ', AuthBO.resetPassword: ' +
-                    String(err?.message || err),
+                    errorMessage(err),
             })
             return AuthErrorHandler.unknownError()
         }

@@ -54,6 +54,7 @@ export function validateLoginSchema(
     if (typeof body.password !== 'string') {
         alerts.push(v.getMessage('string', { value: body.password, label: 'password' }))
     } else if (
+        typeof minPasswordLen === 'number' &&
         Number.isInteger(minPasswordLen) &&
         minPasswordLen > 0 &&
         body.password.length < minPasswordLen

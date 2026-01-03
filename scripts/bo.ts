@@ -817,7 +817,7 @@ async function getNextTx() {
     return Number(r.rows?.[0]?.next_tx)
 }
 
-async function upsertMethodsToDb(objectName, methods, opts) {
+async function upsertMethodsToDb(objectName: string, methods: string[], opts: any) {
     await ensureDbQueries()
 
     // Ask developer for tx numbers when doing real DB writes and none were specified.
@@ -872,7 +872,7 @@ async function upsertMethodsToDb(objectName, methods, opts) {
     return mapping
 }
 
-async function cmdAuth(opts) {
+async function cmdAuth(opts: any) {
     const objectName = 'Auth'
     const methods = authMethods()
 
@@ -921,7 +921,7 @@ async function cmdAuth(opts) {
     }
 }
 
-async function cmdNew(objectName, opts) {
+async function cmdNew(objectName: string, opts: any) {
     validateObjectName(objectName)
 
     const methods = opts.methods ? parseCsv(opts.methods) : crudMethods(objectName)
@@ -973,7 +973,7 @@ async function cmdNew(objectName, opts) {
     }
 }
 
-async function cmdSync(objectName, opts) {
+async function cmdSync(objectName: string, opts: any) {
     validateObjectName(objectName)
     const boFile = await resolveBoSourceFile(objectName)
     const content = await fs.readFile(boFile, 'utf8')
@@ -994,14 +994,19 @@ async function cmdList() {
     }
 }
 
-async function resolveMethodId(objectName, methodName) {
+async function resolveMethodId(objectName: string, methodName: string) {
     const r = await db.exe('security', 'resolveMethodId', [objectName, methodName])
     const row = r.rows?.[0]
     if (!row?.method_id) return null
     return { methodId: row.method_id, tx: row.tx_nu }
 }
 
-async function applyPerm(profileId, fqMethods, mode, opts) {
+async function applyPerm(
+    profileId: string | number,
+    fqMethods: string[],
+    mode: 'allow' | 'deny',
+    opts: any
+) {
     await ensureDbQueries()
     const profile = Number(profileId)
     if (!Number.isInteger(profile) || profile <= 0)
@@ -1032,7 +1037,7 @@ async function applyPerm(profileId, fqMethods, mode, opts) {
     return results
 }
 
-async function cmdPerms(opts) {
+async function cmdPerms(opts: any) {
     const profile = opts.profile
     const allow = parseCsv(opts.allow)
     const deny = parseCsv(opts.deny)
@@ -1050,12 +1055,12 @@ async function cmdPerms(opts) {
     const rl = readline.createInterface({ input: process.stdin, output: process.stdout })
     try {
         const profiles = await db.exe('security', 'listProfiles', null)
-        const profileIds = (profiles.rows ?? []).map((r) => r.profile_id)
+        const profileIds = (profiles.rows ?? []).map((r: any) => r.profile_id)
         console.log('Profiles:', profileIds.join(', '))
         const p = await rl.question('Profile id: ')
 
         const objects = await db.exe('security', 'listObjects', null)
-        const objectNames = (objects.rows ?? []).map((r) => r.object_na)
+        const objectNames = (objects.rows ?? []).map((r: any) => r.object_na)
         console.log('Objects:', objectNames.join(', '))
         const o = await rl.question('Object (exact): ')
 
@@ -1066,7 +1071,7 @@ async function cmdPerms(opts) {
             return
         }
 
-        rows.forEach((r, idx) => {
+        rows.forEach((r: any, idx: number) => {
             console.log(`[${idx + 1}] ${r.object_na}.${r.method_na}  tx=${r.tx_nu}`)
         })
 

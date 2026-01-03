@@ -2,17 +2,17 @@ export {}
 
 declare global {
     type AppConfig = {
-        app?: {
-            lang?: string
-            host?: string
-            port?: number
-            name?: string
-            trustProxy?: any
-            frontendMode?: string
+        app: {
+            lang: string
+            host: string
+            port: number
+            name: string
+            trustProxy?: boolean | number | string
+            frontendMode: string
             [k: string]: unknown
         }
-        bo?: {
-            path?: string
+        bo: {
+            path: string
             [k: string]: unknown
         }
         auth?: {

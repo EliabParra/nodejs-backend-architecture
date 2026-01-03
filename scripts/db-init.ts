@@ -9,13 +9,14 @@ import { pathToFileURL } from 'node:url'
 import pg from 'pg'
 import bcrypt from 'bcryptjs'
 import { createRequire } from 'node:module'
+import { errorMessage } from '../src/helpers/error.js'
 
 const require = createRequire(import.meta.url)
 
 type DbInitOptValue = string | boolean
 type DbInitOpts = Record<string, DbInitOptValue>
 
-function envBool(value) {
+function envBool(value: unknown): boolean | undefined {
     if (value == null) return undefined
     const v = String(value).trim().toLowerCase()
     if (['1', 'true', 'yes', 'y', 'on'].includes(v)) return true
@@ -23,7 +24,7 @@ function envBool(value) {
     return undefined
 }
 
-function envInt(value) {
+function envInt(value: unknown): number | undefined {
     if (value == null) return undefined
     const n = Number.parseInt(String(value), 10)
     return Number.isFinite(n) ? n : undefined
@@ -50,16 +51,16 @@ function parseArgs(argv: string[]): { args: string[]; opts: DbInitOpts } {
     return { args, opts }
 }
 
-function isTty() {
+function isTty(): boolean {
     return Boolean(process.stdin.isTTY && process.stdout.isTTY)
 }
 
-function normalizeSchemaName(value) {
+function normalizeSchemaName(value: unknown): string | undefined {
     const s = String(value ?? '').trim()
     return s.length > 0 ? s : undefined
 }
 
-function normalizeTableName(value) {
+function normalizeTableName(value: unknown): string | undefined {
     const s = String(value ?? '').trim()
     return s.length > 0 ? s : undefined
 }
@@ -141,7 +142,7 @@ function loadDbConfig() {
     return db
 }
 
-function pgClientConfig(db) {
+function pgClientConfig(db: any) {
     // pg accepts either connectionString or host/user/password/etc.
     if (db.connectionString) {
         return {
@@ -182,7 +183,7 @@ function sqlSecurityOptionalEmail() {
     ]
 }
 
-function sqlAuthUserIdentifierTweaks({ authUsername }) {
+function sqlAuthUserIdentifierTweaks({ authUsername }: { authUsername: boolean }) {
     // If username support is disabled, allow user_na to be nullable.
     // NOTE: unique constraints already allow multiple NULLs in Postgres.
     if (authUsername) return []
@@ -247,7 +248,7 @@ function sqlSecurityOperationalColumnsAndAudit() {
     ]
 }
 
-function sqlSessionTable(schemaName, tableName) {
+function sqlSessionTable(schemaName: string | undefined, tableName: string | undefined) {
     const schema = schemaName ?? 'public'
     const table = tableName ?? 'session'
     const qualified = schema === 'public' ? `public.${table}` : `${schema}.${table}`
@@ -259,7 +260,7 @@ function sqlSessionTable(schemaName, tableName) {
     ]
 }
 
-async function fileExists(p) {
+async function fileExists(p: string): Promise<boolean> {
     try {
         await fs.access(p)
         return true
@@ -268,11 +269,11 @@ async function fileExists(p) {
     }
 }
 
-function parseAsyncMethodsFromBO(fileContent) {
+function parseAsyncMethodsFromBO(fileContent: string): string[] {
     // We only want business methods defined as `async name(...)`.
-    const methods = new Set()
+    const methods = new Set<string>()
     const re = /\basync\s+([A-Za-z_][A-Za-z0-9_]*)\s*\(/g
-    let m
+    let m: RegExpExecArray | null
     while ((m = re.exec(fileContent)) != null) {
         const name = m[1]
         if (!name) continue
@@ -283,7 +284,7 @@ function parseAsyncMethodsFromBO(fileContent) {
     return Array.from(methods)
 }
 
-async function discoverBOs(repoRoot) {
+async function discoverBOs(repoRoot: string) {
     const boRoot = path.resolve(repoRoot, 'BO')
     if (!(await fileExists(boRoot))) return []
 
@@ -304,14 +305,17 @@ async function discoverBOs(repoRoot) {
     return objects
 }
 
-async function ensureProfile(client, profileId) {
+async function ensureProfile(client: any, profileId: number) {
     await client.query(
         'insert into security.profile (profile_id) values ($1) on conflict (profile_id) do nothing',
         [profileId]
     )
 }
 
-async function ensureProfileNamed(client, { profileId, profileName }) {
+async function ensureProfileNamed(
+    client: any,
+    { profileId, profileName }: { profileId: number; profileName: string }
+) {
     // Only set name if it's currently NULL to avoid overwriting existing meaning.
     await client.query(
         'insert into security.profile (profile_id, profile_na) values ($1, $2) on conflict (profile_id) do update set profile_na = coalesce(security.profile.profile_na, excluded.profile_na)',
@@ -319,19 +323,19 @@ async function ensureProfileNamed(client, { profileId, profileName }) {
     )
 }
 
-async function getProfileCount(client) {
+async function getProfileCount(client: any) {
     const r = await client.query('select count(*)::int as n from security.profile')
     return Number(r.rows?.[0]?.n ?? 0)
 }
 
-async function getNextTxFromDb(client) {
+async function getNextTxFromDb(client: any) {
     const r = await client.query(
         'select coalesce(max(tx_nu), 0) + 1 as next_tx from security.method'
     )
     return Number(r.rows?.[0]?.next_tx)
 }
 
-async function upsertObject(client, objectName) {
+async function upsertObject(client: any, objectName: string) {
     const r = await client.query(
         'insert into security.object (object_na) values ($1) on conflict (object_na) do update set object_na = excluded.object_na returning object_id',
         [objectName]
@@ -341,7 +345,10 @@ async function upsertObject(client, objectName) {
     return objectId
 }
 
-async function upsertMethodKeepTx(client, { objectId, methodName, txNu }) {
+async function upsertMethodKeepTx(
+    client: any,
+    { objectId, methodName, txNu }: { objectId: number; methodName: string; txNu: number }
+) {
     // If the method already exists, keep existing tx (don't overwrite contracts).
     const r = await client.query(
         `insert into security.method (object_id, method_na, tx_nu)
@@ -356,14 +363,20 @@ async function upsertMethodKeepTx(client, { objectId, methodName, txNu }) {
     return { methodId: row.method_id, txNu: Number(row.tx_nu) }
 }
 
-async function grantPermission(client, { profileId, methodId }) {
+async function grantPermission(
+    client: any,
+    { profileId, methodId }: { profileId: number; methodId: number }
+) {
     await client.query(
         'insert into security.permission_method (profile_id, method_id) values ($1, $2) on conflict (profile_id, method_id) do nothing',
         [profileId, methodId]
     )
 }
 
-async function resolveMethodIdByName(client, { objectName, methodName }) {
+async function resolveMethodIdByName(
+    client: any,
+    { objectName, methodName }: { objectName: string; methodName: string }
+) {
     const r = await client.query(
         `select m.method_id
          from security.method m
@@ -374,7 +387,10 @@ async function resolveMethodIdByName(client, { objectName, methodName }) {
     return r.rows?.[0]?.method_id ?? null
 }
 
-async function grantPublicAuthResetPerms(client, { publicProfileId }) {
+async function grantPublicAuthResetPerms(
+    client: any,
+    { publicProfileId }: { publicProfileId: number }
+) {
     const methods = ['requestPasswordReset', 'verifyPasswordReset', 'resetPassword']
     const objectName = 'Auth'
 
@@ -400,7 +416,10 @@ async function grantPublicAuthResetPerms(client, { publicProfileId }) {
     return { granted }
 }
 
-async function grantPublicAuthRegisterPerms(client, { publicProfileId }) {
+async function grantPublicAuthRegisterPerms(
+    client: any,
+    { publicProfileId }: { publicProfileId: number }
+) {
     const methods = ['register', 'requestEmailVerification', 'verifyEmail']
     const objectName = 'Auth'
 
@@ -426,7 +445,13 @@ async function grantPublicAuthRegisterPerms(client, { publicProfileId }) {
     return { granted }
 }
 
-function printProfileEnvTips({ publicProfileId, sessionProfileId }) {
+function printProfileEnvTips({
+    publicProfileId,
+    sessionProfileId,
+}: {
+    publicProfileId: number | null
+    sessionProfileId: number | null
+}) {
     console.log('---')
     console.log('Server config tips:')
     if (publicProfileId != null) console.log(`- Set AUTH_PUBLIC_PROFILE_ID=${publicProfileId}`)
@@ -435,7 +460,14 @@ function printProfileEnvTips({ publicProfileId, sessionProfileId }) {
     console.log('---')
 }
 
-async function registerBOs(client, { repoRoot, profileId, txStart }) {
+async function registerBOs(
+    client: any,
+    {
+        repoRoot,
+        profileId,
+        txStart,
+    }: { repoRoot: string; profileId: number; txStart: number | null }
+) {
     const bos = await discoverBOs(repoRoot)
     if (bos.length === 0) {
         console.log('No BOs discovered under ./BO (skipping BO registration).')
@@ -466,8 +498,8 @@ async function registerBOs(client, { repoRoot, profileId, txStart }) {
                     // If the method existed, txNu might be different; in both cases, move forward to keep new tx unique.
                     nextTx = Math.max(nextTx + 1, txNu + 1)
                     break
-                } catch (err) {
-                    const msg = String(err?.message || err)
+                } catch (err: unknown) {
+                    const msg = errorMessage(err)
                     // Unique tx constraint collision -> increment and retry.
                     if (
                         msg.toLowerCase().includes('uq_method_tx') ||
@@ -488,7 +520,7 @@ async function registerBOs(client, { repoRoot, profileId, txStart }) {
     return { registered }
 }
 
-async function promptYesNo(rl, question, defaultYes = false) {
+async function promptYesNo(rl: any, question: string, defaultYes = false) {
     const suffix = defaultYes ? ' [Y/n] ' : ' [y/N] '
     const ans = String(await rl.question(question + suffix))
         .trim()
@@ -497,8 +529,8 @@ async function promptYesNo(rl, question, defaultYes = false) {
     return ['y', 'yes'].includes(ans)
 }
 
-async function promptChoice(rl, question, choices, defaultValue) {
-    const normalized = choices.map((c) => String(c).trim().toLowerCase())
+async function promptChoice(rl: any, question: string, choices: unknown[], defaultValue: unknown) {
+    const normalized = choices.map((c: unknown) => String(c).trim().toLowerCase())
     const def = defaultValue != null ? String(defaultValue).trim().toLowerCase() : undefined
     const suffix = def != null ? ` (${def}) ` : ' '
 
@@ -511,13 +543,16 @@ async function promptChoice(rl, question, choices, defaultValue) {
         console.log(`Please choose one of: ${normalized.join(', ')}`)
     }
 }
-async function promptText(rl, question, defaultValue) {
+async function promptText(rl: any, question: string, defaultValue: string) {
     const suffix = defaultValue != null ? ` (${defaultValue}) ` : ' '
     const ans = String(await rl.question(question + suffix)).trim()
     return ans.length > 0 ? ans : defaultValue
 }
 
-async function ensureAdminUser(client, { profileId, adminUser, adminHash }) {
+async function ensureAdminUser(
+    client: any,
+    { profileId, adminUser, adminHash }: { profileId: number; adminUser: string; adminHash: string }
+) {
     await client.query(
         'insert into security.profile (profile_id) values ($1) on conflict (profile_id) do nothing',
         [profileId]
@@ -792,7 +827,11 @@ async function main() {
         if (registerBo) {
             // Create profile ahead of time in case we want to grant perms, even if seedAdmin is off.
             await ensureProfile(client, profileId)
-            await registerBOs(client, { repoRoot: process.cwd(), profileId, txStart })
+            await registerBOs(client, {
+                repoRoot: process.cwd(),
+                profileId,
+                txStart: txStart ?? null,
+            })
 
             // Optional: grant public profile permissions for Auth public methods.
             // This keeps unauthenticated /toProccess scoped to these methods only.
@@ -824,7 +863,8 @@ async function main() {
         }
 
         if (seedAdmin) {
-            let adminPassword = opts.adminPassword
+            let adminPassword: string | undefined =
+                typeof opts.adminPassword === 'string' ? opts.adminPassword : undefined
             if (!adminPassword && !nonInteractive) {
                 const rl = readline.createInterface({ input, output })
                 try {
@@ -855,11 +895,11 @@ async function main() {
         if (includeEmail) console.log('Optional column enabled: security.user.user_em')
         if (registerBo)
             console.log(`BO methods auto-registered and granted to profile_id=${profileId}`)
-    } catch (err) {
+    } catch (err: unknown) {
         try {
             await client.query('rollback')
         } catch {}
-        console.error('DB init failed:', err?.message || err)
+        console.error('DB init failed:', errorMessage(err))
         process.exitCode = 1
     } finally {
         await client.end()
