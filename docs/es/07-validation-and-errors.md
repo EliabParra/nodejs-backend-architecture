@@ -21,7 +21,7 @@ Si falla, `Validator` arma `alerts` usando plantillas de [src/config/messages.js
 
 ### Estructura de ejemplo (genérica)
 
-- Labels por idioma: `BO/<ObjectName>/errors/<objectName>Alerts.json`
+- Labels por idioma: `BO/<ObjectName>/messages/<objectName>Alerts.json`
 - Uso: `BO/<ObjectName>/<ObjectName>Validate.ts`
 
 ## Validación de esquema HTTP (Dispatcher/Session)
@@ -38,8 +38,8 @@ Esto produce `alerts` con labels (`body`, `username`, `password`, etc.) usando l
 
 Ejemplo: `<ObjectName>`.
 
-- Mensajes del dominio en JSON: `BO/<ObjectName>/errors/<objectName>ErrorMsgs.json`
-- Handler que normaliza: `BO/<ObjectName>/errors/<ObjectName>ErrorHandler.ts`
+- Mensajes del dominio en JSON: `BO/<ObjectName>/messages/<objectName>ErrorMsgs.json`
+- Handler que normaliza: `BO/<ObjectName>/<ObjectName>ErrorHandler.ts`
 
 Convención:
 

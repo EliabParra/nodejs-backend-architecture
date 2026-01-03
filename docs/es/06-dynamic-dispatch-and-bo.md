@@ -46,11 +46,11 @@ Estructura típica (placeholders):
 - BO (orquestación + mensajes): `BO/<ObjectName>/<ObjectName>BO.ts`
 - Repositorio / modelo (DB): `BO/<ObjectName>/<ObjectName>.ts`
 - Validación: `BO/<ObjectName>/<ObjectName>Validate.ts`
-- Mensajes de éxito: `BO/<ObjectName>/<objectName>SuccessMsgs.json`
+- Mensajes de éxito: `BO/<ObjectName>/messages/<objectName>SuccessMsgs.json`
 - Errores del dominio:
-    - Handler: `BO/<ObjectName>/errors/<ObjectName>ErrorHandler.ts`
-    - Mensajes: `BO/<ObjectName>/errors/<objectName>ErrorMsgs.json`
-    - Labels: `BO/<ObjectName>/errors/<objectName>Alerts.json`
+    - Handler: `BO/<ObjectName>/<ObjectName>ErrorHandler.ts`
+    - Mensajes: `BO/<ObjectName>/messages/<objectName>ErrorMsgs.json`
+    - Labels: `BO/<ObjectName>/messages/<objectName>Alerts.json`
 
 ## Firma y contrato del método BO
 

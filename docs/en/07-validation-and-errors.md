@@ -21,7 +21,7 @@ On failure, `Validator` builds `alerts` using templates from [src/config/message
 
 ### Example structure (generic)
 
-- Labels per language: `BO/<ObjectName>/errors/<objectName>Alerts.json`
+- Labels per language: `BO/<ObjectName>/messages/<objectName>Alerts.json`
 - Usage: `BO/<ObjectName>/<ObjectName>Validate.ts`
 
 ## HTTP schema validation (Dispatcher/Session)
@@ -38,8 +38,8 @@ This produces labeled `alerts` (`body`, `username`, `password`, etc.) using the 
 
 Example: `<ObjectName>`.
 
-- Domain messages in JSON: `BO/<ObjectName>/errors/<objectName>ErrorMsgs.json`
-- Normalizer/handler: `BO/<ObjectName>/errors/<ObjectName>ErrorHandler.ts`
+- Domain messages in JSON: `BO/<ObjectName>/messages/<objectName>ErrorMsgs.json`
+- Normalizer/handler: `BO/<ObjectName>/<ObjectName>ErrorHandler.ts`
 
 Convention:
 

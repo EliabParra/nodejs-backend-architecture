@@ -4,7 +4,7 @@ const require = createRequire(import.meta.url)
 import bcrypt from 'bcryptjs'
 import { createHash, randomBytes } from 'node:crypto'
 
-import { AuthErrorHandler } from './errors/AuthErrorHandler.js'
+import { AuthErrorHandler } from './AuthErrorHandler.js'
 import { AuthValidate } from './AuthValidate.js'
 import { AuthRepository } from './Auth.js'
 import EmailService from '../../src/BSS/EmailService.js'
@@ -17,7 +17,10 @@ type ApiResponse = {
     data?: Record<string, unknown> | null
 }
 
-const successMsgs = require('./authSuccessMsgs.json')[config.app.lang] as Record<string, string>
+const successMsgs = require('./messages/authSuccessMsgs.json')[config.app.lang] as Record<
+    string,
+    string
+>
 const email = new EmailService()
 
 function sha256Hex(value: string): string {

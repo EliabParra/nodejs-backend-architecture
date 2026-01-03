@@ -184,7 +184,7 @@ const require = createRequire(import.meta.url)
 type ApiError = { code: number; msg: string; alerts?: string[] }
 type ErrorMsgs = Record<string, ApiError>
 
-const errorMsgs = require('./${objectName.toLowerCase()}ErrorMsgs.json')[config.app.lang] as ErrorMsgs
+const errorMsgs = require('./messages/${objectName.toLowerCase()}ErrorMsgs.json')[config.app.lang] as ErrorMsgs
 
 export class ${objectName}ErrorHandler {
     static notFound(): ApiError { return errorMsgs.notFound }
@@ -204,7 +204,7 @@ export class ${objectName}ErrorHandler {
 function templateValidate(objectName: string) {
     return `import { createRequire } from 'node:module'
 const require = createRequire(import.meta.url)
-const labels = require('./errors/${objectName.toLowerCase()}Alerts.json')[config.app.lang].labels as Record<string, string>
+const labels = require('./messages/${objectName.toLowerCase()}Alerts.json')[config.app.lang].labels as Record<string, string>
 
 /* ${objectName}Validate: validación/normalización reutilizable */
 
@@ -316,11 +316,11 @@ const require = createRequire(import.meta.url)
 
 type ApiResponse = { code: number; msg: string; data?: Record<string, unknown> | null; alerts?: string[] }
 
-import { ${objectName}ErrorHandler } from './errors/${objectName}ErrorHandler.js'
+import { ${objectName}ErrorHandler } from './${objectName}ErrorHandler.js'
 import { ${objectName}Validate } from './${objectName}Validate.js'
 import { ${objectName}Repository } from './${objectName}.js'
 
-const successMsgs = require('./${objectName.toLowerCase()}SuccessMsgs.json')[config.app.lang] as Record<string, string>
+const successMsgs = require('./messages/${objectName.toLowerCase()}SuccessMsgs.json')[config.app.lang] as Record<string, string>
 
 /* ${objectName}BO: métodos async se registran; helpers internos pueden iniciar con "_". En sync se ignoran y no se registran en DB. */
 
@@ -425,7 +425,7 @@ type AuthErrorKey =
     | 'emailNotVerified'
     | 'unknownError'
 
-const errorMsgs = require('./authErrorMsgs.json')[config.app.lang] as Record<AuthErrorKey, ApiError>
+const errorMsgs = require('./messages/authErrorMsgs.json')[config.app.lang] as Record<AuthErrorKey, ApiError>
 
 export class AuthErrorHandler {
     static invalidParameters(alerts?: string[]): ApiError {
@@ -452,7 +452,7 @@ type AuthLabels = {
     newPassword: string
 }
 
-const labels = require('./errors/authAlerts.json')[config.app.lang].labels as AuthLabels
+const labels = require('./messages/authAlerts.json')[config.app.lang].labels as AuthLabels
 
 export class AuthValidate {
     static normalizeText(value: string | null | undefined): string | undefined {
@@ -587,12 +587,12 @@ type ApiResponse = { code: number; msg: string; data?: Record<string, unknown> |
 import bcrypt from 'bcryptjs'
 import { createHash, randomBytes } from 'node:crypto'
 
-import { AuthErrorHandler } from './errors/AuthErrorHandler.js'
+import { AuthErrorHandler } from './AuthErrorHandler.js'
 import { AuthValidate } from './AuthValidate.js'
 import { AuthRepository } from './Auth.js'
 import EmailService from '../../src/BSS/EmailService.js'
 
-const successMsgs = require('./authSuccessMsgs.json')[config.app.lang] as Record<string, string>
+const successMsgs = require('./messages/authSuccessMsgs.json')[config.app.lang] as Record<string, string>
 const email = new EmailService()
 
 function sha256Hex(value: string): string {
@@ -890,19 +890,19 @@ async function cmdAuth(opts: any) {
         { p: path.join(baseDir, `${objectName}.ts`), c: templateAuthRepo() },
         { p: path.join(baseDir, `${objectName}Validate.ts`), c: templateAuthValidate() },
         {
-            p: path.join(baseDir, `${objectName.toLowerCase()}SuccessMsgs.json`),
+            p: path.join(baseDir, 'messages', `${objectName.toLowerCase()}SuccessMsgs.json`),
             c: templateAuthSuccessMsgs(),
         },
         {
-            p: path.join(baseDir, 'errors', `${objectName}ErrorHandler.ts`),
+            p: path.join(baseDir, `${objectName}ErrorHandler.ts`),
             c: templateAuthErrorHandler(),
         },
         {
-            p: path.join(baseDir, 'errors', `${objectName.toLowerCase()}ErrorMsgs.json`),
+            p: path.join(baseDir, 'messages', `${objectName.toLowerCase()}ErrorMsgs.json`),
             c: templateAuthErrorMsgs(),
         },
         {
-            p: path.join(baseDir, 'errors', `${objectName.toLowerCase()}Alerts.json`),
+            p: path.join(baseDir, 'messages', `${objectName.toLowerCase()}Alerts.json`),
             c: templateAuthAlertsLabels(),
         },
     ]
@@ -942,19 +942,19 @@ async function cmdNew(objectName: string, opts: any) {
         { p: path.join(baseDir, `${objectName}.ts`), c: templateRepo(objectName) },
         { p: path.join(baseDir, `${objectName}Validate.ts`), c: templateValidate(objectName) },
         {
-            p: path.join(baseDir, `${objectName.toLowerCase()}SuccessMsgs.json`),
+            p: path.join(baseDir, 'messages', `${objectName.toLowerCase()}SuccessMsgs.json`),
             c: templateSuccessMsgs(objectName, methods),
         },
         {
-            p: path.join(baseDir, 'errors', `${objectName}ErrorHandler.ts`),
+            p: path.join(baseDir, `${objectName}ErrorHandler.ts`),
             c: templateErrorHandler(objectName),
         },
         {
-            p: path.join(baseDir, 'errors', `${objectName.toLowerCase()}ErrorMsgs.json`),
+            p: path.join(baseDir, 'messages', `${objectName.toLowerCase()}ErrorMsgs.json`),
             c: templateErrorMsgs(),
         },
         {
-            p: path.join(baseDir, 'errors', `${objectName.toLowerCase()}Alerts.json`),
+            p: path.join(baseDir, 'messages', `${objectName.toLowerCase()}Alerts.json`),
             c: templateAlertsLabels(objectName),
         },
     ]

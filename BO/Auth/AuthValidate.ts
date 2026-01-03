@@ -11,7 +11,7 @@ type AuthLabels = {
     newPassword: string
 }
 
-const labels = require('./errors/authAlerts.json')[config.app.lang].labels as AuthLabels
+const labels = require('./messages/authAlerts.json')[config.app.lang].labels as AuthLabels
 
 export class AuthValidate {
     static normalizeText(value: string | null | undefined): string | undefined {

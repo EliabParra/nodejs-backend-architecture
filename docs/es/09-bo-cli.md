@@ -42,10 +42,10 @@ Esto crea:
 - `BO/ObjectName/ObjectNameBO.ts`
 - `BO/ObjectName/ObjectName.ts` (entidad + `ObjectNameRepository`)
 - `BO/ObjectName/ObjectNameValidate.ts`
-- `BO/ObjectName/objectNameSuccessMsgs.json`
-- `BO/ObjectName/errors/ObjectNameErrorHandler.ts`
-- `BO/ObjectName/errors/objectNameErrorMsgs.json`
-- `BO/ObjectName/errors/objectNameAlerts.json`
+- `BO/ObjectName/messages/objectNameSuccessMsgs.json`
+- `BO/ObjectName/ObjectNameErrorHandler.ts`
+- `BO/ObjectName/messages/objectNameErrorMsgs.json`
+- `BO/ObjectName/messages/objectNameAlerts.json`
 
 Ejemplo (métodos personalizados):
 

@@ -11,7 +11,10 @@ type AuthErrorKey =
     | 'emailNotVerified'
     | 'unknownError'
 
-const errorMsgs = require('./authErrorMsgs.json')[config.app.lang] as Record<AuthErrorKey, ApiError>
+const errorMsgs = require('./messages/authErrorMsgs.json')[config.app.lang] as Record<
+    AuthErrorKey,
+    ApiError
+>
 
 export class AuthErrorHandler {
     static invalidParameters(alerts?: string[]): ApiError {
