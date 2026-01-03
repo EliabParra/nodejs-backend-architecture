@@ -14,7 +14,8 @@
 ## Bootstrap
 
 1. [src/index.ts](../../src/index.ts)
-  - Imports [src/globals.ts](../../src/globals.ts)
+
+- Imports [src/globals.ts](../../src/globals.ts)
 
 - Creates `new Dispatcher()`, runs `await dispatcher.init()`, then calls `serverOn()`
 
