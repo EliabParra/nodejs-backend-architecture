@@ -26,7 +26,7 @@ test('bo CLI auth --dry does not write files', async () => {
     const existedBefore = await pathExists(targetDir)
     const beforeListing = existedBefore ? await fs.readdir(targetDir) : null
 
-    const r = spawnSync(process.execPath, ['scripts/bo.mjs', 'auth', '--dry'], {
+    const r = spawnSync(process.execPath, ['--import', 'tsx', 'scripts/bo.ts', 'auth', '--dry'], {
         cwd: repoRoot,
         encoding: 'utf8',
     })

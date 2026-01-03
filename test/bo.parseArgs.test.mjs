@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 
-import { parseArgs } from '../scripts/bo.mjs'
+import { parseArgs } from '../scripts/bo.ts'
 
 test('bo.parseArgs parses flags and values', () => {
     const { args, opts } = parseArgs([

@@ -20,25 +20,26 @@ Un backend de referencia que muestra un patrón de arquitectura (dispatcher tran
 ## Principios
 
 - **API-only por defecto** (`APP_FRONTEND_MODE=none`).
-- **Demos aislados** en `examples/` y `public/` (ver el capítulo de Ejemplos).
+- Este template **no trae demo de dominio/UI** por defecto.
 - Contrato JSON consistente + errores normalizados.
+- Runtime TypeScript-first con typecheck estricto.
+- Seam DI-friendly vía `AppContext` (sin container pesado).
 
 ## Mapa rápido
 
-- **Entrada del servidor**: [src/index.js](../../src/index.js)
-- **Globals (service locator)**: [src/globals.js](../../src/globals.js)
-- **Dispatcher (Express + endpoints)**: [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.js)
+- **Entrada del servidor**: [src/index.ts](../../src/index.ts)
+- **Globals (service locator)**: [src/globals.ts](../../src/globals.ts)
+- **Dispatcher (Express + endpoints)**: [src/BSS/Dispatcher.ts](../../src/BSS/Dispatcher.ts)
 - **Express plumbing (middlewares/handlers/session wiring)**: `src/express/`
     - Middlewares: [src/express/middleware/](../../src/express/middleware/)
     - Handlers: [src/express/handlers/](../../src/express/handlers/)
-    - Session wiring: [src/express/session/apply-session-middleware.js](../../src/express/session/apply-session-middleware.js)
-- **Seguridad (tx + permisos + BO dinámico)**: [src/BSS/Security.js](../../src/BSS/Security.js)
-- **Sesión (express-session)**: [src/BSS/Session.js](../../src/BSS/Session.js)
-- **DB**: [src/BSS/DBComponent.js](../../src/BSS/DBComponent.js)
-- **Validación (alerts)**: [src/BSS/Validator.js](../../src/BSS/Validator.js)
+    - Session wiring: [src/express/session/apply-session-middleware.ts](../../src/express/session/apply-session-middleware.ts)
+- **Seguridad (tx + permisos + BO dinámico)**: [src/BSS/Security.ts](../../src/BSS/Security.ts)
+- **Sesión (express-session)**: [src/BSS/Session.ts](../../src/BSS/Session.ts)
+- **DB**: [src/BSS/DBComponent.ts](../../src/BSS/DBComponent.ts)
+- **Validación (alerts)**: [src/BSS/Validator.ts](../../src/BSS/Validator.ts)
 - **Helpers compartidos (BSS)**: [src/BSS/helpers/](../../src/BSS/helpers/)
-- **Router de páginas**: [src/router/pages.js](../../src/router/pages.js)
-- **Ejemplos incluidos (cliente/pages/demo BO)**: ver [docs/es/12-examples.md](12-examples.md)
+- **Router de páginas**: [src/router/pages.ts](../../src/router/pages.ts)
 
 ## Índice
 
@@ -53,8 +54,8 @@ Un backend de referencia que muestra un patrón de arquitectura (dispatcher tran
 9. [CLI para BO + tx + permisos](09-bo-cli.md)
 10. [DB init CLI (schema `security`)](10-db-init-cli.md)
 11. [Frontend clients y requests](11-frontend-clients-and-requests.md)
-12. [Ejemplos incluidos (opcional)](12-examples.md)
-13. [Autenticación (módulo Auth)](13-autenticacion.md)
+12. [Autenticación (módulo Auth)](13-autenticacion.md)
+13. [TypeScript-first + DI (mapa de tipos)](14-types-y-di.md)
 
 ## Glosario
 

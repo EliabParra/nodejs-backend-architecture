@@ -16,7 +16,9 @@ test('bo CLI perms --dry allow is DB-safe', () => {
     const r = spawnSync(
         process.execPath,
         [
-            'scripts/bo.mjs',
+            '--import',
+            'tsx',
+            'scripts/bo.ts',
             'perms',
             '--profile',
             '1',
@@ -39,7 +41,17 @@ test('bo CLI perms --dry allow is DB-safe', () => {
 test('bo CLI perms --dry deny is DB-safe', () => {
     const r = spawnSync(
         process.execPath,
-        ['scripts/bo.mjs', 'perms', '--profile', '2', '--deny', 'Person.deletePerson', '--dry'],
+        [
+            '--import',
+            'tsx',
+            'scripts/bo.ts',
+            'perms',
+            '--profile',
+            '2',
+            '--deny',
+            'Person.deletePerson',
+            '--dry',
+        ],
         { cwd: repoRoot, encoding: 'utf8' }
     )
 
@@ -52,7 +64,17 @@ test('bo CLI perms --dry deny is DB-safe', () => {
 test('bo CLI perms rejects invalid method format', () => {
     const r = spawnSync(
         process.execPath,
-        ['scripts/bo.mjs', 'perms', '--profile', '1', '--allow', 'BadFormat', '--dry'],
+        [
+            '--import',
+            'tsx',
+            'scripts/bo.ts',
+            'perms',
+            '--profile',
+            '1',
+            '--allow',
+            'BadFormat',
+            '--dry',
+        ],
         { cwd: repoRoot, encoding: 'utf8' }
     )
 
@@ -63,7 +85,17 @@ test('bo CLI perms rejects invalid method format', () => {
 test('bo CLI perms rejects invalid profile', () => {
     const r = spawnSync(
         process.execPath,
-        ['scripts/bo.mjs', 'perms', '--profile', '0', '--allow', 'Person.getPerson', '--dry'],
+        [
+            '--import',
+            'tsx',
+            'scripts/bo.ts',
+            'perms',
+            '--profile',
+            '0',
+            '--allow',
+            'Person.getPerson',
+            '--dry',
+        ],
         { cwd: repoRoot, encoding: 'utf8' }
     )
 

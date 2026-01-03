@@ -10,7 +10,7 @@ En esta arquitectura, el backend **depende** del schema `security` (tx + permiso
 
 ## Qué crea
 
-El script [scripts/db-init.mjs](../../scripts/db-init.mjs) crea, si no existen:
+El script [scripts/db-init.ts](../../scripts/db-init.ts) crea, si no existen:
 
 - Schema `security`
 - Tablas mínimas requeridas por [src/config/queries.json](../../src/config/queries.json):
@@ -45,7 +45,8 @@ Esto hace que `POST /login` pueda funcionar sin que tengas que insertar manualme
 
 Además, el script puede **auto-registrar** BOs ya existentes en `BO/`:
 
-- Detecta carpetas `BO/<ObjectName>/` que tengan `BO/<ObjectName>/<ObjectName>BO.js`.
+- Detecta carpetas `BO/<ObjectName>/` que tengan `BO/<ObjectName>/<ObjectName>BO.ts`.
+    - En build/producción, el output compilado es `...BO.js` bajo `dist/`.
 - Extrae métodos declarados como `async <method_na>(...)` (ignora los que empiezan con `_`).
 - Inserta/actualiza:
     - `security.object(object_na)`
@@ -123,7 +124,7 @@ En runtime, puedes mover/configurar el schema/table de sesiones sin tocar `confi
 - `SESSION_SCHEMA=security`
 - `SESSION_TABLE=session`
 
-Implementación: [src/BSS/Session.js](../../src/BSS/Session.js) (usa `connect-pg-simple` con `schemaName`/`tableName`).
+Implementación: [src/BSS/Session.ts](../../src/BSS/Session.ts) (usa `connect-pg-simple` con `schemaName`/`tableName`).
 
 ## Notas operativas
 

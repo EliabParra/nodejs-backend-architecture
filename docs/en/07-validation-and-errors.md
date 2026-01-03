@@ -2,7 +2,7 @@
 
 ## Validator (alerts)
 
-Implementation: [src/BSS/Validator.js](../../src/BSS/Validator.js)
+Implementation: [src/BSS/Validator.ts](../../src/BSS/Validator.ts)
 
 The validator exposes:
 
@@ -21,10 +21,8 @@ On failure, `Validator` builds `alerts` using templates from [src/config/message
 
 ### Example structure (generic)
 
-- Labels per language: `BO/<ObjectName>/errors/<objectName>Alerts.json`
-- Usage: `BO/<ObjectName>/<ObjectName>Validate.js`
-
-For a working example, see: [examples/bo-demo/BO](../../examples/bo-demo/BO)
+- Labels per language: `BO/<ObjectName>/messages/<objectName>Alerts.json`
+- Usage: `BO/<ObjectName>/<ObjectName>Validate.ts`
 
 ## HTTP schema validation (Dispatcher/Session)
 
@@ -32,7 +30,7 @@ In addition to the BO-level `Validator`, the server validates the **shape** of s
 
 Implementation:
 
-- [src/BSS/helpers/http-validators.js](../../src/BSS/helpers/http-validators.js)
+- [src/BSS/helpers/http-validators.ts](../../src/BSS/helpers/http-validators.ts)
 
 This produces labeled `alerts` (`body`, `username`, `password`, etc.) using the same `Validator` message templates.
 
@@ -40,8 +38,8 @@ This produces labeled `alerts` (`body`, `username`, `password`, etc.) using the 
 
 Example: `<ObjectName>`.
 
-- Domain messages in JSON: `BO/<ObjectName>/errors/<objectName>ErrorMsgs.json`
-- Normalizer/handler: `BO/<ObjectName>/errors/<ObjectName>ErrorHandler.js`
+- Domain messages in JSON: `BO/<ObjectName>/messages/<objectName>ErrorMsgs.json`
+- Normalizer/handler: `BO/<ObjectName>/<ObjectName>ErrorHandler.ts`
 
 Convention:
 
@@ -54,14 +52,14 @@ This allows BO methods to return standardized errors, and the dispatcher uses th
 
 ### DB
 
-[src/BSS/DBComponent.js](../../src/BSS/DBComponent.js) executes queries from `queries[schema][queryName]`.
+[src/BSS/DBComponent.ts](../../src/BSS/DBComponent.ts) executes queries from `queries[schema][queryName]`.
 
 - On exception, it logs and **throws** an `Error` (it does not return `null`).
 - Domain/BO code should expect `await db.exe(...)` can throw and must handle it with `try/catch`.
 
 Recommended pattern:
 
-```js
+```ts
 try {
     const r = await db.exe('schema', 'queryName', [
         /* params */
@@ -75,14 +73,14 @@ try {
 
 ### Dispatcher
 
-[src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.js)
+[src/BSS/Dispatcher.ts](../../src/BSS/Dispatcher.ts)
 
 - In `/toProccess`, unexpected exceptions return `msgs[lang].errors.client.unknown`.
 - Details are written to log (`log.show(TYPE_ERROR, ...)`).
 
 The final handler that normalizes unhandled errors lives in:
 
-- [src/express/middleware/final-error-handler.js](../../src/express/middleware/final-error-handler.js)
+- [src/express/middleware/final-error-handler.ts](../../src/express/middleware/final-error-handler.ts)
 
 ## Internal consistency guideline
 

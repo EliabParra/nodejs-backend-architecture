@@ -4,7 +4,7 @@ import express from 'express'
 import request from 'supertest'
 
 import Dispatcher from '../src/BSS/Dispatcher.js'
-import { csrfProtection, csrfTokenHandler } from '../src/express/middleware/csrf.js'
+import { createCsrfProtection, createCsrfTokenHandler } from '../src/express/middleware/csrf.js'
 
 import { withGlobals } from './_helpers/global-state.mjs'
 
@@ -75,6 +75,15 @@ test('POST /login returns invalidParameters when body schema is invalid (with CS
         globalThis.db = { exe: async () => {} }
         globalThis.security = { isReady: true }
 
+        const csrfTokenHandler = createCsrfTokenHandler({
+            config: globalThis.config,
+            msgs: globalThis.msgs,
+        })
+        const csrfProtection = createCsrfProtection({
+            config: globalThis.config,
+            msgs: globalThis.msgs,
+        })
+
         const dispatcher = new Dispatcher()
 
         dispatcher.app.get('/csrf', csrfTokenHandler)
@@ -117,6 +126,11 @@ test('POST /toProccess returns login error when session does not exist', async (
         globalThis.db = { exe: async () => {} }
         globalThis.security = { isReady: true }
 
+        const csrfProtection = createCsrfProtection({
+            config: globalThis.config,
+            msgs: globalThis.msgs,
+        })
+
         const dispatcher = new Dispatcher()
 
         dispatcher.app.use(express.json())
@@ -156,6 +170,15 @@ test('POST /toProccess returns serviceUnavailable when security.ready rejects', 
             getPermissions: () => true,
             executeMethod: async () => ({ code: 200, msg: 'ok' }),
         }
+
+        const csrfTokenHandler = createCsrfTokenHandler({
+            config: globalThis.config,
+            msgs: globalThis.msgs,
+        })
+        const csrfProtection = createCsrfProtection({
+            config: globalThis.config,
+            msgs: globalThis.msgs,
+        })
 
         const dispatcher = new Dispatcher()
 
@@ -207,6 +230,15 @@ test('POST /toProccess returns permissionDenied when permissions check fails (an
             getDataTx: () => ({ method_na: 'm', object_na: 'o' }),
             getPermissions: () => false,
         }
+
+        const csrfTokenHandler = createCsrfTokenHandler({
+            config: globalThis.config,
+            msgs: globalThis.msgs,
+        })
+        const csrfProtection = createCsrfProtection({
+            config: globalThis.config,
+            msgs: globalThis.msgs,
+        })
 
         const dispatcher = new Dispatcher()
 
@@ -266,6 +298,15 @@ test('POST /toProccess returns executeMethod response when permissions allow (an
             getPermissions: () => true,
             executeMethod: async (data) => ({ code: 201, msg: 'created', data }),
         }
+
+        const csrfTokenHandler = createCsrfTokenHandler({
+            config: globalThis.config,
+            msgs: globalThis.msgs,
+        })
+        const csrfProtection = createCsrfProtection({
+            config: globalThis.config,
+            msgs: globalThis.msgs,
+        })
 
         const dispatcher = new Dispatcher()
 
@@ -333,6 +374,15 @@ test('POST /toProccess returns unknown when tx is not found (and audits tx_error
             executeMethod: async () => ({ code: 200, msg: 'ok' }),
         }
 
+        const csrfTokenHandler = createCsrfTokenHandler({
+            config: globalThis.config,
+            msgs: globalThis.msgs,
+        })
+        const csrfProtection = createCsrfProtection({
+            config: globalThis.config,
+            msgs: globalThis.msgs,
+        })
+
         const dispatcher = new Dispatcher()
 
         dispatcher.app.use(express.json())
@@ -387,6 +437,11 @@ test('POST /logout returns login error when session does not exist (CSRF bypass)
         globalThis.db = { exe: async () => {} }
         globalThis.security = { isReady: true }
 
+        const csrfProtection = createCsrfProtection({
+            config: globalThis.config,
+            msgs: globalThis.msgs,
+        })
+
         const dispatcher = new Dispatcher()
         dispatcher.app.use(express.json())
         dispatcher.app.post('/logout', csrfProtection, dispatcher.logout.bind(dispatcher))
@@ -419,6 +474,15 @@ test('POST /logout destroys session and returns success when session exists (req
             show: () => {},
         }
         globalThis.security = { isReady: true }
+
+        const csrfTokenHandler = createCsrfTokenHandler({
+            config: globalThis.config,
+            msgs: globalThis.msgs,
+        })
+        const csrfProtection = createCsrfProtection({
+            config: globalThis.config,
+            msgs: globalThis.msgs,
+        })
 
         const dispatcher = new Dispatcher()
         dispatcher.app.use(express.json())

@@ -2,7 +2,7 @@
 
 ## Validator (alerts)
 
-Implementación: [src/BSS/Validator.js](../../src/BSS/Validator.js)
+Implementación: [src/BSS/Validator.ts](../../src/BSS/Validator.ts)
 
 El validador expone:
 
@@ -21,10 +21,8 @@ Si falla, `Validator` arma `alerts` usando plantillas de [src/config/messages.js
 
 ### Estructura de ejemplo (genérica)
 
-- Labels por idioma: `BO/<ObjectName>/errors/<objectName>Alerts.json`
-- Uso: `BO/<ObjectName>/<ObjectName>Validate.js`
-
-Si quieres ver un ejemplo completo, revisa: [examples/bo-demo/BO](../../examples/bo-demo/BO)
+- Labels por idioma: `BO/<ObjectName>/messages/<objectName>Alerts.json`
+- Uso: `BO/<ObjectName>/<ObjectName>Validate.ts`
 
 ## Validación de esquema HTTP (Dispatcher/Session)
 
@@ -32,7 +30,7 @@ Además del `Validator` usado en BO, el servidor valida el **shape** de algunos 
 
 Implementación:
 
-- [src/BSS/helpers/http-validators.js](../../src/BSS/helpers/http-validators.js)
+- [src/BSS/helpers/http-validators.ts](../../src/BSS/helpers/http-validators.ts)
 
 Esto produce `alerts` con labels (`body`, `username`, `password`, etc.) usando las plantillas del `Validator`.
 
@@ -40,8 +38,8 @@ Esto produce `alerts` con labels (`body`, `username`, `password`, etc.) usando l
 
 Ejemplo: `<ObjectName>`.
 
-- Mensajes del dominio en JSON: `BO/<ObjectName>/errors/<objectName>ErrorMsgs.json`
-- Handler que normaliza: `BO/<ObjectName>/errors/<ObjectName>ErrorHandler.js`
+- Mensajes del dominio en JSON: `BO/<ObjectName>/messages/<objectName>ErrorMsgs.json`
+- Handler que normaliza: `BO/<ObjectName>/<ObjectName>ErrorHandler.ts`
 
 Convención:
 
@@ -54,14 +52,14 @@ Esto permite que el BO devuelva directamente el objeto de error y el dispatcher 
 
 ### DB
 
-[src/BSS/DBComponent.js](../../src/BSS/DBComponent.js) ejecuta queries desde `queries[schema][queryName]`.
+[src/BSS/DBComponent.ts](../../src/BSS/DBComponent.ts) ejecuta queries desde `queries[schema][queryName]`.
 
 - En caso de excepción, loguea y **lanza** un `Error` (no devuelve `null`).
 - Por diseño, los modelos/BO deben asumir que `await db.exe(...)` puede lanzar y deben manejarlo con `try/catch`.
 
 Patrón recomendado:
 
-```js
+```ts
 try {
     const r = await db.exe('schema', 'queryName', [
         /* params */
@@ -75,14 +73,14 @@ try {
 
 ### Dispatcher
 
-[src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.js)
+[src/BSS/Dispatcher.ts](../../src/BSS/Dispatcher.ts)
 
 - En `/toProccess`, ante exception responde `msgs[lang].errors.client.unknown`.
 - Los detalles quedan en log (`log.show(TYPE_ERROR, ...)`).
 
 El handler final que normaliza errores no controlados vive en:
 
-- [src/express/middleware/final-error-handler.js](../../src/express/middleware/final-error-handler.js)
+- [src/express/middleware/final-error-handler.ts](../../src/express/middleware/final-error-handler.ts)
 
 ## Recomendación de consistencia (regla interna)
 

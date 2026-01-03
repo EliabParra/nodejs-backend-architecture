@@ -25,7 +25,7 @@ Luego guarda ese hash como `user_pw` en tu tabla `security.user`.
 
 ## Ejecutar
 
-- Modo normal: `npm start` (corre [src/index.js](../../src/index.js))
+- Modo normal: `npm start` (corre [src/index.ts](../../src/index.ts))
 - Modo dev: `npm run dev` (nodemon)
 
 ## Desarrollo (watch) con backend + SPA separados
@@ -90,20 +90,7 @@ El backend servirá assets estáticos del build y hará fallback a `index.html` 
 
 ### (Opcional) levantar backend + frontend a la vez
 
-Si en tu equipo quieres un comando para levantar ambos (sin acoplar el backend a un framework), usa:
-
-- `npm run full`
-
-> Nota: `npm run full` es solo un helper de desarrollo, no un patrón de producción.
-
-Requiere configurar en el `.env` del backend:
-
-- `FRONTEND_PATH=...` (ruta al repo del frontend con `package.json`)
-- (opcional) `FRONTEND_SCRIPT=start`
-- (opcional) `FRONTEND_ARGS=...` (ej. `--port 4201` para evitar conflicto con `4200`)
-- (opcional) `BACKEND_SCRIPT=dev`
-- (opcional) `BACKEND_ARGS=...`
-- (opcional) `FULL_KEEP_ALIVE=true`
+En desarrollo, levanta backend y frontend por separado (backend: `npm run dev`).
 
 Para conectar cualquier frontend, ver [11-frontend-clients-and-requests.md](11-frontend-clients-and-requests.md).
 
@@ -116,10 +103,10 @@ Al levantar, el servidor expone siempre:
 Rutas de páginas (`/` y `/content`) dependen del modo:
 
 - `APP_FRONTEND_MODE=none` (default): **no** sirve páginas (API-only).
-- `APP_FRONTEND_MODE=pages`: sirve páginas estáticas desde `public/pages/` (ver ejemplos en [docs/es/12-examples.md](12-examples.md)).
+- `APP_FRONTEND_MODE=pages`: sirve páginas estáticas desde `public/pages/`.
 - `APP_FRONTEND_MODE=spa`: sirve un build SPA desde `SPA_DIST_PATH` y hace fallback a `index.html`.
 
-Estos endpoints se definen en [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.js). El router de páginas (modo `pages`) está en [src/router/pages.js](../../src/router/pages.js).
+Estos endpoints se definen en [src/BSS/Dispatcher.ts](../../src/BSS/Dispatcher.ts). El router de páginas (modo `pages`) está en [src/router/pages.ts](../../src/router/pages.ts).
 
 ## Primer smoke-test (manual)
 
@@ -127,7 +114,4 @@ Estos endpoints se definen en [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.j
 2. Iniciar sesión.
 3. Ejecutar tus propios métodos BO vía `POST /toProccess` usando un `tx` mapeado en el schema `security`.
 
-Si quieres un demo completo funcionando (BOs + SQL de ejemplo), usa el ejemplo bajo [examples/bo-demo](../../examples/bo-demo).
-
-Las páginas internas (cuando `APP_FRONTEND_MODE=pages`) usan `fetch` hacia `/login`, `/logout` y `/toProccess`.
-Si quieres ver el cliente demo incluido, ver [docs/es/12-examples.md](12-examples.md).
+Si habilitas el modo `pages`, agrega tus propios archivos bajo `public/pages/`.

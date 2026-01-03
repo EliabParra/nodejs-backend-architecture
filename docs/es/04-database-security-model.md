@@ -6,12 +6,11 @@ Tu arquitectura usa un **modelo transaccional**: el cliente envía un `tx`, el s
 
 Todas las queries de seguridad están en [src/config/queries.json](../../src/config/queries.json) bajo `security`.
 
-- `security.getUser`: login por `(user_na, user_pw)` → devuelve `user_id`, `user_na`, `profile_id`
 - `security.getUser`: obtiene el usuario por `user_na` y retorna `user_pw` (hash) para validar password vía bcrypt en servidor
 - `security.loadPermissions`: carga permisos de cada perfil por `(object_na, method_na)`
 - `security.loadDataTx`: carga mapping `tx_nu` → `(object_na, method_na)`
 
-Estas cargas se hacen al iniciar el proceso en [src/BSS/Security.js](../../src/BSS/Security.js).
+Estas cargas se hacen al iniciar el proceso en [src/BSS/Security.ts](../../src/BSS/Security.ts).
 
 ## Tablas esperadas (inferidas por las queries)
 
@@ -88,11 +87,12 @@ Cuando agregas una feature nueva, estos son los pasos **mínimos** para que el d
 
 - `object_na` debe coincidir exactamente con:
     - carpeta `BO/<object_na>/`
-    - archivo `BO/<object_na>/<object_na>BO.js`
+        - archivo fuente `BO/<object_na>/<object_na>BO.ts`
+          (en build el output es `...BO.js` bajo `dist/`)
     - nombre exportado de clase `export class <object_na>BO { ... }`
       (ver [docs/es/06-dynamic-dispatch-and-bo.md](06-dynamic-dispatch-and-bo.md))
 
-- `method_na` debe existir como método en la clase BO (ej. `<method_na>(params)` en `BO/<object_na>/<object_na>BO.js`).
+- `method_na` debe existir como método en la clase BO (ej. `<method_na>(params)` en `BO/<object_na>/<object_na>BO.ts`).
 
 ## Nota operativa
 
@@ -100,7 +100,7 @@ Los permisos y el tx-map se cargan **una vez al inicio** (caché en memoria). Si
 
 ## Login (detalle)
 
-Implementación: [src/BSS/Session.js](../../src/BSS/Session.js)
+Implementación: [src/BSS/Session.ts](../../src/BSS/Session.ts)
 
 - La query `security.getUser` ya no valida password en SQL.
 - El servidor compara `password` vs `user.user_pw` usando bcrypt.

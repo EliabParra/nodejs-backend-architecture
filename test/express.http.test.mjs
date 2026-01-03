@@ -9,7 +9,7 @@ import { applyCorsIfEnabled } from '../src/express/middleware/cors.js'
 import { applyBodyParsers } from '../src/express/middleware/body-parsers.js'
 import { jsonBodySyntaxErrorHandler } from '../src/express/middleware/json-syntax-error.js'
 import { createFinalErrorHandler } from '../src/express/middleware/final-error-handler.js'
-import { csrfProtection, csrfTokenHandler } from '../src/express/middleware/csrf.js'
+import { createCsrfProtection, createCsrfTokenHandler } from '../src/express/middleware/csrf.js'
 import { createLoginRateLimiter } from '../src/express/rate-limit/limiters.js'
 import { applySessionMiddleware } from '../src/express/session/apply-session-middleware.js'
 import { createHealthHandler } from '../src/express/handlers/health.js'
@@ -188,7 +188,7 @@ test('CORS origin not allowed is mapped to 403 by final error handler', async ()
             }
 
             const app = express()
-            applyCorsIfEnabled(app)
+            applyCorsIfEnabled(app, { config: globalThis.config })
             app.get('/ok', (req, res) => res.status(200).send({ ok: true }))
             app.use(createFinalErrorHandler({ clientErrors, serverErrors }))
 
@@ -218,7 +218,7 @@ test('request logger logs info for 2xx and warning for 4xx/5xx unless already lo
                 req.requestStartMs = Date.now()
                 next()
             })
-            applyRequestLogger(app)
+            applyRequestLogger(app, { log: globalThis.log })
 
             app.get('/ok', (req, res) => res.status(200).send({ ok: true }))
             app.get('/err', (req, res) => res.status(500).send({ ok: false }))
@@ -287,6 +287,11 @@ test('csrfTokenHandler returns unknown when session is missing', async () => {
             globalThis.config = { app: { lang: 'es' } }
             globalThis.msgs = makeEsMsgsForCsrfAndJson()
 
+            const csrfTokenHandler = createCsrfTokenHandler({
+                config: globalThis.config,
+                msgs: globalThis.msgs,
+            })
+
             const app = express()
             app.get('/csrf', csrfTokenHandler)
 
@@ -305,6 +310,11 @@ test('csrfTokenHandler returns a csrfToken when session exists', async () => {
         try {
             globalThis.config = { app: { lang: 'es' } }
             globalThis.msgs = makeEsMsgsForCsrfAndJson()
+
+            const csrfTokenHandler = createCsrfTokenHandler({
+                config: globalThis.config,
+                msgs: globalThis.msgs,
+            })
 
             const app = express()
             app.use((req, res, next) => {
@@ -329,6 +339,11 @@ test('csrfProtection bypasses /toProccess when unauthenticated', async () => {
         try {
             globalThis.config = { app: { lang: 'es' } }
             globalThis.msgs = makeEsMsgsForCsrfAndJson()
+
+            const csrfProtection = createCsrfProtection({
+                config: globalThis.config,
+                msgs: globalThis.msgs,
+            })
 
             const app = express()
             app.use(express.json())
@@ -356,6 +371,11 @@ test('csrfProtection rejects when expected token is missing', async () => {
             globalThis.config = { app: { lang: 'es' } }
             globalThis.msgs = makeEsMsgsForCsrfAndJson()
 
+            const csrfProtection = createCsrfProtection({
+                config: globalThis.config,
+                msgs: globalThis.msgs,
+            })
+
             const app = express()
             app.use((req, res, next) => {
                 req.session = {}
@@ -378,6 +398,11 @@ test('csrfProtection allows request when header matches session token', async ()
         try {
             globalThis.config = { app: { lang: 'es' } }
             globalThis.msgs = makeEsMsgsForCsrfAndJson()
+
+            const csrfProtection = createCsrfProtection({
+                config: globalThis.config,
+                msgs: globalThis.msgs,
+            })
 
             const app = express()
             app.use((req, res, next) => {

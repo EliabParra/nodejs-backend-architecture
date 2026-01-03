@@ -25,7 +25,7 @@ Then store that hash as `user_pw` in the `security.user` table.
 
 ## Run
 
-- Normal: `npm start` (runs [src/index.js](../../src/index.js))
+- Normal: `npm start` (runs [src/index.ts](../../src/index.ts))
 - Dev: `npm run dev` (nodemon)
 
 ## Development (watch) with backend + SPA separated
@@ -90,20 +90,7 @@ The backend will serve static build assets and fall back to `index.html` for SPA
 
 ### (Optional) start backend + frontend together
 
-If your team wants a single command to start both (without coupling the backend to any specific framework), use:
-
-- `npm run full`
-
-> Note: `npm run full` is a development helper only, not a production pattern.
-
-In backend `.env` set:
-
-- `FRONTEND_PATH=...` (path to the frontend repo containing `package.json`)
-- (optional) `FRONTEND_SCRIPT=start`
-- (optional) `FRONTEND_ARGS=...` (e.g. `--port 4201` to avoid `4200` conflicts)
-- (optional) `BACKEND_SCRIPT=dev`
-- (optional) `BACKEND_ARGS=...`
-- (optional) `FULL_KEEP_ALIVE=true`
+Run backend and frontend separately in development (backend: `npm run dev`).
 
 To connect any frontend, see [11-frontend-clients-and-requests.md](11-frontend-clients-and-requests.md).
 
@@ -116,10 +103,10 @@ When running, the server always exposes:
 Page routes (`/` and `/content`) depend on the mode:
 
 - `APP_FRONTEND_MODE=none` (default): serves **no** pages (API-only).
-- `APP_FRONTEND_MODE=pages`: serves static pages from `public/pages/` (see examples in [docs/en/12-examples.md](12-examples.md)).
+- `APP_FRONTEND_MODE=pages`: serves static pages from `public/pages/`.
 - `APP_FRONTEND_MODE=spa`: serves a SPA build from `SPA_DIST_PATH` and falls back to `index.html`.
 
-These endpoints are defined in [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.js). The pages router (pages mode) is in [src/router/pages.js](../../src/router/pages.js).
+These endpoints are defined in [src/BSS/Dispatcher.ts](../../src/BSS/Dispatcher.ts). The pages router (pages mode) is in [src/router/pages.ts](../../src/router/pages.ts).
 
 ## Quick manual smoke-test
 
@@ -127,7 +114,4 @@ These endpoints are defined in [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.
 2. Login.
 3. Call your own BO methods via `POST /toProccess` using a `tx` mapped in the `security` schema.
 
-If you want a working end-to-end demo (BOs + sample SQL), use the example under [examples/bo-demo](../../examples/bo-demo).
-
-The built-in pages (when `APP_FRONTEND_MODE=pages`) use `fetch` against `/login`, `/logout`, and `/toProccess`.
-To inspect the included demo client/pages, see [docs/en/12-examples.md](12-examples.md).
+If you enable `pages` mode, add your own files under `public/pages/`.

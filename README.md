@@ -26,16 +26,21 @@ This repository is a **starter/blueprint** that gives you a solid backend baseli
 - DB-backed permission model (`security` schema) with CLIs for init + BO sync + permissions.
 - Operational basics included: `/health`, `/ready`, request IDs, consistent JSON errors.
 - Optional frontend hosting modes (`none`/`pages`/`spa`) with safe ordering.
+- TypeScript-first runtime (ESM) with `strict: true` and a DI-friendly seam (`AppContext`).
 
 ### Who this is for
 
 - Internal apps (B2B/admin) that want cookie sessions + CSRF.
 - Teams that want a maintainable baseline and clear extension points.
 
-### Who this is NOT for (yet)
+### TypeScript-first + DI (what to expect)
 
-- Public REST APIs that must be OpenAPI-first.
-- Projects that require TypeScript-first + DI from day one.
+- **TypeScript-first**: source-of-truth is `src/**/*.ts` and strict typechecking is part of the quality gate.
+- **DI-friendly** (no heavy container): runtime services are available via globals, and also collected into an `AppContext` created by `createAppContext()`.
+
+Start here:
+
+- Types + DI: [docs/en/14-types-and-di.md](docs/en/14-types-and-di.md)
 
 ### Quickstart (10 minutes)
 
@@ -101,28 +106,24 @@ Start here:
 - English index: [docs/en/00-index.md](docs/en/00-index.md)
 - Auth (EN): [docs/en/13-authentication.md](docs/en/13-authentication.md)
 - Frontend tutorial (EN): [docs/en/11-frontend-clients-and-requests.md](docs/en/11-frontend-clients-and-requests.md)
-- Examples (EN): [docs/en/12-examples.md](docs/en/12-examples.md)
 
 ### Scripts
 
-| Script                                             | Description                                                  |
-| -------------------------------------------------- | ------------------------------------------------------------ |
-| `npm start`                                        | Runs the API server                                          |
-| `npm run dev`                                      | Runs with `nodemon`                                          |
-| `npm run format`                                   | Formats the repo (Prettier)                                  |
-| `npm run format:check`                             | Checks formatting (CI-friendly)                              |
-| `npm test`                                         | DB-safe tests (Node test runner)                             |
-| `npm run test:watch`                               | Runs tests in watch mode                                     |
-| `npm run test:http`                                | Runs HTTP tests only                                         |
-| `npm run test:cli`                                 | Runs CLI tests only                                          |
-| `npm run test:coverage`                            | Generates coverage (c8)                                      |
-| `npm run db:init`                                  | Initializes the `security` schema (idempotent)               |
-| `npm run bo -- <command>`                          | BO CLI (scaffold BOs, sync tx, manage permissions)           |
-| `npm run hashpw -- "<plainPassword>" [saltRounds]` | Generates bcrypt hashes                                      |
-| `npm run full`                                     | Optional dev helper (backend + frontend) via `FRONTEND_PATH` |
-| `npm run export:starter`                           | Exports a clean starterpack (without demo BOs)               |
+| Script                                             | Description                                          |
+| -------------------------------------------------- | ---------------------------------------------------- |
+| `npm start`                                        | Runs the API server                                  |
+| `npm test`                                         | DB-safe tests (Node test runner)                     |
+| `npm run dev`                                      | Runs with `nodemon`                                  |
+| `npm run format`                                   | Formats the repo (Prettier)                          |
+| `npm run format:check`                             | Checks formatting (CI-friendly)                      |
+| `npm run test:watch`                               | Runs tests in watch mode                             |
+| `npm run test:coverage`                            | Generates coverage (c8)                              |
+| `npm run verify`                                   | Quality gate: typecheck + build + dist smoke + tests |
+| `npm run db:init`                                  | Initializes the `security` schema (idempotent)       |
+| `npm run bo -- <command>`                          | BO CLI (scaffold BOs, sync tx, manage permissions)   |
+| `npm run hashpw -- "<plainPassword>" [saltRounds]` | Generates bcrypt hashes                              |
 
-Coverage note: `c8` is configured to focus on runtime logic (`src/**/*.js`) and excludes wiring/entrypoints (e.g. `src/index.js`) and JSDoc-only definitions (`src/jsdoc/**`).
+Coverage note: `c8` is configured to focus on runtime logic (`src/**/*.ts`) and excludes wiring/entrypoints (e.g. `src/index.ts`) and docs/scripts/BO assets.
 
 ### BO/ (your domain)
 
@@ -130,7 +131,6 @@ The `BO/` folder is intentionally **empty by design**.
 
 - Add your BOs under `BO/<ObjectName>/<ObjectName>BO.js`.
 - Scaffold quickly: `npm run bo -- new ObjectName`.
-- Demo BOs (optional): `examples/bo-demo/BO/`.
 
 ### License
 
@@ -142,4 +142,4 @@ MIT. See [LICENSE](LICENSE).
 - `BO/`: your domain BOs (kept empty by default)
 - `scripts/`: CLI tools (BO CLI, db-init, export starterpack, etc.)
 - `docs/`: ES/EN documentation
-- `public/`: optional demo pages/scripts (only served when enabled)
+- `public/`: optional static assets for `pages` mode (may be empty)
