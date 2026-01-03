@@ -1,0 +1,72 @@
+{
+    "app": {
+        "name": "app",
+        "port": 3000,
+        "host": "localhost",
+        "lang": "es",
+        "frontendMode": "none"
+    },
+    "db": {
+        "database": "app_db",
+        "user": "postgres",
+        "password": "CHANGE_ME",
+        "port": 5432,
+        "ssl": false,
+        "max": 20,
+        "idleTimeoutMillis": 1000,
+        "connectionTimeoutMillis": 1000,
+        "maxUses": 7500
+    },
+    "session": {
+        "secret": "CHANGE_ME",
+        "resave": false,
+        "saveUninitialized": false,
+        "duration": 1800000,
+        "activeDuration": 900000,
+        "store": {
+            "type": "pg",
+            "schemaName": "",
+            "tableName": "session",
+            "ttlSeconds": 1800,
+            "pruneIntervalSeconds": 300
+        },
+        "cookie": {
+            "maxAge": 1800000,
+            "secure": false,
+            "sameSite": "lax",
+            "httpOnly": true
+        }
+    },
+    "bo": {
+        "path": "../../BO/"
+    },
+    "log": {
+        "activation": [true, true, true, true]
+    },
+    "cors": {
+        "enabled": true,
+        "credentials": true,
+        "origins": ["http://localhost:5173", "http://localhost:4200"]
+    },
+    "auth": {
+        "loginId": "email",
+        "login2StepNewDevice": false,
+        "publicProfileId": null,
+        "sessionProfileId": 1,
+        "requireEmailVerification": true,
+        "deviceCookieName": "device_token",
+        "deviceCookieMaxAgeMs": 15552000000,
+        "loginChallengeExpiresSeconds": 600,
+        "loginChallengeMaxAttempts": 5,
+        "passwordResetExpiresSeconds": 900,
+        "passwordResetMaxAttempts": 5,
+        "passwordResetPurpose": "password_reset",
+        "emailVerificationExpiresSeconds": 900,
+        "emailVerificationMaxAttempts": 5,
+        "emailVerificationPurpose": "email_verification"
+    },
+    "email": {
+        "mode": "log",
+        "from": "no-reply@example.com"
+    }
+}
