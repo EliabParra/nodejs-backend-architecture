@@ -210,4 +210,4 @@ g.db = new DBComponent()
 // Do NOT instantiate Security here.
 // Security's constructor triggers async init which queries the DB.
 // That breaks CLI scripts that import globals for config/db/log (e.g. scripts/bo.ts).
-// Server startup (src/index.js) is responsible for creating globalThis.security.
+// Server startup (src/index.ts) is responsible for creating globalThis.security.
