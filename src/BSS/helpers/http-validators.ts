@@ -24,7 +24,7 @@ export function validateToProccessSchema(body: unknown, ctx: AppContext): string
         const isOk =
             typeof params === 'string' ||
             (typeof params === 'number' && Number.isFinite(params)) ||
-            (params !== null && typeof params === 'object' && !Array.isArray(params))
+            (typeof params === 'object' && !Array.isArray(params))
 
         if (!isOk) {
             alerts.push(msgs[config.app.lang].alerts.paramsType.replace('{value}', 'params'))
