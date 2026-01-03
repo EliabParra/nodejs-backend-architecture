@@ -1,6 +1,6 @@
 # 05 — Contrato API (cliente-servidor)
 
-Los endpoints API están definidos en [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.js).
+Los endpoints API están definidos en [src/BSS/Dispatcher.ts](../../src/BSS/Dispatcher.ts).
 
 ## Convención de respuesta
 
@@ -32,7 +32,7 @@ Nota: de forma general, cualquier error no controlado también se normaliza a JS
 
 Implementación del handler final de errores:
 
-- [src/express/middleware/final-error-handler.js](../../src/express/middleware/final-error-handler.js)
+- [src/express/middleware/final-error-handler.ts](../../src/express/middleware/final-error-handler.ts)
 
 Nota: si el body excede `config.app.bodyLimit`, el servidor puede responder:
 
@@ -60,8 +60,8 @@ Estos endpoints sirven para monitoreo (health checks) y readiness (dependencias 
 
 Implementación:
 
-- [src/express/handlers/health.js](../../src/express/handlers/health.js)
-- [src/express/handlers/ready.js](../../src/express/handlers/ready.js)
+- [src/express/handlers/health.ts](../../src/express/handlers/health.ts)
+- [src/express/handlers/ready.ts](../../src/express/handlers/ready.ts)
 
 ## Logging de requests
 
@@ -82,8 +82,8 @@ El output se controla con `config.log.activation`.
 
 Implementación:
 
-- requestId: [src/express/middleware/request-id.js](../../src/express/middleware/request-id.js)
-- completion logger: [src/express/middleware/request-logger.js](../../src/express/middleware/request-logger.js)
+- requestId: [src/express/middleware/request-id.ts](../../src/express/middleware/request-id.ts)
+- completion logger: [src/express/middleware/request-logger.ts](../../src/express/middleware/request-logger.ts)
 
 Notas:
 
@@ -100,7 +100,7 @@ Además del logging a stdout, el backend puede registrar eventos en DB si existe
 
 Esto se inserta de forma best-effort (si falla, no rompe el request). El `requestId` se persiste como `request_id`.
 
-Helper (best-effort): [src/BSS/helpers/audit-log.js](../../src/BSS/helpers/audit-log.js)
+Helper (best-effort): [src/BSS/helpers/audit-log.ts](../../src/BSS/helpers/audit-log.ts)
 
 ## CORS + sesión (frontend en otro puerto)
 
@@ -142,11 +142,11 @@ Nota: `/toProccess` y `/logout` siguen respondiendo `401 login` si no existe ses
 
 Implementación:
 
-- [src/express/middleware/csrf.js](../../src/express/middleware/csrf.js)
+- [src/express/middleware/csrf.ts](../../src/express/middleware/csrf.ts)
 
 ## POST /login
 
-Archivo: [src/BSS/Session.js](../../src/BSS/Session.js)
+Archivo: [src/BSS/Session.ts](../../src/BSS/Session.ts)
 
 ### Request
 
@@ -167,7 +167,7 @@ Validación de esquema (shape):
 
 Implementación de validación de esquema HTTP (reutilizable):
 
-- [src/BSS/helpers/http-validators.js](../../src/BSS/helpers/http-validators.js)
+- [src/BSS/helpers/http-validators.ts](../../src/BSS/helpers/http-validators.ts)
 
 Si el body llega como JSON inválido, también se responde `400 invalidParameters` + `alerts`.
 
@@ -195,7 +195,7 @@ Notas:
 
 ## POST /login/verify
 
-Archivo: [src/BSS/Session.js](../../src/BSS/Session.js)
+Archivo: [src/BSS/Session.ts](../../src/BSS/Session.ts)
 
 Completa el desafío de login de 2 pasos iniciado por `POST /login`.
 
@@ -222,14 +222,14 @@ CSRF:
 
 ### Rate limiting (anti brute-force)
 
-El endpoint `/login` está protegido con rate limiting. El limiter se define en [src/express/rate-limit/limiters.js](../../src/express/rate-limit/limiters.js) y se aplica desde [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.js). Cuando se excede el límite, devuelve:
+El endpoint `/login` está protegido con rate limiting. El limiter se define en [src/express/rate-limit/limiters.ts](../../src/express/rate-limit/limiters.ts) y se aplica desde [src/BSS/Dispatcher.ts](../../src/BSS/Dispatcher.ts). Cuando se excede el límite, devuelve:
 
 - HTTP `429`
 - Body: `msgs[lang].errors.client.tooManyRequests`
 
 ## POST /logout
 
-Archivo: [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.js)
+Archivo: [src/BSS/Dispatcher.ts](../../src/BSS/Dispatcher.ts)
 
 ### Request
 
@@ -253,7 +253,7 @@ CSRF:
 
 ## POST /toProccess
 
-Archivo: [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.js)
+Archivo: [src/BSS/Dispatcher.ts](../../src/BSS/Dispatcher.ts)
 
 ### Request
 
@@ -302,7 +302,7 @@ CSRF:
 
 ### Rate limiting (protección de carga)
 
-`/toProccess` tiene rate limiting. El limiter se define en [src/express/rate-limit/limiters.js](../../src/express/rate-limit/limiters.js) y se aplica desde [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.js).
+`/toProccess` tiene rate limiting. El limiter se define en [src/express/rate-limit/limiters.ts](../../src/express/rate-limit/limiters.ts) y se aplica desde [src/BSS/Dispatcher.ts](../../src/BSS/Dispatcher.ts).
 
 - Límite: 120 requests por minuto.
 - Key:

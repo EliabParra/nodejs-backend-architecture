@@ -4,7 +4,7 @@ This architecture runs business logic without REST routes per resource: it execu
 
 ## How a BO is resolved and executed
 
-Implementation: [src/BSS/Security.js](../../src/BSS/Security.js)
+Implementation: [src/BSS/Security.ts](../../src/BSS/Security.ts)
 
 - The server receives `{ tx, params }`.
 - `tx` is translated to `{ object_na, method_na }` using `Security.txMap`.
@@ -80,4 +80,4 @@ Quick examples:
 
 ## Note about `config.bo.path`
 
-`config.bo.path` (in [src/config/config.json](../../src/config/config.json)) is a relative path used by `import()` from [src/BSS/Security.js](../../src/BSS/Security.js). If you move folders, keep this value consistent.
+`config.bo.path` (in [src/config/config.json](../../src/config/config.json)) is a relative path used by `import()` from [src/BSS/Security.ts](../../src/BSS/Security.ts). If you move folders, keep this value consistent.

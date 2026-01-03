@@ -69,20 +69,20 @@ Nota sobre desacople: el backend puede correr en modo **API-only** (`APP_FRONTEN
 
 Implementación del adapter:
 
-- [src/frontend-adapters/index.js](../../src/frontend-adapters/index.js)
+- [src/frontend-adapters/index.ts](../../src/frontend-adapters/index.ts)
 
 ## Express plumbing (dónde vive ahora)
 
 - Middlewares (helmet, CORS, parsers, CSRF, rate limit, requestId/log): `src/express/middleware/`
 - Health/readiness handlers: `src/express/handlers/`
-- Session wiring (express-session + store): [src/express/session/apply-session-middleware.js](../../src/express/session/apply-session-middleware.js)
+- Session wiring (express-session + store): [src/express/session/apply-session-middleware.ts](../../src/express/session/apply-session-middleware.ts)
 
 El `Dispatcher` queda principalmente como orquestador: registra rutas, conecta middlewares y delega la configuración de Express a módulos chicos.
 
 ## Router de páginas
 
-- Declaración de rutas en [src/router/routes.js](../../src/router/routes.js)
-- Router y middleware `requireAuth` en [src/router/pages.js](../../src/router/pages.js)
+- Declaración de rutas en [src/router/routes.ts](../../src/router/routes.ts)
+- Router y middleware `requireAuth` en [src/router/pages.ts](../../src/router/pages.ts)
 - Se pueden proteger rutas por configuración de ruta (ej. `validateIsAuth=true`).
 - Cuando se requiere auth y no hay sesión, redirige a `/?returnTo=...`.
 

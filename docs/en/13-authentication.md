@@ -68,7 +68,7 @@ So `/toProccess` can run those methods without an authenticated session.
 
 ## 2) Config (runtime)
 
-Config lives in [src/config/config.json](../../src/config/config.json) and env overrides in [src/globals.js](../../src/globals.js).
+Config lives in [src/config/config.json](../../src/config/config.json) and env overrides in [src/globals.ts](../../src/globals.ts).
 
 Common Auth settings:
 

@@ -2,7 +2,7 @@
 
 ## Validator (alerts)
 
-Implementación: [src/BSS/Validator.js](../../src/BSS/Validator.js)
+Implementación: [src/BSS/Validator.ts](../../src/BSS/Validator.ts)
 
 El validador expone:
 
@@ -32,7 +32,7 @@ Además del `Validator` usado en BO, el servidor valida el **shape** de algunos 
 
 Implementación:
 
-- [src/BSS/helpers/http-validators.js](../../src/BSS/helpers/http-validators.js)
+- [src/BSS/helpers/http-validators.ts](../../src/BSS/helpers/http-validators.ts)
 
 Esto produce `alerts` con labels (`body`, `username`, `password`, etc.) usando las plantillas del `Validator`.
 
@@ -54,7 +54,7 @@ Esto permite que el BO devuelva directamente el objeto de error y el dispatcher 
 
 ### DB
 
-[src/BSS/DBComponent.js](../../src/BSS/DBComponent.js) ejecuta queries desde `queries[schema][queryName]`.
+[src/BSS/DBComponent.ts](../../src/BSS/DBComponent.ts) ejecuta queries desde `queries[schema][queryName]`.
 
 - En caso de excepción, loguea y **lanza** un `Error` (no devuelve `null`).
 - Por diseño, los modelos/BO deben asumir que `await db.exe(...)` puede lanzar y deben manejarlo con `try/catch`.
@@ -75,14 +75,14 @@ try {
 
 ### Dispatcher
 
-[src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.js)
+[src/BSS/Dispatcher.ts](../../src/BSS/Dispatcher.ts)
 
 - En `/toProccess`, ante exception responde `msgs[lang].errors.client.unknown`.
 - Los detalles quedan en log (`log.show(TYPE_ERROR, ...)`).
 
 El handler final que normaliza errores no controlados vive en:
 
-- [src/express/middleware/final-error-handler.js](../../src/express/middleware/final-error-handler.js)
+- [src/express/middleware/final-error-handler.ts](../../src/express/middleware/final-error-handler.ts)
 
 ## Recomendación de consistencia (regla interna)
 

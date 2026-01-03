@@ -2,7 +2,7 @@
 
 ## Dónde vive la configuración
 
-Se carga al iniciar en [src/globals.js](../../src/globals.js) usando `createRequire()`:
+Se carga al iniciar en [src/globals.ts](../../src/globals.ts) usando `createRequire()`:
 
 - `config` desde [src/config/config.json](../../src/config/config.json)
 - `queries` desde [src/config/queries.json](../../src/config/queries.json)
@@ -71,10 +71,10 @@ Archivo: [src/config/config.json](../../src/config/config.json)
 - `app.lang`: idioma activo (`"es"` o `"en"`). Afecta `msgs[...]` y alerts.
 - `app.frontendMode`: `"pages"` | `"spa"` | `"none"` (ver arriba)
 - `app.bodyLimit` (opcional): límite de tamaño para requests JSON/urlencoded (ej. `"100kb"`, `"1mb"`).
-- `db`: parámetros para `pg.Pool` (ver [src/BSS/DBComponent.js](../../src/BSS/DBComponent.js))
-- `session`: configuración de `express-session` (ver [src/BSS/Session.js](../../src/BSS/Session.js))
-- `bo.path`: ruta relativa usada por `Security` para importar BO dinámicamente (ver [src/BSS/Security.js](../../src/BSS/Security.js))
-- `log.activation`: flags por nivel (error/info/debug/warn) usados por [src/BSS/Log.js](../../src/BSS/Log.js)
+- `db`: parámetros para `pg.Pool` (ver [src/BSS/DBComponent.ts](../../src/BSS/DBComponent.ts))
+- `session`: configuración de `express-session` (ver [src/BSS/Session.ts](../../src/BSS/Session.ts))
+- `bo.path`: ruta relativa usada por `Security` para importar BO dinámicamente (ver [src/BSS/Security.ts](../../src/BSS/Security.ts))
+- `log.activation`: flags por nivel (error/info/debug/warn) usados por [src/BSS/Log.ts](../../src/BSS/Log.ts)
 - `log.format` (opcional): `"text"` | `"json"` (puede venir de `LOG_FORMAT`)
 
 Nota: con `info` activo, el servidor loguea también requests exitosos (2xx/3xx) con `requestId` y `durationMs` (ver [docs/es/05-api-contract.md](05-api-contract.md)).
@@ -87,12 +87,12 @@ Config: [src/config/config.json](../../src/config/config.json) → `cors`
 - `cors.credentials`: permite cookies/sesión cross-origin (necesario si el frontend corre en otro origen).
 - `cors.origins`: allowlist de orígenes permitidos en dev (ej. Vite `http://localhost:5173`, Angular `http://localhost:4200`).
 
-Cableado: [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.js) compone el middleware.
+Cableado: [src/BSS/Dispatcher.ts](../../src/BSS/Dispatcher.ts) compone el middleware.
 
 La implementación vive en módulos dedicados de Express:
 
-- CORS: [src/express/middleware/cors.js](../../src/express/middleware/cors.js)
-- CSRF: [src/express/middleware/csrf.js](../../src/express/middleware/csrf.js)
+- CORS: [src/express/middleware/cors.ts](../../src/express/middleware/cors.ts)
+- CSRF: [src/express/middleware/csrf.ts](../../src/express/middleware/csrf.ts)
 
 Nota (CSRF): para requests `POST` debes enviar el header `X-CSRF-Token` (ver [docs/es/05-api-contract.md](05-api-contract.md)).
 
@@ -112,18 +112,18 @@ Nota (CSRF): para requests `POST` debes enviar el header `X-CSRF-Token` (ver [do
 
 El servidor aplica headers de seguridad estándar via `helmet` y deshabilita `X-Powered-By`.
 
-Cableado: [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.js) compone el middleware.
+Cableado: [src/BSS/Dispatcher.ts](../../src/BSS/Dispatcher.ts) compone el middleware.
 
 La implementación vive en:
 
-- Helmet: [src/express/middleware/helmet.js](../../src/express/middleware/helmet.js)
+- Helmet: [src/express/middleware/helmet.ts](../../src/express/middleware/helmet.ts)
 
 ## Modo de páginas (backend) vs SPA (frontend)
 
 Puedes elegir quién “posee” las rutas:
 
 - `none` (default / recomendado): API-only (no sirve páginas).
-- `pages`: Express sirve páginas desde `public/pages` (rutas definidas en `src/router/routes.js`).
+- `pages`: Express sirve páginas desde `public/pages` (rutas definidas en `src/router/routes.ts`).
 - `spa`: Express sirve un build SPA (React/Angular/Vue/etc.) y responde `index.html` para rutas no-API.
 
 Scripts principales en `package.json`:
@@ -187,7 +187,7 @@ Extensiones opcionales de queries:
 
 El acceso se hace con:
 
-- `db.exe(schema, queryName, params)` en [src/BSS/DBComponent.js](../../src/BSS/DBComponent.js)
+- `db.exe(schema, queryName, params)` en [src/BSS/DBComponent.ts](../../src/BSS/DBComponent.ts)
 
 Nota sobre params:
 

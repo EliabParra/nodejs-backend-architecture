@@ -69,20 +69,20 @@ Decoupling note: the backend can run in **API-only** mode (`APP_FRONTEND_MODE=no
 
 Adapter entrypoint:
 
-- [src/frontend-adapters/index.js](../../src/frontend-adapters/index.js)
+- [src/frontend-adapters/index.ts](../../src/frontend-adapters/index.ts)
 
 ## Express plumbing (where it lives now)
 
 - Middlewares (helmet, CORS, parsers, CSRF, rate limit, requestId/log): `src/express/middleware/`
 - Health/readiness handlers: `src/express/handlers/`
-- Session wiring (express-session + store): [src/express/session/apply-session-middleware.js](../../src/express/session/apply-session-middleware.js)
+- Session wiring (express-session + store): [src/express/session/apply-session-middleware.ts](../../src/express/session/apply-session-middleware.ts)
 
 `Dispatcher` is intentionally kept as the orchestrator: it registers routes, composes middlewares, and delegates Express configuration to small modules.
 
 ## Pages router
 
-- Route declarations: [src/router/routes.js](../../src/router/routes.js)
-- Router + `requireAuth` middleware: [src/router/pages.js](../../src/router/pages.js)
+- Route declarations: [src/router/routes.ts](../../src/router/routes.ts)
+- Router + `requireAuth` middleware: [src/router/pages.ts](../../src/router/pages.ts)
 - Routes can be protected per route config (e.g. `validateIsAuth=true`).
 - When auth is required and no session exists, the router redirects to `/?returnTo=...`.
 

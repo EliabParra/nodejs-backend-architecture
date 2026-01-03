@@ -5,8 +5,7 @@
         "module": "NodeNext",
         "moduleResolution": "NodeNext",
 
-        "allowJs": true,
-        "checkJs": false,
+        "allowJs": false,
 
         "strict": false,
         "skipLibCheck": true,
@@ -15,6 +14,6 @@
 
         "noEmit": true
     },
-    "include": ["src/**/*.js", "src/**/*.ts", "scripts/**/*.ts"],
+    "include": ["src/**/*.ts", "scripts/**/*.ts"],
     "exclude": ["node_modules", "dist", "test", "docs", "public", "BO"]
 }

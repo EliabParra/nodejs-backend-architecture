@@ -10,7 +10,7 @@ All security SQL is under the `security` key in [src/config/queries.json](../../
 - `security.loadPermissions`: loads allowed `(object_na, method_na)` per profile
 - `security.loadDataTx`: loads `tx_nu` → `(object_na, method_na)` mapping
 
-These are loaded at process startup by [src/BSS/Security.js](../../src/BSS/Security.js).
+These are loaded at process startup by [src/BSS/Security.ts](../../src/BSS/Security.ts).
 
 ## Expected tables (inferred from current queries)
 
@@ -80,7 +80,7 @@ Permissions and tx mappings are loaded **once at startup** (in-memory cache). If
 
 ## Login (detail)
 
-Implementation: [src/BSS/Session.js](../../src/BSS/Session.js)
+Implementation: [src/BSS/Session.ts](../../src/BSS/Session.ts)
 
 - The `security.getUser` query no longer checks the password in SQL.
 - The server compares `password` vs `user.user_pw` using bcrypt.

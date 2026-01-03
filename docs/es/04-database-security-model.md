@@ -11,7 +11,7 @@ Todas las queries de seguridad están en [src/config/queries.json](../../src/con
 - `security.loadPermissions`: carga permisos de cada perfil por `(object_na, method_na)`
 - `security.loadDataTx`: carga mapping `tx_nu` → `(object_na, method_na)`
 
-Estas cargas se hacen al iniciar el proceso en [src/BSS/Security.js](../../src/BSS/Security.js).
+Estas cargas se hacen al iniciar el proceso en [src/BSS/Security.ts](../../src/BSS/Security.ts).
 
 ## Tablas esperadas (inferidas por las queries)
 
@@ -100,7 +100,7 @@ Los permisos y el tx-map se cargan **una vez al inicio** (caché en memoria). Si
 
 ## Login (detalle)
 
-Implementación: [src/BSS/Session.js](../../src/BSS/Session.js)
+Implementación: [src/BSS/Session.ts](../../src/BSS/Session.ts)
 
 - La query `security.getUser` ya no valida password en SQL.
 - El servidor compara `password` vs `user.user_pw` usando bcrypt.

@@ -8,7 +8,6 @@
         "format": "prettier --write .",
         "format:check": "prettier --check .",
         "typecheck": "tsc -p tsconfig.json --noEmit",
-        "typecheck:js": "tsc -p tsconfig.check.json --noEmit",
         "test": "node --import tsx --import ./test/setup.mjs --test",
         "test:http": "node --import tsx --import ./test/setup.mjs --test test/*.http.test.mjs",
         "test:cli": "node --import tsx --import ./test/setup.mjs --test test/*cli*.test.mjs",
@@ -25,7 +24,7 @@
         "db:init": "tsx scripts/db-init.ts",
         "hashpw": "tsx scripts/hash-password.ts",
         "bo": "tsx scripts/bo.ts",
-        "docs:jsdoc": "jsdoc -c jsdoc.json",
+        "docs:jsdoc": "npm run build && jsdoc -c jsdoc.json",
         "export:starter": "tsx scripts/export-starter.ts"
     },
     "type": "module",
@@ -55,9 +54,10 @@
     "c8": {
         "all": true,
         "include": [
-            "src/**/*.js"
+            "src/**/*.ts"
         ],
         "exclude": [
+            "src/index.ts",
             "src/jsdoc/**",
             "test/**",
             "scripts/**",

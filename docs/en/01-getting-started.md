@@ -119,7 +119,7 @@ Page routes (`/` and `/content`) depend on the mode:
 - `APP_FRONTEND_MODE=pages`: serves static pages from `public/pages/` (see examples in [docs/en/12-examples.md](12-examples.md)).
 - `APP_FRONTEND_MODE=spa`: serves a SPA build from `SPA_DIST_PATH` and falls back to `index.html`.
 
-These endpoints are defined in [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.js). The pages router (pages mode) is in [src/router/pages.js](../../src/router/pages.js).
+These endpoints are defined in [src/BSS/Dispatcher.ts](../../src/BSS/Dispatcher.ts). The pages router (pages mode) is in [src/router/pages.ts](../../src/router/pages.ts).
 
 ## Quick manual smoke-test
 

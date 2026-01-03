@@ -123,7 +123,7 @@ At runtime, you can move/configure the session schema/table without editing `con
 - `SESSION_SCHEMA=security`
 - `SESSION_TABLE=session`
 
-Implementation: [src/BSS/Session.js](../../src/BSS/Session.js) (passes `schemaName`/`tableName` to `connect-pg-simple`).
+Implementation: [src/BSS/Session.ts](../../src/BSS/Session.ts) (passes `schemaName`/`tableName` to `connect-pg-simple`).
 
 ## Operational notes
 
