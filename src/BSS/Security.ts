@@ -109,8 +109,12 @@ export default class Security {
         }
     }
 
-    getDataTx(tx: unknown): { object_na: string; method_na: string } | null {
-        return this.txMap.get(tx) ?? null
+    getDataTx(tx: unknown): { object_na: string; method_na: string } | false {
+        if (this.txMap.has(tx)) {
+            const v = this.txMap.get(tx)
+            return v ?? false
+        }
+        return false
     }
 
     async executeMethod(jsonData: { object_na: unknown; method_na: unknown; params: any }) {

@@ -10,6 +10,16 @@ import * as ts from 'typescript'
 
 const repoRoot = process.cwd()
 
+type BoOptValue = string | boolean
+type BoOpts = Record<string, BoOptValue>
+
+function formatError(err: unknown): string {
+    if (err && typeof err === 'object' && 'message' in err) {
+        return String((err as { message?: unknown }).message)
+    }
+    return String(err)
+}
+
 function isMainModule() {
     const entry = process.argv?.[1]
     if (!entry) return false
@@ -51,9 +61,9 @@ function isTty() {
     return Boolean(process.stdin.isTTY && process.stdout.isTTY)
 }
 
-function parseArgs(argv) {
-    const args = []
-    const opts = {}
+function parseArgs(argv: string[]): { args: string[]; opts: BoOpts } {
+    const args: string[] = []
+    const opts: BoOpts = {}
     for (let i = 0; i < argv.length; i++) {
         const a = argv[i]
         if (a.startsWith('--')) {
@@ -72,14 +82,14 @@ function parseArgs(argv) {
     return { args, opts }
 }
 
-function validateObjectName(name) {
+function validateObjectName(name: unknown): asserts name is string {
     if (!name || typeof name !== 'string') throw new Error('ObjectName is required')
     if (!/^[A-Z][A-Za-z0-9]*$/.test(name)) {
         throw new Error('ObjectName must be PascalCase (e.g. Person, OrderItem)')
     }
 }
 
-function parseCsv(value) {
+function parseCsv(value: unknown): string[] {
     if (!value) return []
     return String(value)
         .split(',')
@@ -87,18 +97,18 @@ function parseCsv(value) {
         .filter(Boolean)
 }
 
-function crudMethods(objectName) {
+function crudMethods(objectName: string): string[] {
     return [`get${objectName}`, `create${objectName}`, `update${objectName}`, `delete${objectName}`]
 }
 
-function escapeTemplateBraces(s) {
+function escapeTemplateBraces(s: string): string {
     return s.replaceAll('{', '\\{').replaceAll('}', '\\}')
 }
 
-async function writeFileSafe(filePath, content, force) {
+async function writeFileSafe(filePath: string, content: string, force: boolean): Promise<void> {
     await fs.mkdir(path.dirname(filePath), { recursive: true })
 
-    async function writeOne(p, c) {
+    async function writeOne(p: string, c: string): Promise<void> {
         if (!force) {
             await fs.writeFile(p, c, { flag: 'wx' })
         } else {
@@ -122,9 +132,9 @@ async function writeFileSafe(filePath, content, force) {
     }
 }
 
-function templateSuccessMsgs(objectName, methods) {
-    const es = {}
-    const en = {}
+function templateSuccessMsgs(objectName: string, methods: string[]): string {
+    const es: Record<string, string> = {}
+    const en: Record<string, string> = {}
     for (const m of methods) {
         es[m] = `${objectName} ${m} OK`
         en[m] = `${objectName} ${m} OK`
@@ -723,12 +733,12 @@ export class AuthBO {
 `
 }
 
-function parseMethodsFromBO(fileContent) {
-    const methods = new Set()
+function parseMethodsFromBO(fileContent: string): string[] {
+    const methods = new Set<string>()
     // Only register methods declared as: async <name>(...)
     // This avoids accidentally picking up helper calls or nested functions.
     const re = /\basync\s+([A-Za-z_][A-Za-z0-9_]*)\s*\(/g
-    let m
+    let m: RegExpExecArray | null
     while ((m = re.exec(fileContent)) != null) {
         const name = m[1]
         if (!name) continue
@@ -1070,7 +1080,7 @@ async function main() {
         printHelp()
         process.exitCode = 1
     } catch (err) {
-        console.error('ERROR:', err?.message ?? err)
+        console.error('ERROR:', formatError(err))
         process.exitCode = 1
     } finally {
         try {

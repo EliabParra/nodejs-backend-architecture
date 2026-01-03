@@ -9,7 +9,7 @@ import {
     sqlAuthTables,
     sqlAuthLogin2StepTables,
     sqlSessionTable,
-} from '../scripts/db-init.mjs'
+} from '../scripts/db-init.ts'
 
 test('sqlSecuritySchemaBase includes required tables', () => {
     const sql = sqlSecuritySchemaBase().join('\n')

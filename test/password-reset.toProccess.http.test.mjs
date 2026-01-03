@@ -89,10 +89,14 @@ test('password reset works via /toProccess without session (public profile)', as
             }
         })()
         if (!hasAuthBo) {
-            const gen = spawnSync(process.execPath, ['scripts/bo.mjs', 'auth', '--force'], {
-                cwd: repoRoot,
-                encoding: 'utf8',
-            })
+            const gen = spawnSync(
+                process.execPath,
+                ['--import', 'tsx', 'scripts/bo.ts', 'auth', '--force'],
+                {
+                    cwd: repoRoot,
+                    encoding: 'utf8',
+                }
+            )
             assert.equal(gen.status, 0, gen.stderr || gen.stdout)
         }
 

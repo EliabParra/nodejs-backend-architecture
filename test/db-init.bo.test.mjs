@@ -4,7 +4,7 @@ import os from 'node:os'
 import path from 'node:path'
 import fs from 'node:fs/promises'
 
-import { parseAsyncMethodsFromBO, discoverBOs } from '../scripts/db-init.mjs'
+import { parseAsyncMethodsFromBO, discoverBOs } from '../scripts/db-init.ts'
 
 test('parseAsyncMethodsFromBO extracts async methods and ignores _private', () => {
     const content = `
