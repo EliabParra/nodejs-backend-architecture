@@ -37,7 +37,7 @@ For dynamic import to work:
     - The build output is `BO/<object_na>/<object_na>BO.js` under `dist/`.
 3. The file must export: `export class <object_na>BO { ... }`
 4. The class must implement: `<method_na>(params)`
-5. In DB, `security.object.object_na` and `security.method.method_na` must match those strings.
+5. In DB, `security.objects.object_name` and `security.methods.method_name` must match those strings.
 
 ## Recommended BO structure
 
@@ -70,7 +70,7 @@ Example:
 2. Implement `export class <object_na>BO` with methods `method_na`.
 3. (Optional but recommended) create `BO/<object_na>/<object_na>.ts` and `<object_na>Validate.ts`.
 4. Add SQL queries under the target schema in [src/config/queries.json](../../src/config/queries.json).
-5. Register `object_na` and `method_na` + `tx_nu` in the `security` schema. see [docs/en/04-database-security-model.md](04-database-security-model.md).
+5. Register `object_na` and `method_na` + `tx` in the `security` schema. see [docs/en/04-database-security-model.md](04-database-security-model.md).
 6. Grant permissions to profiles.
 7. Call it from the client by sending `{ tx, params }`.
 

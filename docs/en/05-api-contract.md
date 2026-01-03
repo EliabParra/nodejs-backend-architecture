@@ -92,7 +92,7 @@ Notes:
 
 ## Audit (DB)
 
-In addition to stdout logs, the backend can persist audit events to the DB when `security.audit_log` exists:
+In addition to stdout logs, the backend can persist audit events to the DB when `security.audit_logs` exists:
 
 - `login` / `logout`
 - `/toProccess`: `tx_exec`, `tx_denied`, `tx_error`
@@ -260,7 +260,7 @@ Implementation: [src/BSS/Dispatcher.ts](../../src/BSS/Dispatcher.ts)
 { "tx": 123, "params": {} }
 ```
 
-- `tx`: transaction number resolved to `(object_na, method_na)` from `security.method` (see [docs/en/04-database-security-model.md](04-database-security-model.md)).
+- `tx`: transaction number resolved to `(object_na, method_na)` from `security.methods` (see [docs/en/04-database-security-model.md](04-database-security-model.md)).
 - `params`: passed directly to the BO method.
 
 ### Schema validation (shape)
@@ -311,4 +311,4 @@ CSRF:
 
 ## tx values
 
-The concrete `tx` values depend on your project (what exists in `security.method.tx_nu`).
+The concrete `tx` values depend on your project (what exists in `security.methods.tx`).

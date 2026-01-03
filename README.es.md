@@ -82,8 +82,8 @@ Endpoints útiles:
 ## Idea central (BO + tx)
 
 - Tu lógica de negocio vive en módulos BO bajo `BO/<ObjectName>/<ObjectName>BO.js`.
-- `security.method` mapea `tx` → `(object_na, method_na)`.
-- `security.permission_method` controla qué perfiles pueden ejecutar qué métodos.
+- `security.methods` mapea `tx` → `(object_name, method_name)`.
+- `security.permission_methods` controla qué perfiles pueden ejecutar qué métodos.
 
 Scaffold de BO:
 

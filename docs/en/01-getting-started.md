@@ -15,18 +15,106 @@
 
 ## Users and passwords (bcrypt)
 
-Login no longer compares plaintext passwords. In `security.user.user_pw` you must store a **bcrypt hash**.
+Login no longer compares plaintext passwords. In `security.users.password` you must store a **bcrypt hash**.
 
 - Generate a hash:
     - `npm run hashpw -- "MyStrongPassword123"`
     - (optional) rounds: `npm run hashpw -- "MyStrongPassword123" 10`
 
-Then store that hash as `user_pw` in the `security.user` table.
+Then store that hash as `password` in the `security.users` table.
 
 ## Run
 
 - Normal: `npm start` (runs [src/index.ts](../../src/index.ts))
 - Dev: `npm run dev` (nodemon)
+
+## End-to-end workflow (copy/paste)
+
+Goal: initialize the DB, create a BO, register its tx mapping + permissions, and execute it via `/toProccess`.
+
+### 1) Initialize DB (schema + session table)
+
+```bash
+npm run db:init
+```
+
+If you want to preview the SQL without touching the DB:
+
+```bash
+npm run db:init -- --print
+```
+
+### 2) Create a BO (files)
+
+```bash
+npm run bo -- new Order --methods getOrder,createOrder
+```
+
+### 3) Sync BO methods to DB (tx mapping)
+
+```bash
+npm run bo -- sync Order --txStart 200
+```
+
+To see the resulting mapping:
+
+```bash
+npm run bo -- list
+```
+
+### 4) Grant permissions to a profile
+
+Example (profile `1`):
+
+```bash
+npm run bo -- perms --profile 1 --allow Order.getOrder,Order.createOrder
+```
+
+### 5) Start the server and verify readiness
+
+```bash
+npm start
+```
+
+In another terminal:
+
+```bash
+curl http://localhost:3000/health
+curl http://localhost:3000/ready
+```
+
+### 6) Login and call `/toProccess` (cookies + CSRF)
+
+This backend uses cookie sessions, so you need:
+
+- a cookie jar
+- a CSRF token
+
+```bash
+# 1) Login (stores cookies in cookies.txt)
+curl -sS -c cookies.txt -b cookies.txt \
+    -H "Content-Type: application/json" \
+    -d '{"username":"admin","password":"CHANGE_ME"}' \
+    http://localhost:3000/login
+
+# 2) Get CSRF token (requires session cookie)
+curl -sS -c cookies.txt -b cookies.txt http://localhost:3000/csrf
+```
+
+Copy the `csrfToken` value from the `/csrf` response, then call `/toProccess`:
+
+```bash
+curl -sS -c cookies.txt -b cookies.txt \
+    -H "Content-Type: application/json" \
+    -H "X-CSRF-Token: <paste_csrfToken_here>" \
+    -d '{"tx":200,"params":{}}' \
+    http://localhost:3000/toProccess
+```
+
+Notes:
+
+- `tx` values are project-specific. Use `npm run bo -- list` to find the tx for `Order.getOrder`.
+- Permissions/tx mappings are cached at startup; after DB changes, restart the server.
 
 ## Development (watch) with backend + SPA separated
 

@@ -181,7 +181,7 @@ Notas de seguridad:
 
 ## 4) Cómo obtener los tx de Auth
 
-Los tx son **específicos de tu proyecto** (viven en Postgres en `security.method.tx_nu`).
+Los tx son **específicos de tu proyecto** (viven en Postgres en `security.methods.tx`).
 
 Formas de encontrarlos:
 
@@ -189,11 +189,11 @@ Formas de encontrarlos:
 - O consulta directo:
 
 ```sql
-select o.object_na, m.method_na, m.tx_nu
-from security.method m
-join security.object o on o.object_id = m.object_id
-where o.object_na = 'Auth'
-order by m.tx_nu;
+select o.object_name as object_na, m.method_name as method_na, m.tx as tx_nu
+from security.methods m
+join security.objects o on o.object_id = m.object_id
+where o.object_name = 'Auth'
+order by m.tx;
 ```
 
 ## 5) Docs relacionadas

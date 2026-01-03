@@ -1,6 +1,6 @@
 # 04 — Security model (schema `security`)
 
-This architecture uses a **transaction-driven** model: the client sends a `tx`, the server translates it to `(object_na, method_na)` from the `security` schema, checks permissions, and only then executes the BO.
+This architecture uses a **transaction-driven** model: the client sends a `tx`, the server resolves it to `(object_na, method_na)` from the `security` schema, checks permissions, and only then executes the BO.
 
 ## Queries that define the model
 
@@ -8,7 +8,7 @@ All security SQL is under the `security` key in [src/config/queries.json](../../
 
 - `security.getUser`: fetches the user by `user_na` and returns `user_pw` (hash) so the server can verify passwords with bcrypt
 - `security.loadPermissions`: loads allowed `(object_na, method_na)` per profile
-- `security.loadDataTx`: loads `tx_nu` → `(object_na, method_na)` mapping
+- `security.loadDataTx`: loads `tx` → `(object_na, method_na)` mapping (returned as `tx_nu` alias)
 
 These are loaded at process startup by [src/BSS/Security.ts](../../src/BSS/Security.ts).
 
@@ -16,30 +16,30 @@ These are loaded at process startup by [src/BSS/Security.ts](../../src/BSS/Secur
 
 The current queries imply these minimum tables/fields:
 
-- `security.user`: `user_id` (PK), `user_na`, `user_pw` (**bcrypt hash**)
-- `security.profile`: `profile_id` (PK)
-- `security.user_profile`: `user_id` (FK), `profile_id` (FK)
-- `security.object`: `object_id` (PK), `object_na`
-- `security.method`: `method_id` (PK), `object_id` (FK), `method_na`, `tx_nu`
-- `security.permission_method`: `profile_id` (FK), `method_id` (FK)
+- `security.users`: `user_id` (PK), `username`, `password` (**bcrypt hash**)
+- `security.profiles`: `profile_id` (PK)
+- `security.user_profiles`: `user_id` (FK), `profile_id` (FK)
+- `security.objects`: `object_id` (PK), `object_name`
+- `security.methods`: `method_id` (PK), `object_id` (FK), `method_name`, `tx`
+- `security.permission_methods`: `profile_id` (FK), `method_id` (FK)
 
 ## Optional (recommended) fields and tables
 
 For real-world usage (not just demos), it’s common to add:
 
-- `security."user"`:
+- `security.users`:
     - `is_active` (disable users without deleting)
     - `created_at`, `updated_at`
     - `last_login_at`
-    - optional `user_em` (email)
-- `security.profile.profile_na` (human-friendly profile name)
-- `security.audit_log` (audit events for login/logout/tx)
+    - optional `email`
+- `security.profiles.profile_name` (human-friendly profile name)
+- `security.audit_logs` (audit events for login/logout/tx)
 
 The `npm run db:init` CLI creates these extensions in an idempotent way.
 
 ## Runtime behavior
 
-1. On startup, `Security.loadDataTx()` builds `txMap: Map<tx_nu, {object_na, method_na}>`.
+1. On startup, `Security.loadDataTx()` builds `txMap: Map<tx, {object_na, method_na}>`.
 2. On startup, `Security.loadPermissions()` builds `permission: Map<"profile_id_method_na_object_na", true>`.
 3. For each `/toProccess` request:
     - `txMap.get(tx)` resolves the target
@@ -50,19 +50,19 @@ The `npm run db:init` CLI creates these extensions in an idempotent way.
 Minimum steps to make a new feature executable:
 
 1. **Create/register the object**
-    - Insert into `security.object` with `object_na = "<YourObject>"`
+    - Insert into `security.objects` with `object_name = "<YourObject>"`
 
 2. **Create/register the method**
-    - Insert into `security.method` with:
+    - Insert into `security.methods` with:
         - the `object_id`
-        - `method_na = "<yourMethod>"`
-        - `tx_nu = <txNumber>`
+        - `method_name = "<yourMethod>"`
+        - `tx = <txNumber>`
 
 3. **Grant permissions**
-    - Insert into `security.permission_method` for each authorized profile (`profile_id`, `method_id`).
+    - Insert into `security.permission_methods` for each authorized profile (`profile_id`, `method_id`).
 
 4. **Assign profiles to users** (if needed)
-    - Ensure `security.user_profile` links the user to the profile.
+    - Ensure `security.user_profiles` links the user to the profile.
 
 ## Critical consistency rules
 
@@ -77,7 +77,7 @@ Minimum steps to make a new feature executable:
 
 ## Operational note
 
-Permissions and tx mappings are loaded **once at startup** (in-memory cache). If you change `security.method` or permissions in the DB, you need to restart the server in the current version.
+Permissions and tx mappings are loaded **once at startup** (in-memory cache). If you change `security.methods` or permissions in the DB, you need to restart the server in the current version.
 
 ## Login (detail)
 

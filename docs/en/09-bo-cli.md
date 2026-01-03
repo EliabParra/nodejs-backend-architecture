@@ -4,7 +4,7 @@ This repo includes a CLI that lets you:
 
 - Create the standard BO structure (folder + baseline files).
 - Register `object_na`, `method_na`, and `tx_nu` in Postgres (transaction mapping).
-- Grant/revoke permissions to profiles (`security.permission_method`).
+- Grant/revoke permissions to profiles (`security.permission_methods`).
 
 The CLI lives in [scripts/bo.ts](../../scripts/bo.ts) and runs via `npm run bo`.
 
@@ -18,10 +18,14 @@ The CLI lives in [scripts/bo.ts](../../scripts/bo.ts) and runs via `npm run bo`.
 
 The CLI operates on these tables (see [docs/en/04-database-security-model.md](04-database-security-model.md)):
 
-- `security.object(object_id, object_na)`
-- `security.method(method_id, object_id, method_na, tx_nu)`
-- `security.profile(profile_id)`
-- `security.permission_method(profile_id, method_id)`
+- `security.objects(object_id, object_name)`
+- `security.methods(method_id, object_id, method_name, tx)`
+- `security.profiles(profile_id)`
+- `security.permission_methods(profile_id, method_id)`
+
+Notes:
+
+- Runtime SQL aliases keep compatibility with the legacy names (`object_na`, `method_na`, `tx_nu`, etc.). The physical columns are `object_name`, `method_name`, `tx`.
 
 ## Commands
 
@@ -64,9 +68,9 @@ Useful options:
 
 The CLI:
 
-1. Ensures/creates `security.object` (`object_na = "Order"`).
-2. Inserts/updates `security.method` rows for each method.
-3. Assigns `tx_nu` automatically from `max(tx_nu)+1`.
+1. Ensures/creates `security.objects` (`object_name = "Order"`).
+2. Inserts/updates `security.methods` rows for each method.
+3. Assigns `tx` automatically from `max(tx)+1`.
 
 Tx control:
 
@@ -75,20 +79,46 @@ Tx control:
 
 ### 2) Sync BO methods to DB: `sync`
 
-Reads `BO/<Object>/<Object>BO.ts`, extracts methods and upserts them into `security.method`.
+Reads `BO/<Object>/<Object>BO.ts`, extracts async methods and upserts missing ones into `security.methods`.
 
 - `npm run bo -- sync ObjectName`
 
 Options:
 
-- `--txStart <n>` or `--tx <...>` to control `tx_nu`.
+- `--txStart <n>` or `--tx <...>` to control `tx`.
 - `--dry` to preview without touching DB.
+- `--all` to sync all BOs under `./BO`.
+- `--prune` to delete stale DB methods (present in DB but no longer present in code).
+- `--yes` for non-interactive mode (disables prompts).
 
 Notes:
 
 - Method extraction is intentionally strict: only methods declared as `async <name>(...)` are considered business methods.
 - During `sync`, methods starting with `_` are ignored (recommended for internal helpers like `_mapRow`, `_normalize`).
 - Avoid defining extra public `async` helpers inside the BO unless you want them mapped to `tx` and permissions.
+
+What `sync` actually changes:
+
+- Adds only **missing** methods (code − DB). Existing DB entries keep their current `tx` (contract stability).
+- If `--prune` is set, it can also delete **stale** DB methods (DB − code). This is always gated behind confirmation (interactive prompt) or `--yes`.
+
+Examples:
+
+```bash
+# Sync a single BO (adds missing methods only)
+npm run bo -- sync Order --txStart 200
+
+# Sync and optionally prune stale methods (will prompt)
+npm run bo -- sync Order --prune
+
+# Sync ALL BOs and prune stale methods non-interactively
+npm run bo -- sync --all --prune --yes
+```
+
+Dry run notes:
+
+- `sync --dry` (single-object): prints discovered methods and the tx plan without connecting to DB.
+- `sync --all --dry`: cannot diff against DB without connecting; prints a code-only list.
 
 ### 3) List DB mapping: `list`
 
@@ -130,14 +160,15 @@ It lists `profile_id`, `object_na`, available methods, and lets you select.
 2. Implement real DB queries in the repository (replace `TODO_*` placeholders).
 3. Map methods to DB (tx):
     - `npm run bo -- sync Order --txStart 200`
+    - When removing methods from code, keep DB clean with: `npm run bo -- sync Order --prune`
 4. Assign profile permissions:
     - `npm run bo -- perms --profile 2 --allow Order.getOrder,Order.createOrder`
 5. Restart the server to reload `Security` cache.
 
 ## Important considerations
 
-- **tx stability**: once used by a frontend, avoid changing `tx_nu` (it becomes part of your contract).
-- **uniqueness**: ideally `security.method.tx_nu` should be unique (recommended DB constraint).
+- **tx stability**: once used by a frontend, avoid changing `tx` (it becomes part of your contract).
+- **uniqueness**: ideally `security.methods.tx` should be unique (recommended DB constraint).
 - **restart required**: in this version, tx/permissions are loaded only at startup.
 
 ## Troubleshooting

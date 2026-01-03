@@ -37,7 +37,7 @@ Para que el import dinámico funcione:
     - En build, el output es `BO/<object_na>/<object_na>BO.js` bajo `dist/`.
 3. Ese archivo debe exportar la clase exacta: `export class <object_na>BO { ... }`
 4. La clase debe tener el método exacto: `<method_na>(params)`
-5. En DB, `security.object.object_na` y `security.method.method_na` deben coincidir con los strings anteriores.
+5. En DB, `security.objects.object_name` y `security.methods.method_name` deben coincidir con los strings anteriores.
 
 ## Estructura recomendada de un BO
 
@@ -70,7 +70,7 @@ Ejemplo:
 2. Implementar clase `export class <object_na>BO` con métodos `method_na`.
 3. Crear (opcional pero recomendado) `BO/<object_na>/<object_na>.ts` y `<object_na>Validate.ts`.
 4. Agregar queries al schema correspondiente en [src/config/queries.json](../../src/config/queries.json).
-5. Registrar `object_na` y `method_na` + `tx_nu` en schema `security`. ver [docs/es/04-database-security-model.md](04-database-security-model.md).
+5. Registrar `object_na` y `method_na` + `tx` en schema `security`. ver [docs/es/04-database-security-model.md](04-database-security-model.md).
 6. Dar permisos al/los perfiles.
 7. Consumir desde cliente enviando `{ tx, params }`.
 

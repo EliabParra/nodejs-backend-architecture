@@ -84,8 +84,8 @@ Useful endpoints:
 ### Core idea (BO + tx)
 
 - Your business logic lives in BO modules under `BO/<ObjectName>/<ObjectName>BO.js`.
-- `security.method` maps `tx` → `(object_na, method_na)`.
-- `security.permission_method` controls which profiles can execute which methods.
+- `security.methods` maps `tx` → `(object_name, method_name)`.
+- `security.permission_methods` controls which profiles can execute which methods.
 
 Scaffold a BO:
 

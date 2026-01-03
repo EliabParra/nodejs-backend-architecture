@@ -8,7 +8,7 @@ Todas las queries de seguridad están en [src/config/queries.json](../../src/con
 
 - `security.getUser`: obtiene el usuario por `user_na` y retorna `user_pw` (hash) para validar password vía bcrypt en servidor
 - `security.loadPermissions`: carga permisos de cada perfil por `(object_na, method_na)`
-- `security.loadDataTx`: carga mapping `tx_nu` → `(object_na, method_na)`
+- `security.loadDataTx`: carga mapping `tx` → `(object_na, method_na)` (devuelto como alias `tx_nu`)
 
 Estas cargas se hacen al iniciar el proceso en [src/BSS/Security.ts](../../src/BSS/Security.ts).
 
@@ -16,49 +16,49 @@ Estas cargas se hacen al iniciar el proceso en [src/BSS/Security.ts](../../src/B
 
 Las queries actuales implican estas tablas y campos mínimos:
 
-- `security.user`:
+- `security.users`:
     - `user_id` (PK)
-    - `user_na` (username)
-    - `user_pw` (**hash bcrypt**)
+    - `username`
+    - `password` (**hash bcrypt**)
 
-- `security.profile`:
+- `security.profiles`:
     - `profile_id` (PK)
 
-- `security.user_profile`:
-    - `user_id` (FK → user)
-    - `profile_id` (FK → profile)
+- `security.user_profiles`:
+    - `user_id` (FK → users)
+    - `profile_id` (FK → profiles)
 
-- `security.object`:
+- `security.objects`:
     - `object_id` (PK)
-    - `object_na` (nombre lógico del BO, ej. `Person`)
+    - `object_name` (nombre lógico del BO, ej. `Person`)
 
-- `security.method`:
+- `security.methods`:
     - `method_id` (PK)
-    - `object_id` (FK → object)
-    - `method_na` (nombre de método, ej. `getPerson`)
-    - `tx_nu` (número de transacción que envía el cliente)
+    - `object_id` (FK → objects)
+    - `method_name` (nombre de método, ej. `getPerson`)
+    - `tx` (número de transacción que envía el cliente)
 
-- `security.permission_method`:
-    - `profile_id` (FK → profile)
-    - `method_id` (FK → method)
+- `security.permission_methods`:
+    - `profile_id` (FK → profiles)
+    - `method_id` (FK → methods)
 
 ## Campos y tablas opcionales (recomendados)
 
 Para uso real (no solo demo), es común agregar:
 
-- `security."user"`:
+- `security.users`:
     - `is_active` (deshabilitar cuentas sin borrar)
     - `created_at`, `updated_at`
     - `last_login_at`
-    - `user_em` (email) opcional
-- `security.profile.profile_na` (nombre humano del perfil)
-- `security.audit_log` (auditoría de login/logout/tx)
+    - `email` opcional
+- `security.profiles.profile_name` (nombre humano del perfil)
+- `security.audit_logs` (auditoría de login/logout/tx)
 
 El CLI `npm run db:init` crea estas extensiones de forma idempotente.
 
 ## Cómo se usa en runtime
 
-1. En startup, `Security.loadDataTx()` arma `txMap: Map<tx_nu, {object_na, method_na}>`.
+1. En startup, `Security.loadDataTx()` arma `txMap: Map<tx, {object_na, method_na}>`.
 2. En startup, `Security.loadPermissions()` arma `permission: Map<"profile_id_method_na_object_na", true>`.
 3. En cada request a `/toProccess`:
     - se resuelve `txMap.get(tx)`
@@ -69,19 +69,19 @@ El CLI `npm run db:init` crea estas extensiones de forma idempotente.
 Cuando agregas una feature nueva, estos son los pasos **mínimos** para que el dispatcher pueda ejecutarla:
 
 1. **Crear/registrar el object**
-    - Insert en `security.object` con `object_na = "<TuObjeto>"`
+    - Insert en `security.objects` con `object_name = "<TuObjeto>"`
 
 2. **Crear/registrar el method**
-    - Insert en `security.method` con:
+    - Insert en `security.methods` con:
         - `object_id` del object
-        - `method_na = "<tuMetodo>"`
-        - `tx_nu = <numeroTx>` (este número lo enviará el cliente)
+        - `method_name = "<tuMetodo>"`
+        - `tx = <numeroTx>` (este número lo enviará el cliente)
 
 3. **Asignar permisos**
-    - Insert en `security.permission_method` un registro por perfil autorizado (`profile_id`, `method_id`).
+    - Insert en `security.permission_methods` un registro por perfil autorizado (`profile_id`, `method_id`).
 
 4. **Asignar perfil al usuario** (si hace falta)
-    - Asegúrate de que `security.user_profile` conecte el user con el profile.
+    - Asegúrate de que `security.user_profiles` conecte el user con el profile.
 
 ## Reglas de consistencia (críticas)
 
@@ -96,7 +96,7 @@ Cuando agregas una feature nueva, estos son los pasos **mínimos** para que el d
 
 ## Nota operativa
 
-Los permisos y el tx-map se cargan **una vez al inicio** (caché en memoria). Si cambias `security.method` o permisos en DB, en esta versión necesitas reiniciar el servidor para recargar.
+Los permisos y el tx-map se cargan **una vez al inicio** (caché en memoria). Si cambias `security.methods` o permisos en DB, en esta versión necesitas reiniciar el servidor para recargar.
 
 ## Login (detalle)
 

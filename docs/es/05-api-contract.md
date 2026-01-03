@@ -92,7 +92,7 @@ Notas:
 
 ## Auditoría (DB)
 
-Además del logging a stdout, el backend puede registrar eventos en DB si existe `security.audit_log`:
+Además del logging a stdout, el backend puede registrar eventos en DB si existe `security.audit_logs`:
 
 - `login` / `logout`
 - `/toProccess`: `tx_exec`, `tx_denied`, `tx_error`
@@ -260,7 +260,7 @@ Archivo: [src/BSS/Dispatcher.ts](../../src/BSS/Dispatcher.ts)
 { "tx": 53, "params": {} }
 ```
 
-- `tx`: número que se mapea a `(object_na, method_na)` usando `security.method` (ver [docs/es/04-database-security-model.md](04-database-security-model.md)).
+- `tx`: número que se mapea a `(object_na, method_na)` usando `security.methods` (ver [docs/es/04-database-security-model.md](04-database-security-model.md)).
 - `params`: se pasa directo al método del BO.
 
 ### Validación de esquema (shape)
@@ -311,6 +311,6 @@ CSRF:
 
 ## Ejemplos
 
-Los valores concretos de `tx` dependen de tu proyecto (lo que exista en `security.method.tx_nu`).
+Los valores concretos de `tx` dependen de tu proyecto (lo que exista en `security.methods.tx`).
 
 Ver también: [docs/es/11-frontend-clients-and-requests.md](11-frontend-clients-and-requests.md)

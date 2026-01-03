@@ -15,18 +15,106 @@
 
 ## Usuarios y passwords (bcrypt)
 
-El login ya **no compara contraseña en texto plano**. En `security.user.user_pw` debes guardar un **hash bcrypt**.
+El login ya **no compara contraseña en texto plano**. En `security.users.password` debes guardar un **hash bcrypt**.
 
 - Generar hash:
     - `npm run hashpw -- "MiPasswordSegura123"`
     - (opcional) rounds: `npm run hashpw -- "MiPasswordSegura123" 10`
 
-Luego guarda ese hash como `user_pw` en tu tabla `security.user`.
+Luego guarda ese hash como `password` en tu tabla `security.users`.
 
 ## Ejecutar
 
 - Modo normal: `npm start` (corre [src/index.ts](../../src/index.ts))
 - Modo dev: `npm run dev` (nodemon)
+
+## Flujo end-to-end (copy/paste)
+
+Objetivo: inicializar DB, crear un BO, registrar el mapping de tx + permisos, y ejecutarlo vía `/toProccess`.
+
+### 1) Inicializar DB (schema + tabla de sesión)
+
+```bash
+npm run db:init
+```
+
+Si quieres ver el SQL sin tocar la DB:
+
+```bash
+npm run db:init -- --print
+```
+
+### 2) Crear un BO (archivos)
+
+```bash
+npm run bo -- new Order --methods getOrder,createOrder
+```
+
+### 3) Sincronizar métodos del BO a la DB (mapping de tx)
+
+```bash
+npm run bo -- sync Order --txStart 200
+```
+
+Para ver el mapping generado:
+
+```bash
+npm run bo -- list
+```
+
+### 4) Conceder permisos a un perfil
+
+Ejemplo (profile `1`):
+
+```bash
+npm run bo -- perms --profile 1 --allow Order.getOrder,Order.createOrder
+```
+
+### 5) Levantar el server y verificar readiness
+
+```bash
+npm start
+```
+
+En otra terminal:
+
+```bash
+curl http://localhost:3000/health
+curl http://localhost:3000/ready
+```
+
+### 6) Login y llamada a `/toProccess` (cookies + CSRF)
+
+Este backend usa sesión por cookie, así que necesitas:
+
+- un “cookie jar”
+- un token CSRF
+
+```bash
+# 1) Login (guarda cookies en cookies.txt)
+curl -sS -c cookies.txt -b cookies.txt \
+    -H "Content-Type: application/json" \
+    -d '{"username":"admin","password":"CHANGE_ME"}' \
+    http://localhost:3000/login
+
+# 2) Obtener CSRF token (requiere la cookie de sesión)
+curl -sS -c cookies.txt -b cookies.txt http://localhost:3000/csrf
+```
+
+Copia el `csrfToken` de la respuesta de `/csrf` y luego llama `/toProccess`:
+
+```bash
+curl -sS -c cookies.txt -b cookies.txt \
+    -H "Content-Type: application/json" \
+    -H "X-CSRF-Token: <pega_csrfToken_aqui>" \
+    -d '{"tx":200,"params":{}}' \
+    http://localhost:3000/toProccess
+```
+
+Notas:
+
+- Los valores de `tx` son específicos del proyecto. Usa `npm run bo -- list` para ver el tx de `Order.getOrder`.
+- Permisos y tx se cachean al inicio; después de cambios en DB, reinicia el server.
 
 ## Desarrollo (watch) con backend + SPA separados
 

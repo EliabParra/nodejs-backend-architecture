@@ -181,7 +181,7 @@ Security notes:
 
 ## 4) Finding the Auth tx numbers
 
-Tx numbers are **project-specific** (they live in Postgres under `security.method.tx_nu`).
+Tx numbers are **project-specific** (they live in Postgres under `security.methods.tx`).
 
 Ways to find them:
 
@@ -189,11 +189,11 @@ Ways to find them:
 - Or query directly:
 
 ```sql
-select o.object_na, m.method_na, m.tx_nu
-from security.method m
-join security.object o on o.object_id = m.object_id
-where o.object_na = 'Auth'
-order by m.tx_nu;
+select o.object_name as object_na, m.method_name as method_na, m.tx as tx_nu
+from security.methods m
+join security.objects o on o.object_id = m.object_id
+where o.object_name = 'Auth'
+order by m.tx;
 ```
 
 ## 5) Related docs

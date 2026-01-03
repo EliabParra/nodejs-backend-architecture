@@ -4,7 +4,7 @@ Este repo incluye un CLI para:
 
 - Crear la estructura estándar de un BO (carpeta + archivos base).
 - Registrar automáticamente en DB el `object_na`, `method_na` y el `tx_nu` (mapping de transacciones).
-- Asignar/quitar permisos a perfiles (tabla `security.permission_method`).
+- Asignar/quitar permisos a perfiles (tabla `security.permission_methods`).
 
 El CLI vive en [scripts/bo.ts](../../scripts/bo.ts) y se ejecuta con `npm run bo`.
 
@@ -18,10 +18,14 @@ El CLI vive en [scripts/bo.ts](../../scripts/bo.ts) y se ejecuta con `npm run bo
 
 El CLI trabaja con estas tablas (ya descritas en [docs/es/04-database-security-model.md](04-database-security-model.md)):
 
-- `security.object(object_id, object_na)`
-- `security.method(method_id, object_id, method_na, tx_nu)`
-- `security.profile(profile_id)`
-- `security.permission_method(profile_id, method_id)`
+- `security.objects(object_id, object_name)`
+- `security.methods(method_id, object_id, method_name, tx)`
+- `security.profiles(profile_id)`
+- `security.permission_methods(profile_id, method_id)`
+
+Notas:
+
+- En runtime, las queries siguen devolviendo aliases compatibles (`object_na`, `method_na`, `tx_nu`, etc.). Físicamente, las columnas se llaman `object_name`, `method_name`, `tx`.
 
 ## Comandos
 
@@ -62,9 +66,9 @@ Opciones útiles:
 
 El CLI:
 
-1. Asegura/crea `security.object` (`object_na = "ObjectName"`).
-2. Inserta/actualiza filas en `security.method` para cada método.
-3. Asigna `tx_nu` automáticamente desde `max(tx_nu)+1`.
+1. Asegura/crea `security.objects` (`object_name = "ObjectName"`).
+2. Inserta/actualiza filas en `security.methods` para cada método.
+3. Asigna `tx` automáticamente desde `max(tx)+1`.
 
 Control de tx:
 
@@ -73,20 +77,46 @@ Control de tx:
 
 ### 2) Sincronizar métodos del BO a DB: `sync`
 
-Lee `BO/<Object>/<Object>BO.ts`, detecta los métodos y los registra/actualiza en `security.method`.
+Lee `BO/<Object>/<Object>BO.ts`, detecta métodos `async` y agrega los que faltan en `security.methods`.
 
 - `npm run bo -- sync ObjectName`
 
 Opciones:
 
-- `--txStart <n>` o `--tx <...>` para controlar los `tx_nu`.
+- `--txStart <n>` o `--tx <...>` para controlar los `tx`.
 - `--dry` para revisar el plan sin tocar DB.
+- `--all` para sincronizar todos los BOs bajo `./BO`.
+- `--prune` para borrar métodos stale en DB (existen en DB pero ya no están en el código).
+- `--yes` para modo no-interactivo (desactiva prompts).
 
 Notas:
 
 - La detección de métodos es estricta: solo se consideran “métodos de negocio” los declarados como `async <nombre>(...)`.
 - En `sync`, se ignoran los métodos que empiezan con `_` (recomendado para helpers internos como `_mapRow`, `_normalize`).
 - Evita declarar helpers `async` públicos dentro del BO si no quieres que queden mapeados a `tx` y permisos.
+
+Qué cambia realmente `sync`:
+
+- Solo agrega métodos **faltantes** (código − DB). Los existentes mantienen su `tx` (estabilidad de contrato).
+- Con `--prune`, también puede borrar métodos **stale** (DB − código). Esto siempre requiere confirmación (prompt) o `--yes`.
+
+Ejemplos:
+
+```bash
+# Sync de un BO (solo agrega lo que falta)
+npm run bo -- sync Order --txStart 200
+
+# Sync + borrar stale (pregunta confirmación)
+npm run bo -- sync Order --prune
+
+# Sync de TODOS los BOs + prune en modo no-interactivo
+npm run bo -- sync --all --prune --yes
+```
+
+Notas de dry run:
+
+- `sync --dry` (un BO): imprime métodos detectados y el plan de tx sin conectarse a DB.
+- `sync --all --dry`: no puede hacer diff contra DB sin conectar; imprime una lista solo del código.
 
 ### 3) Listar mapping en DB: `list`
 
@@ -128,14 +158,15 @@ Te lista `profile_id`, `object_na`, métodos disponibles y te deja elegir.
 2. Implementar DB queries reales del repositorio (reemplazar los `TODO_*` en el repo).
 3. Mapear métodos a DB (tx):
     - `npm run bo -- sync ObjectName --txStart <n>`
+    - Cuando elimines métodos del código, limpia DB con: `npm run bo -- sync ObjectName --prune`
 4. Asignar permisos por perfil:
     - `npm run bo -- perms --profile <profileId> --allow ObjectName.getObject,ObjectName.createObject`
 5. Reiniciar el server para recargar cache de `Security`.
 
 ## Consideraciones importantes
 
-- **Estabilidad de `tx`**: una vez publicado a un frontend, evita cambiar `tx_nu` (es contrato).
-- **Unicidad**: idealmente `security.method.tx_nu` debería ser único (recomendado como constraint en DB).
+- **Estabilidad de `tx`**: una vez publicado a un frontend, evita cambiar `tx` (es contrato).
+- **Unicidad**: idealmente `security.methods.tx` debería ser único (recomendado como constraint en DB).
 - **Reinicio requerido**: en esta versión, permisos y tx se cargan solo al inicio.
 
 ## Troubleshooting
