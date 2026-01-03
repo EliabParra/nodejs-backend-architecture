@@ -184,5 +184,4 @@ Nota sobre params:
 Opción más segura (named params):
 
 - Si prefieres objects, usa `db.exeNamed(schema, queryName, paramsObj, orderKeys)` donde `orderKeys` es un array como `['person_id','person_na','person_ln']`.
-- Si prefieres objects, usa `db.exeNamed(schema, queryName, paramsObj, orderKeys)` donde `orderKeys` es un array como `['id','name','lastName']`.
 - Esto fuerza un orden estable y puede fallar rápido si faltan/sobran llaves o si el conteo de placeholders del SQL no coincide.

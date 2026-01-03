@@ -22,7 +22,7 @@ On failure, `Validator` builds `alerts` using templates from [src/config/message
 ### Example structure (generic)
 
 - Labels per language: `BO/<ObjectName>/errors/<objectName>Alerts.json`
-- Usage: `BO/<ObjectName>/<ObjectName>Validate.js`
+- Usage: `BO/<ObjectName>/<ObjectName>Validate.ts`
 
 ## HTTP schema validation (Dispatcher/Session)
 
@@ -39,7 +39,7 @@ This produces labeled `alerts` (`body`, `username`, `password`, etc.) using the 
 Example: `<ObjectName>`.
 
 - Domain messages in JSON: `BO/<ObjectName>/errors/<objectName>ErrorMsgs.json`
-- Normalizer/handler: `BO/<ObjectName>/errors/<ObjectName>ErrorHandler.js`
+- Normalizer/handler: `BO/<ObjectName>/errors/<ObjectName>ErrorHandler.ts`
 
 Convention:
 
@@ -59,7 +59,7 @@ This allows BO methods to return standardized errors, and the dispatcher uses th
 
 Recommended pattern:
 
-```js
+```ts
 try {
     const r = await db.exe('schema', 'queryName', [
         /* params */

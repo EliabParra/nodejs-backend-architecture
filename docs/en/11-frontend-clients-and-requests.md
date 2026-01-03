@@ -54,7 +54,7 @@ Create a small module that:
 2. Always sends `credentials/include`.
 3. Normalizes errors (always tries `res.json()` and returns `{ ok, data, error }`).
 
-## 3) Vanilla JS (fetch)
+## 3) Vanilla JS/TS (fetch)
 
 Suggested file: `apiClient.js` (in your frontend repo).
 
@@ -100,7 +100,7 @@ export async function toProccess(baseUrl, tx, params) {
 
 ### Option A: `fetch` only (no libraries)
 
-Create `src/api/client.js`:
+Create `src/api/client.ts` (plain JS also works):
 
 ```js
 let csrfToken = null
@@ -203,7 +203,7 @@ export class ApiService {
     - your CORS allowlist does not include the frontend origin.
 - If you get `413`: request body is too large.
 
-## 9) Production: cross-domain cookies (common failure mode)
+## 7) Production: cross-domain cookies (common failure mode)
 
 If frontend and backend are on different domains and you want **cookie-based sessions**:
 
@@ -218,7 +218,7 @@ If frontend and backend are on different domains and you want **cookie-based ses
 
 See variables in [03-configuration.md](03-configuration.md).
 
-## 7) How to connect “any frontend” (recommended)
+## 8) How to connect “any frontend” (recommended)
 
 ### Development (no repo coupling)
 

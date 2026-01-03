@@ -45,7 +45,8 @@ This makes `POST /login` work without manual hash inserts.
 
 The script can also **auto-register** existing BOs under `BO/`:
 
-- Finds folders `BO/<ObjectName>/` containing `BO/<ObjectName>/<ObjectName>BO.js`.
+- Finds folders `BO/<ObjectName>/` containing `BO/<ObjectName>/<ObjectName>BO.ts`.
+    - In production builds, the compiled output is `...BO.js` under `dist/`.
 - Extracts methods declared as `async <method_na>(...)` (ignores methods starting with `_`).
 - Upserts:
     - `security.object(object_na)`

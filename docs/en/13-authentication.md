@@ -1,6 +1,6 @@
 # 13 — Authentication (Auth module)
 
-This repo includes an **optional Auth module** implemented as a BO (`BO/Auth/AuthBO.js`) plus a couple of HTTP endpoints (`/login`, `/login/verify`).
+This repo includes an **optional Auth module** implemented as a BO (`BO/Auth/AuthBO.ts`) plus a couple of HTTP endpoints (`/login`, `/login/verify`).
 
 It supports:
 

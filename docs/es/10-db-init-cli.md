@@ -45,7 +45,8 @@ Esto hace que `POST /login` pueda funcionar sin que tengas que insertar manualme
 
 Además, el script puede **auto-registrar** BOs ya existentes en `BO/`:
 
-- Detecta carpetas `BO/<ObjectName>/` que tengan `BO/<ObjectName>/<ObjectName>BO.js`.
+- Detecta carpetas `BO/<ObjectName>/` que tengan `BO/<ObjectName>/<ObjectName>BO.ts`.
+    - En build/producción, el output compilado es `...BO.js` bajo `dist/`.
 - Extrae métodos declarados como `async <method_na>(...)` (ignora los que empiezan con `_`).
 - Inserta/actualiza:
     - `security.object(object_na)`

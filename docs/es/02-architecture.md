@@ -56,7 +56,7 @@ Ver: [14-types-y-di.md](14-types-y-di.md)
     - `security.getPermissions({ profile_id, method_na, object_na })` contra `permission` precargado
 5. **Ejecutar BO**
     - `security.executeMethod({ object_na, method_na, params })`
-    - Import dinámico del BO: `../../BO/<object_na>/<object_na>BO.js` (ver `config.bo.path` en [src/config/config.json](../../src/config/config.json))
+    - Import dinámico del BO (según `config.bo.path`): intenta `...BO.js` primero (dist) y hace fallback a `...BO.ts` en dev/test.
 6. **Responder**
     - `res.status(response.code).send(response)`
 

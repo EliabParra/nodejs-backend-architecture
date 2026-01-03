@@ -115,7 +115,7 @@ if (!result.ok) {
 
 ### Opción A: usar `fetch` (sin librerías)
 
-Crea `src/api/client.js`:
+Crea `src/api/client.ts` (JS plano también funciona):
 
 ```js
 let csrfToken = null
@@ -272,7 +272,7 @@ Ver variables en [03-configuration.md](03-configuration.md).
 
 - Si recibes `413`: estás enviando un body demasiado grande.
 
-## 7) Cómo conectar “cualquier frontend” (recomendado)
+## 8) Cómo conectar “cualquier frontend” (recomendado)
 
 ### Desarrollo (sin acoplar repos)
 

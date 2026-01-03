@@ -68,7 +68,8 @@ Minimum steps to make a new feature executable:
 
 - `object_na` must match exactly:
     - folder `BO/<object_na>/`
-    - file `BO/<object_na>/<object_na>BO.js`
+        - source file `BO/<object_na>/<object_na>BO.ts`
+          (build output is `...BO.js` under `dist/`)
     - exported class name `export class <object_na>BO { ... }`
       (see [docs/en/06-dynamic-dispatch-and-bo.md](06-dynamic-dispatch-and-bo.md))
 

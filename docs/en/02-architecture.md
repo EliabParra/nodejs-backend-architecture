@@ -58,6 +58,10 @@ See: [14-types-and-di.md](14-types-and-di.md)
 2. **Resolve tx → (object_na, method_na)**: `security.getDataTx(body.tx)` ([src/BSS/Security.ts](../../src/BSS/Security.ts))
 3. **Permissions**: `security.getPermissions({ profile_id, method_na, object_na })`
 4. **Execute BO**: `security.executeMethod({ object_na, method_na, params })`
+
+- BO modules are loaded dynamically using `config.bo.path`.
+- At runtime the loader tries `...BO.js` first (dist) and falls back to `...BO.ts` for dev/test.
+
 5. **Response**: `res.status(response.code).send(response)`
 
 ### Diagram
