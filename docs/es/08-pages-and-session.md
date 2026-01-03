@@ -4,9 +4,7 @@
 
 Las páginas (modo `pages`) viven en `public/pages/`.
 
-Los archivos HTML concretos incluidos en este repo son **ejemplos** (no parte del core). Ver:
-
-- [docs/es/12-examples.md](12-examples.md)
+Si usas `APP_FRONTEND_MODE=pages`, agrega tus propios HTML bajo `public/pages/`.
 
 Express sirve `public/` como estático **solo si** `APP_FRONTEND_MODE=pages` (modo legacy) desde [src/BSS/Dispatcher.ts](../../src/BSS/Dispatcher.ts).
 

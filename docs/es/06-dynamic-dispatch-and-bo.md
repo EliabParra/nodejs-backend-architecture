@@ -42,8 +42,6 @@ Estructura típica (placeholders):
     - Mensajes: `BO/<ObjectName>/errors/<objectName>ErrorMsgs.json`
     - Labels: `BO/<ObjectName>/errors/<objectName>Alerts.json`
 
-Si quieres ver un ejemplo completo, revisa: [examples/bo-demo/BO](../../examples/bo-demo/BO)
-
 ## Firma y contrato del método BO
 
 Un método BO recibe `params` (lo que venga en el request) y retorna un objeto con al menos:
@@ -77,10 +75,6 @@ Ejemplos rápidos:
 - Crear BO: `npm run bo -- new ObjectName --methods getObject,createObject,updateObject,deleteObject`
 - Mapear a DB (tx): `npm run bo -- sync ObjectName --txStart <n>`
 - Asignar permisos: `npm run bo -- perms --profile <profileId> --allow ObjectName.getObject,ObjectName.createObject`
-
-Si quieres ver un ejemplo completo funcionando (BOs demo + estructura), ver:
-
-- [docs/es/12-examples.md](12-examples.md)
 
 ## Nota sobre `config.bo.path`
 

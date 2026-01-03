@@ -54,15 +54,9 @@ Create a small module that:
 2. Always sends `credentials/include`.
 3. Normalizes errors (always tries `res.json()` and returns `{ ok, data, error }`).
 
-You can use the existing example client as reference: [public/js/Sender.js](../../public/js/Sender.js).
-
-To keep this tutorial template-first, the demo client/pages live under the Examples chapter:
-
-- [12-examples.md](12-examples.md)
-
 ## 3) Vanilla JS (fetch)
 
-Suggested file: `public/js/apiClient.js` (or in your frontend repo).
+Suggested file: `apiClient.js` (in your frontend repo).
 
 ```js
 let csrfToken = null

@@ -22,7 +22,6 @@ La mayoría de las respuestas siguen este shape (no siempre vienen todos los cam
 
 Un cliente típico muestra `alerts` si existen; si no, muestra `msg`.
 Para ver recomendaciones de implementación: [docs/es/11-frontend-clients-and-requests.md](11-frontend-clients-and-requests.md).
-Para ver el cliente demo incluido: [docs/es/12-examples.md](12-examples.md).
 
 Nota: si el cliente envía un `Content-Type: application/json` pero el body no es JSON válido, el servidor normaliza la respuesta a:
 
@@ -314,7 +313,4 @@ CSRF:
 
 Los valores concretos de `tx` dependen de tu proyecto (lo que exista en `security.method.tx_nu`).
 
-Si quieres ver ejemplos completos (incluyendo UI/cliente de ejemplo y tx de demo), ver:
-
-- [docs/es/11-frontend-clients-and-requests.md](11-frontend-clients-and-requests.md)
-- [docs/es/12-examples.md](12-examples.md)
+Ver también: [docs/es/11-frontend-clients-and-requests.md](11-frontend-clients-and-requests.md)

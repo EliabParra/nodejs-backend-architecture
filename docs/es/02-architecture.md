@@ -2,13 +2,12 @@
 
 ## Estructura por capas
 
-- **Cliente (estático)**: `public/` (HTML/CSS/JS)
+- **Cliente (assets estáticos opcionales)**: `public/` (HTML/CSS/JS)
 - **Router de páginas**: `src/router/` (sirve HTML y protege rutas)
 - **Dispatcher (API)**: `src/BSS/Dispatcher.ts` (endpoints `/login`, `/logout`, `/toProccess`)
 - **Capa HTTP/Express (plumbing)**: `src/express/` (middlewares, handlers, session wiring)
 - **BSS (servicios transversales)**: `src/BSS/` (DB, session, security, validator, log)
 - **BO (negocio)**: `BO/` (ej. `BO/ObjectName/`).
-    - BOs demo completos viven en `examples/bo-demo/BO/`.
 - **Config**: `src/config/` (config runtime, mensajes, queries SQL)
 
 ## Bootstrap (arranque)

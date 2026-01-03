@@ -116,7 +116,7 @@ Al levantar, el servidor expone siempre:
 Rutas de páginas (`/` y `/content`) dependen del modo:
 
 - `APP_FRONTEND_MODE=none` (default): **no** sirve páginas (API-only).
-- `APP_FRONTEND_MODE=pages`: sirve páginas estáticas desde `public/pages/` (ver ejemplos en [docs/es/12-examples.md](12-examples.md)).
+- `APP_FRONTEND_MODE=pages`: sirve páginas estáticas desde `public/pages/`.
 - `APP_FRONTEND_MODE=spa`: sirve un build SPA desde `SPA_DIST_PATH` y hace fallback a `index.html`.
 
 Estos endpoints se definen en [src/BSS/Dispatcher.ts](../../src/BSS/Dispatcher.ts). El router de páginas (modo `pages`) está en [src/router/pages.ts](../../src/router/pages.ts).
@@ -127,7 +127,4 @@ Estos endpoints se definen en [src/BSS/Dispatcher.ts](../../src/BSS/Dispatcher.t
 2. Iniciar sesión.
 3. Ejecutar tus propios métodos BO vía `POST /toProccess` usando un `tx` mapeado en el schema `security`.
 
-Si quieres un demo completo funcionando (BOs + SQL de ejemplo), usa el ejemplo bajo [examples/bo-demo](../../examples/bo-demo).
-
-Las páginas internas (cuando `APP_FRONTEND_MODE=pages`) usan `fetch` hacia `/login`, `/logout` y `/toProccess`.
-Si quieres ver el cliente demo incluido, ver [docs/es/12-examples.md](12-examples.md).
+Si habilitas el modo `pages`, agrega tus propios archivos bajo `public/pages/`.

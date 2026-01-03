@@ -179,18 +179,8 @@ g.config = applyEnvOverrides(g.require('./config/config.json'))
 const baseQueries = g.require('./config/queries.json')
 let queries = baseQueries
 
-// Optional: enable the demo queries under examples/ (keeps core template demo-agnostic).
-// - DEMO_QUERIES=true loads the default file under examples/bo-demo/
-// - DEMO_QUERIES_PATH can point to a different JSON file (absolute or repo-relative)
-if (envBool(process.env.DEMO_QUERIES)) {
-    const demoPath =
-        resolveRepoRelative(process.env.DEMO_QUERIES_PATH) ??
-        repoPath('examples', 'bo-demo', 'config', 'queries.enterprise.json')
-    queries = mergeQueries(queries, g.require(demoPath))
-}
-
 // Optional: merge additional queries (absolute path or repo-relative).
-// Example: QUERIES_EXTRA_PATH=examples/bo-demo/config/queries.enterprise.json
+// Example: QUERIES_EXTRA_PATH=./src/config/queries.extra.json
 if (process.env.QUERIES_EXTRA_PATH) {
     const extraPath = resolveRepoRelative(process.env.QUERIES_EXTRA_PATH)
     if (extraPath) queries = mergeQueries(queries, g.require(extraPath))

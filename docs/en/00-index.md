@@ -20,7 +20,7 @@ A reference backend that demonstrates the architecture pattern (transaction disp
 ## Principles
 
 - **API-only by default** (`APP_FRONTEND_MODE=none`).
-- **Demos isolated** under `examples/` and `public/` (see the Examples chapter).
+- This template ships **no demo domain/UI** by default.
 - Consistent JSON contract + normalized errors.
 
 ## Quick map
@@ -38,7 +38,6 @@ A reference backend that demonstrates the architecture pattern (transaction disp
 - **Validation (alerts)**: [src/BSS/Validator.ts](../../src/BSS/Validator.ts)
 - **Shared helpers (BSS)**: [src/BSS/helpers/](../../src/BSS/helpers/)
 - **Pages router**: [src/router/pages.ts](../../src/router/pages.ts)
-- **Included examples (client/pages/demo BO)**: see [docs/en/12-examples.md](12-examples.md)
 
 ## Index
 
@@ -53,8 +52,7 @@ A reference backend that demonstrates the architecture pattern (transaction disp
 9. [BO CLI + tx + permissions](09-bo-cli.md)
 10. [DB init CLI (`security` schema)](10-db-init-cli.md)
 11. [Frontend clients and requests](11-frontend-clients-and-requests.md)
-12. [Included examples (optional)](12-examples.md)
-13. [Authentication (Auth module)](13-authentication.md)
+12. [Authentication (Auth module)](13-authentication.md)
 
 ## Glossary
 

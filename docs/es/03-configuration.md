@@ -177,12 +177,11 @@ Estructura:
 Ejemplos actuales:
 
 - `security`: **schema definitivo** del modelo de auth/roles/tx/permisos.
-- `enterprise`: schema de ejemplo (opcional) usado por el demo bajo `examples/` (no se carga por defecto).
+
+Puedes crear otros schemas (por ejemplo `inventory`, `billing`, etc.) y agregar allí sus queries.
 
 Extensiones opcionales de queries:
 
-- `DEMO_QUERIES=true`: carga el archivo de queries demo incluido en `examples/bo-demo/config/queries.enterprise.json`.
-- `DEMO_QUERIES_PATH` (opcional): sobreescribe la ruta del archivo de queries demo.
 - `QUERIES_EXTRA_PATH` (opcional): hace merge de queries adicionales desde un JSON (ruta absoluta o relativa al repo).
 
 El acceso se hace con:
@@ -199,5 +198,3 @@ Opción más segura (named params):
 - Si prefieres objects, usa `db.exeNamed(schema, queryName, paramsObj, orderKeys)` donde `orderKeys` es un array como `['person_id','person_na','person_ln']`.
 - Si prefieres objects, usa `db.exeNamed(schema, queryName, paramsObj, orderKeys)` donde `orderKeys` es un array como `['id','name','lastName']`.
 - Esto fuerza un orden estable y puede fallar rápido si faltan/sobran llaves o si el conteo de placeholders del SQL no coincide.
-
-Para otros proyectos puedes crear otros schemas (por ejemplo `inventory`, `billing`, etc.) y agregar allí sus queries.

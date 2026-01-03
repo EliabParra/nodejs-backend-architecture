@@ -1,6 +1,6 @@
 {
     "source": {
-        "include": ["dist/src", "public/js"],
+        "include": ["dist/src"],
         "includePattern": ".+\\.js$",
         "excludePattern": "(^|/|\\\\)_|node_modules/|\\.tmp-starterpack/|docs/api/"
     },

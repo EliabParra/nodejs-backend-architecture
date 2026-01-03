@@ -101,7 +101,6 @@ Start here:
 - English index: [docs/en/00-index.md](docs/en/00-index.md)
 - Auth (EN): [docs/en/13-authentication.md](docs/en/13-authentication.md)
 - Frontend tutorial (EN): [docs/en/11-frontend-clients-and-requests.md](docs/en/11-frontend-clients-and-requests.md)
-- Examples (EN): [docs/en/12-examples.md](docs/en/12-examples.md)
 
 ### Scripts
 
@@ -120,7 +119,7 @@ Start here:
 | `npm run bo -- <command>`                          | BO CLI (scaffold BOs, sync tx, manage permissions)           |
 | `npm run hashpw -- "<plainPassword>" [saltRounds]` | Generates bcrypt hashes                                      |
 | `npm run full`                                     | Optional dev helper (backend + frontend) via `FRONTEND_PATH` |
-| `npm run export:starter`                           | Exports a clean starterpack (without demo BOs)               |
+| `npm run export:starter`                           | Exports a clean starterpack                                  |
 
 Coverage note: `c8` is configured to focus on runtime logic (`src/**/*.js`) and excludes wiring/entrypoints (e.g. `src/index.ts`) and JSDoc-only definitions (`src/jsdoc/**`).
 
@@ -130,7 +129,6 @@ The `BO/` folder is intentionally **empty by design**.
 
 - Add your BOs under `BO/<ObjectName>/<ObjectName>BO.js`.
 - Scaffold quickly: `npm run bo -- new ObjectName`.
-- Demo BOs (optional): `examples/bo-demo/BO/`.
 
 ### License
 
@@ -142,4 +140,4 @@ MIT. See [LICENSE](LICENSE).
 - `BO/`: your domain BOs (kept empty by default)
 - `scripts/`: CLI tools (BO CLI, db-init, export starterpack, etc.)
 - `docs/`: ES/EN documentation
-- `public/`: optional demo pages/scripts (only served when enabled)
+- `public/`: optional static assets for `pages` mode (may be empty)

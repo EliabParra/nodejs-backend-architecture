@@ -2,13 +2,12 @@
 
 ## Layered structure
 
-- **Client (static)**: `public/` (HTML/CSS/JS)
+- **Client (optional static assets)**: `public/` (HTML/CSS/JS)
 - **Pages router**: `src/router/` (serves HTML and protects routes)
 - **Dispatcher (API)**: `src/BSS/Dispatcher.ts` (`/login`, `/logout`, `/toProccess`)
 - **HTTP/Express layer (plumbing)**: `src/express/` (middlewares, handlers, session wiring)
 - **BSS (cross-cutting services)**: `src/BSS/` (DB, session, security, validator, log)
 - **BO (business)**: `BO/` (e.g. `BO/ObjectName/`).
-    - Full demo BOs live under `examples/bo-demo/BO/`.
 - **Config**: `src/config/` (runtime config, messages, SQL queries)
 
 ## Bootstrap

@@ -99,7 +99,6 @@ Empieza aquí:
 - Índice ES: [docs/es/00-index.md](docs/es/00-index.md)
 - Auth (ES): [docs/es/13-autenticacion.md](docs/es/13-autenticacion.md)
 - Tutorial Frontend (ES): [docs/es/11-frontend-clients-and-requests.md](docs/es/11-frontend-clients-and-requests.md)
-- Ejemplos (ES): [docs/es/12-examples.md](docs/es/12-examples.md)
 
 ## Scripts
 
@@ -118,7 +117,7 @@ Empieza aquí:
 | `npm run bo -- <command>`                          | CLI BO (scaffold, sync tx, permisos)                     |
 | `npm run hashpw -- "<plainPassword>" [saltRounds]` | Genera hashes bcrypt                                     |
 | `npm run full`                                     | Helper opcional (backend + frontend) vía `FRONTEND_PATH` |
-| `npm run export:starter`                           | Export limpio (sin BOs demo)                             |
+| `npm run export:starter`                           | Export limpio                                            |
 
 Nota de cobertura: `c8` está configurado para enfocarse en lógica de runtime (`src/**/*.js`) y excluye wiring/entrypoints (p. ej. `src/index.ts`) y definiciones solo JSDoc (`src/jsdoc/**`).
 
@@ -128,7 +127,6 @@ La carpeta `BO/` se mantiene **vacía por diseño**.
 
 - Agrega tus BOs en `BO/<ObjectName>/<ObjectName>BO.js`.
 - Scaffold rápido: `npm run bo -- new ObjectName`.
-- BOs demo (opcional): `examples/bo-demo/BO/`.
 
 ## Licencia
 

@@ -54,13 +54,9 @@ Crea un módulo que:
 2. Envíe siempre `credentials/include`.
 3. Normalice errores (siempre intenta `res.json()` y devuelve `{ ok, data, error }`).
 
-Si quieres ver el cliente ejemplo incluido en este repo, ver la sección **Ejemplos incluidos** al final.
-
-Si quieres ver los ejemplos/demo incluidos en este repo, ver: [docs/es/12-examples.md](12-examples.md).
-
 ## 3) Vanilla JS (fetch)
 
-Archivo sugerido: `public/js/apiClient.js` (o en tu frontend).
+Archivo sugerido: `apiClient.js` (en tu frontend).
 
 ```js
 let csrfToken = null

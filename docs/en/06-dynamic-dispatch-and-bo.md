@@ -42,8 +42,6 @@ Typical structure (placeholders):
     - Messages: `BO/<ObjectName>/errors/<objectName>ErrorMsgs.json`
     - Labels: `BO/<ObjectName>/errors/<objectName>Alerts.json`
 
-If you want a full working example, see: [examples/bo-demo/BO](../../examples/bo-demo/BO)
-
 ## BO method contract
 
 A BO method receives `params` (whatever is sent in the request) and returns an object with at least:

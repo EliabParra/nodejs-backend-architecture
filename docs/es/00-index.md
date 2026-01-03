@@ -20,7 +20,7 @@ Un backend de referencia que muestra un patrón de arquitectura (dispatcher tran
 ## Principios
 
 - **API-only por defecto** (`APP_FRONTEND_MODE=none`).
-- **Demos aislados** en `examples/` y `public/` (ver el capítulo de Ejemplos).
+- Este template **no trae demo de dominio/UI** por defecto.
 - Contrato JSON consistente + errores normalizados.
 
 ## Mapa rápido
@@ -38,7 +38,6 @@ Un backend de referencia que muestra un patrón de arquitectura (dispatcher tran
 - **Validación (alerts)**: [src/BSS/Validator.ts](../../src/BSS/Validator.ts)
 - **Helpers compartidos (BSS)**: [src/BSS/helpers/](../../src/BSS/helpers/)
 - **Router de páginas**: [src/router/pages.ts](../../src/router/pages.ts)
-- **Ejemplos incluidos (cliente/pages/demo BO)**: ver [docs/es/12-examples.md](12-examples.md)
 
 ## Índice
 
@@ -53,8 +52,7 @@ Un backend de referencia que muestra un patrón de arquitectura (dispatcher tran
 9. [CLI para BO + tx + permisos](09-bo-cli.md)
 10. [DB init CLI (schema `security`)](10-db-init-cli.md)
 11. [Frontend clients y requests](11-frontend-clients-and-requests.md)
-12. [Ejemplos incluidos (opcional)](12-examples.md)
-13. [Autenticación (módulo Auth)](13-autenticacion.md)
+12. [Autenticación (módulo Auth)](13-autenticacion.md)
 
 ## Glosario
 

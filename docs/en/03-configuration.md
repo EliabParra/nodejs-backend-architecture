@@ -176,12 +176,11 @@ Shape:
 Current schemas:
 
 - `security`: **definitive** schema for auth/roles/tx/permissions.
-- `enterprise`: optional example schema used by the demo under `examples/` (not loaded by default).
+
+You can add new schemas (e.g. `inventory`, `billing`) and put feature-specific SQL there.
 
 Optional query extensions:
 
-- `DEMO_QUERIES=true`: loads the demo queries file shipped under `examples/bo-demo/config/queries.enterprise.json`.
-- `DEMO_QUERIES_PATH` (optional): override the demo queries file path.
 - `QUERIES_EXTRA_PATH` (optional): merge additional queries from a JSON file (absolute path or repo-relative).
 
 Queries are executed through:
@@ -197,5 +196,3 @@ Safer option (named params):
 
 - If you prefer objects, use `db.exeNamed(schema, queryName, paramsObj, orderKeys)` where `orderKeys` is an array like `['id','name','lastName']`.
 - This forces a stable order and can fail fast if keys are missing/extra or if the SQL placeholder count does not match.
-
-In other projects you can add new schemas (e.g. `inventory`, `billing`) and put feature-specific SQL there.

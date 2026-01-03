@@ -22,7 +22,6 @@ Most responses follow this shape (not all fields are always present):
 
 A typical client shows `alerts` if present; otherwise it shows `msg`.
 For implementation recommendations, see [11-frontend-clients-and-requests.md](11-frontend-clients-and-requests.md).
-For the included demo client/pages, see [12-examples.md](12-examples.md).
 
 Note: if the client sends `Content-Type: application/json` but the body is not valid JSON, the server normalizes the response to:
 
@@ -310,13 +309,6 @@ CSRF:
     - otherwise: per IP
 - When exceeded: HTTP `429` with `msgs[lang].errors.client.tooManyRequests`.
 
-## Demo tx values (frontend)
+## tx values
 
-The demo UI uses these tx numbers (see [public/js/scripts.js](../../public/js/scripts.js)):
-
-- `53`: get (params = id or name)
-- `63`: create (params = `{ person_na, person_ln }`)
-- `73`: update (params = `{ person_id, person_na, person_ln }`)
-- `83`: delete (params = id or name)
-
-> These numbers work only if they exist in `security.method.tx_nu`.
+The concrete `tx` values depend on your project (what exists in `security.method.tx_nu`).

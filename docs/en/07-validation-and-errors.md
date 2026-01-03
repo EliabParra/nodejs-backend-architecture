@@ -24,8 +24,6 @@ On failure, `Validator` builds `alerts` using templates from [src/config/message
 - Labels per language: `BO/<ObjectName>/errors/<objectName>Alerts.json`
 - Usage: `BO/<ObjectName>/<ObjectName>Validate.js`
 
-For a working example, see: [examples/bo-demo/BO](../../examples/bo-demo/BO)
-
 ## HTTP schema validation (Dispatcher/Session)
 
 In addition to the BO-level `Validator`, the server validates the **shape** of some HTTP requests (for example `/login`, `/logout`, `/toProccess`) before running business logic.
