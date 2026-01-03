@@ -2,7 +2,7 @@
 
 ## Where config lives
 
-Loaded at startup in [src/globals.js](../../src/globals.js) via `createRequire()`:
+Loaded at startup in [src/globals.ts](../../src/globals.ts) via `createRequire()`:
 
 - `config` from [src/config/config.json](../../src/config/config.json)
 - `queries` from [src/config/queries.json](../../src/config/queries.json)
@@ -71,10 +71,10 @@ File: [src/config/config.json](../../src/config/config.json)
 - `app.lang`: active language (`"es"` or `"en"`)
 - `app.frontendMode`: `"pages"` | `"spa"` | `"none"` (see above)
 - `app.bodyLimit` (optional): request size limit for JSON/urlencoded bodies (e.g. `"100kb"`, `"1mb"`).
-- `db`: `pg.Pool` settings (used by [src/BSS/DBComponent.js](../../src/BSS/DBComponent.js))
-- `session`: `express-session` settings (used by [src/BSS/Session.js](../../src/BSS/Session.js))
-- `bo.path`: relative path used by `Security` to dynamically import BO modules (see [src/BSS/Security.js](../../src/BSS/Security.js))
-- `log.activation`: flags per log level (error/info/debug/warn) used by [src/BSS/Log.js](../../src/BSS/Log.js)
+- `db`: `pg.Pool` settings (used by [src/BSS/DBComponent.ts](../../src/BSS/DBComponent.ts))
+- `session`: `express-session` settings (used by [src/BSS/Session.ts](../../src/BSS/Session.ts))
+- `bo.path`: relative path used by `Security` to dynamically import BO modules (see [src/BSS/Security.ts](../../src/BSS/Security.ts))
+- `log.activation`: flags per log level (error/info/debug/warn) used by [src/BSS/Log.ts](../../src/BSS/Log.ts)
 - `log.format` (optional): `"text"` | `"json"` (can be overridden via `LOG_FORMAT`)
 
 Note: with `info` enabled, the server also logs successful requests (2xx/3xx) with `requestId` and `durationMs` (see [docs/en/05-api-contract.md](05-api-contract.md)).
@@ -87,12 +87,12 @@ Config: [src/config/config.json](../../src/config/config.json) → `cors`
 - `cors.credentials`: allows cookies/session cross-origin (needed if the frontend runs on a different origin).
 - `cors.origins`: allowlist of dev origins (e.g. Vite `http://localhost:5173`, Angular `http://localhost:4200`).
 
-Wiring: [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.js) composes the middleware.
+Wiring: [src/BSS/Dispatcher.ts](../../src/BSS/Dispatcher.ts) composes the middleware.
 
 Implementation lives in dedicated Express modules:
 
-- CORS: [src/express/middleware/cors.js](../../src/express/middleware/cors.js)
-- CSRF: [src/express/middleware/csrf.js](../../src/express/middleware/csrf.js)
+- CORS: [src/express/middleware/cors.ts](../../src/express/middleware/cors.ts)
+- CSRF: [src/express/middleware/csrf.ts](../../src/express/middleware/csrf.ts)
 
 Note (CSRF): for `POST` requests you must send the `X-CSRF-Token` header (see [docs/en/05-api-contract.md](05-api-contract.md)).
 
@@ -112,38 +112,26 @@ Note (CSRF): for `POST` requests you must send the `X-CSRF-Token` header (see [d
 
 The server applies standard security headers via `helmet` and disables `X-Powered-By`.
 
-Wiring: [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.js) composes the middleware.
+Wiring: [src/BSS/Dispatcher.ts](../../src/BSS/Dispatcher.ts) composes the middleware.
 
 Implementation lives in:
 
-- Helmet: [src/express/middleware/helmet.js](../../src/express/middleware/helmet.js)
+- Helmet: [src/express/middleware/helmet.ts](../../src/express/middleware/helmet.ts)
 
 ## Backend pages vs SPA frontend
 
 You can choose who “owns” routes:
 
 - `none` (default / recommended): API-only (serves no pages).
-- `pages`: Express serves pages from `public/pages` (routes in `src/router/routes.js`).
+- `pages`: Express serves pages from `public/pages` (routes in `src/router/routes.ts`).
 - `spa`: Express serves a SPA build (React/Angular/Vue/etc.) and falls back to `index.html` for non-API routes.
 
 Main scripts in `package.json`:
 
 - `npm start`: production (uses `.env`/env vars)
 - `npm run dev`: development (nodemon)
-- `npm run full`: optional dev helper (starts backend + frontend via `FRONTEND_PATH`)
 
 For `spa`, the backend deliberately has NO default dist folder (to stay decoupled). You must set `SPA_DIST_PATH` or `config.app.spaDistPath`. If missing, the backend prompts on startup (interactive terminals only).
-
-### Extra variables for `npm run full` (optional)
-
-- `FRONTEND_PATH`: path to the frontend repo (must contain `package.json`).
-- `FRONTEND_SCRIPT` (default `start`): which npm script to run in the frontend.
-- `FRONTEND_ARGS` (optional): extra args passed to the frontend script.
-    - Passed as: `npm run <FRONTEND_SCRIPT> -- <FRONTEND_ARGS>`
-    - Example (Angular, avoid port 4200 conflicts): `FRONTEND_ARGS=--port 4201`
-- `BACKEND_SCRIPT` (default `dev`): which npm script to run in the backend.
-- `BACKEND_ARGS` (optional): extra args passed to the backend script (same `--` pattern).
-- `FULL_KEEP_ALIVE=true|false` (optional): when `true`, don't auto-shutdown the other process when one exits.
 
 ## messages.json
 
@@ -176,17 +164,16 @@ Shape:
 Current schemas:
 
 - `security`: **definitive** schema for auth/roles/tx/permissions.
-- `enterprise`: optional example schema used by the demo under `examples/` (not loaded by default).
+
+You can add new schemas (e.g. `inventory`, `billing`) and put feature-specific SQL there.
 
 Optional query extensions:
 
-- `DEMO_QUERIES=true`: loads the demo queries file shipped under `examples/bo-demo/config/queries.enterprise.json`.
-- `DEMO_QUERIES_PATH` (optional): override the demo queries file path.
 - `QUERIES_EXTRA_PATH` (optional): merge additional queries from a JSON file (absolute path or repo-relative).
 
 Queries are executed through:
 
-- `db.exe(schema, queryName, params)` ([src/BSS/DBComponent.js](../../src/BSS/DBComponent.js))
+- `db.exe(schema, queryName, params)` ([src/BSS/DBComponent.ts](../../src/BSS/DBComponent.ts))
 
 Params note:
 
@@ -197,5 +184,3 @@ Safer option (named params):
 
 - If you prefer objects, use `db.exeNamed(schema, queryName, paramsObj, orderKeys)` where `orderKeys` is an array like `['id','name','lastName']`.
 - This forces a stable order and can fail fast if keys are missing/extra or if the SQL placeholder count does not match.
-
-In other projects you can add new schemas (e.g. `inventory`, `billing`) and put feature-specific SQL there.

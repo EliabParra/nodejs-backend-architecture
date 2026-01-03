@@ -15,7 +15,7 @@ Variables:
 - `APP_FRONTEND_MODE=none|pages|spa`
 - `SPA_DIST_PATH` (spa mode): folder containing `index.html` (build output)
 
-Optional dev helper: `npm run full` starts backend + frontend based on `FRONTEND_PATH` in `.env`.
+In development, run backend and frontend separately (backend: `npm run dev`).
 
 ## 1) What every frontend must respect
 
@@ -54,15 +54,9 @@ Create a small module that:
 2. Always sends `credentials/include`.
 3. Normalizes errors (always tries `res.json()` and returns `{ ok, data, error }`).
 
-You can use the existing example client as reference: [public/js/Sender.js](../../public/js/Sender.js).
+## 3) Vanilla JS/TS (fetch)
 
-To keep this tutorial template-first, the demo client/pages live under the Examples chapter:
-
-- [12-examples.md](12-examples.md)
-
-## 3) Vanilla JS (fetch)
-
-Suggested file: `public/js/apiClient.js` (or in your frontend repo).
+Suggested file: `apiClient.js` (in your frontend repo).
 
 ```js
 let csrfToken = null
@@ -106,7 +100,7 @@ export async function toProccess(baseUrl, tx, params) {
 
 ### Option A: `fetch` only (no libraries)
 
-Create `src/api/client.js`:
+Create `src/api/client.ts` (plain JS also works):
 
 ```js
 let csrfToken = null
@@ -209,7 +203,7 @@ export class ApiService {
     - your CORS allowlist does not include the frontend origin.
 - If you get `413`: request body is too large.
 
-## 9) Production: cross-domain cookies (common failure mode)
+## 7) Production: cross-domain cookies (common failure mode)
 
 If frontend and backend are on different domains and you want **cookie-based sessions**:
 
@@ -224,7 +218,7 @@ If frontend and backend are on different domains and you want **cookie-based ses
 
 See variables in [03-configuration.md](03-configuration.md).
 
-## 7) How to connect “any frontend” (recommended)
+## 8) How to connect “any frontend” (recommended)
 
 ### Development (no repo coupling)
 
@@ -239,15 +233,3 @@ See variables in [03-configuration.md](03-configuration.md).
 
 - If frontend is deployed separately (recommended), configure CORS (`cors.origins`) and cookie flags (`sameSite/secure`) for your domain.
 - If you want the backend to serve a SPA build, use `APP_FRONTEND_MODE=spa` and set `SPA_DIST_PATH` (folder containing `index.html`).
-
-## 8) (Optional) `npm run full` for DX
-
-`npm run full` is an optional dev helper. In backend `.env` set:
-
-- `FRONTEND_PATH=PATH_TO_FRONTEND_REPO` (must contain `package.json`)
-- `FRONTEND_SCRIPT=start` (optional)
-- `FRONTEND_ARGS=...` (optional)
-    - Example (Angular): `FRONTEND_ARGS=--port 4201`
-- `BACKEND_SCRIPT=dev` (optional)
-- `BACKEND_ARGS=...` (optional)
-- `FULL_KEEP_ALIVE=true` (optional)

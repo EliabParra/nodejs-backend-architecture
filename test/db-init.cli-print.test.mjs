@@ -9,7 +9,9 @@ test('db-init --print generates expected SQL without touching DB', () => {
     const r = spawnSync(
         process.execPath,
         [
-            path.join(repoRoot, 'scripts', 'db-init.mjs'),
+            '--import',
+            'tsx',
+            path.join(repoRoot, 'scripts', 'db-init.ts'),
             '--print',
             '--yes',
             '--includeEmail',
@@ -38,7 +40,9 @@ test('db-init --print --auth includes auth tables (and optional 2-step login tab
     const r = spawnSync(
         process.execPath,
         [
-            path.join(repoRoot, 'scripts', 'db-init.mjs'),
+            '--import',
+            'tsx',
+            path.join(repoRoot, 'scripts', 'db-init.ts'),
             '--print',
             '--yes',
             '--auth',

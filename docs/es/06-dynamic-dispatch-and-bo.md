@@ -4,16 +4,25 @@ Esta arquitectura ejecuta lógica de negocio sin rutas REST por recurso: ejecuta
 
 ## Cómo se resuelve y ejecuta un BO
 
-Implementación: [src/BSS/Security.js](../../src/BSS/Security.js)
+Implementación: [src/BSS/Security.ts](../../src/BSS/Security.ts)
 
 - El servidor recibe `{ tx, params }`.
 - `tx` se traduce a `{ object_na, method_na }` usando `Security.txMap`.
 - `Security.executeMethod()` construye el path del módulo:
 
 ```js
-const modulePath = `${config.bo.path}${object_na}/${object_na}BO.js`
-const c = await import(modulePath)
-const instance = new c[`${object_na}BO`]()
+const basePath = `${config.bo.path}${object_na}/${object_na}BO`
+
+// Producción/dist: ESM compilado usa `.js`.
+// Dev/test: también soportamos `.ts` (source) como fallback.
+let mod
+try {
+    mod = await import(`${basePath}.js`)
+} catch {
+    mod = await import(`${basePath}.ts`)
+}
+
+const instance = new mod[`${object_na}BO`]()
 return await instance[method_na](params)
 ```
 
@@ -24,7 +33,8 @@ Además, cachea instancias por `"object_na_method_na"` en `Security.instances`.
 Para que el import dinámico funcione:
 
 1. Debe existir carpeta: `BO/<object_na>/`
-2. Debe existir archivo: `BO/<object_na>/<object_na>BO.js`
+2. Debe existir el archivo fuente: `BO/<object_na>/<object_na>BO.ts`
+    - En build, el output es `BO/<object_na>/<object_na>BO.js` bajo `dist/`.
 3. Ese archivo debe exportar la clase exacta: `export class <object_na>BO { ... }`
 4. La clase debe tener el método exacto: `<method_na>(params)`
 5. En DB, `security.object.object_na` y `security.method.method_na` deben coincidir con los strings anteriores.
@@ -33,16 +43,14 @@ Para que el import dinámico funcione:
 
 Estructura típica (placeholders):
 
-- BO (orquestación + mensajes): `BO/<ObjectName>/<ObjectName>BO.js`
-- Repositorio / modelo (DB): `BO/<ObjectName>/<ObjectName>.js`
-- Validación: `BO/<ObjectName>/<ObjectName>Validate.js`
-- Mensajes de éxito: `BO/<ObjectName>/<objectName>SuccessMsgs.json`
+- BO (orquestación + mensajes): `BO/<ObjectName>/<ObjectName>BO.ts`
+- Repositorio / modelo (DB): `BO/<ObjectName>/<ObjectName>.ts`
+- Validación: `BO/<ObjectName>/<ObjectName>Validate.ts`
+- Mensajes de éxito: `BO/<ObjectName>/messages/<objectName>SuccessMsgs.json`
 - Errores del dominio:
-    - Handler: `BO/<ObjectName>/errors/<ObjectName>ErrorHandler.js`
-    - Mensajes: `BO/<ObjectName>/errors/<objectName>ErrorMsgs.json`
-    - Labels: `BO/<ObjectName>/errors/<objectName>Alerts.json`
-
-Si quieres ver un ejemplo completo, revisa: [examples/bo-demo/BO](../../examples/bo-demo/BO)
+    - Handler: `BO/<ObjectName>/<ObjectName>ErrorHandler.ts`
+    - Mensajes: `BO/<ObjectName>/messages/<objectName>ErrorMsgs.json`
+    - Labels: `BO/<ObjectName>/messages/<objectName>Alerts.json`
 
 ## Firma y contrato del método BO
 
@@ -58,9 +66,9 @@ Ejemplo:
 
 ## Checklist para agregar una nueva feature
 
-1. Crear `BO/<object_na>/` y el archivo `BO/<object_na>/<object_na>BO.js`.
+1. Crear `BO/<object_na>/` y el archivo `BO/<object_na>/<object_na>BO.ts`.
 2. Implementar clase `export class <object_na>BO` con métodos `method_na`.
-3. Crear (opcional pero recomendado) `BO/<object_na>/<object_na>.js` y `<object_na>Validate.js`.
+3. Crear (opcional pero recomendado) `BO/<object_na>/<object_na>.ts` y `<object_na>Validate.ts`.
 4. Agregar queries al schema correspondiente en [src/config/queries.json](../../src/config/queries.json).
 5. Registrar `object_na` y `method_na` + `tx_nu` en schema `security`. ver [docs/es/04-database-security-model.md](04-database-security-model.md).
 6. Dar permisos al/los perfiles.
@@ -78,10 +86,6 @@ Ejemplos rápidos:
 - Mapear a DB (tx): `npm run bo -- sync ObjectName --txStart <n>`
 - Asignar permisos: `npm run bo -- perms --profile <profileId> --allow ObjectName.getObject,ObjectName.createObject`
 
-Si quieres ver un ejemplo completo funcionando (BOs demo + estructura), ver:
-
-- [docs/es/12-examples.md](12-examples.md)
-
 ## Nota sobre `config.bo.path`
 
-`config.bo.path` (en [src/config/config.json](../../src/config/config.json)) es una ruta relativa usada por `import()` desde [src/BSS/Security.js](../../src/BSS/Security.js). Si mueves carpetas, este valor debe mantenerse consistente.
+`config.bo.path` (en [src/config/config.json](../../src/config/config.json)) es una ruta relativa usada por `import()` desde [src/BSS/Security.ts](../../src/BSS/Security.ts). Si mueves carpetas, este valor debe mantenerse consistente.

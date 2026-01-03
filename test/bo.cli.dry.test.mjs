@@ -24,10 +24,14 @@ test('bo CLI new --dry does not write files', async () => {
 
     assert.equal(await pathExists(targetDir), false)
 
-    const r = spawnSync(process.execPath, ['scripts/bo.mjs', 'new', objectName, '--dry'], {
-        cwd: repoRoot,
-        encoding: 'utf8',
-    })
+    const r = spawnSync(
+        process.execPath,
+        ['--import', 'tsx', 'scripts/bo.ts', 'new', objectName, '--dry'],
+        {
+            cwd: repoRoot,
+            encoding: 'utf8',
+        }
+    )
 
     assert.equal(r.status, 0)
     assert.match(r.stdout, /DRY RUN: would create/i)
@@ -43,7 +47,7 @@ test('bo CLI new --dry does not write files', async () => {
 test('bo CLI sync --dry --txStart does not touch DB', async () => {
     const objectName = `ZzBoSyncDry${Date.now()}`
     const baseDir = path.join(repoRoot, 'BO', objectName)
-    const boFile = path.join(baseDir, `${objectName}BO.js`)
+    const boFile = path.join(baseDir, `${objectName}BO.ts`)
 
     try {
         await fs.mkdir(baseDir, { recursive: true })
@@ -62,7 +66,7 @@ test('bo CLI sync --dry --txStart does not touch DB', async () => {
 
         const r = spawnSync(
             process.execPath,
-            ['scripts/bo.mjs', 'sync', objectName, '--dry', '--txStart', '9000'],
+            ['--import', 'tsx', 'scripts/bo.ts', 'sync', objectName, '--dry', '--txStart', '9000'],
             {
                 cwd: repoRoot,
                 encoding: 'utf8',

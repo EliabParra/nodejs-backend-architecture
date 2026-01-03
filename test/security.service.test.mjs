@@ -105,7 +105,7 @@ test('Security.init captures initError and rejects ready when DB fails', async (
 test('Security.executeMethod dynamically imports BO and caches the instance', async () => {
     const objectName = `ZzSec${Date.now()}`
     const baseDir = path.join(repoRoot, 'BO', objectName)
-    const boFile = path.join(baseDir, `${objectName}BO.js`)
+    const boFile = path.join(baseDir, `${objectName}BO.ts`)
 
     await fs.mkdir(baseDir, { recursive: true })
 

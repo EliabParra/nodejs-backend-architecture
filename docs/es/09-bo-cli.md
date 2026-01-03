@@ -6,7 +6,7 @@ Este repo incluye un CLI para:
 - Registrar automáticamente en DB el `object_na`, `method_na` y el `tx_nu` (mapping de transacciones).
 - Asignar/quitar permisos a perfiles (tabla `security.permission_method`).
 
-El CLI vive en [scripts/bo.mjs](../../scripts/bo.mjs) y se ejecuta con `npm run bo`.
+El CLI vive en [scripts/bo.ts](../../scripts/bo.ts) y se ejecuta con `npm run bo`.
 
 ## Requisitos
 
@@ -39,13 +39,13 @@ Ejemplo (CRUD por defecto):
 
 Esto crea:
 
-- `BO/ObjectName/ObjectNameBO.js`
-- `BO/ObjectName/ObjectName.js` (entidad + `ObjectNameRepository`)
-- `BO/ObjectName/ObjectNameValidate.js`
-- `BO/ObjectName/objectNameSuccessMsgs.json`
-- `BO/ObjectName/errors/ObjectNameErrorHandler.js`
-- `BO/ObjectName/errors/objectNameErrorMsgs.json`
-- `BO/ObjectName/errors/objectNameAlerts.json`
+- `BO/ObjectName/ObjectNameBO.ts`
+- `BO/ObjectName/ObjectName.ts` (entidad + `ObjectNameRepository`)
+- `BO/ObjectName/ObjectNameValidate.ts`
+- `BO/ObjectName/messages/objectNameSuccessMsgs.json`
+- `BO/ObjectName/ObjectNameErrorHandler.ts`
+- `BO/ObjectName/messages/objectNameErrorMsgs.json`
+- `BO/ObjectName/messages/objectNameAlerts.json`
 
 Ejemplo (métodos personalizados):
 
@@ -73,7 +73,7 @@ Control de tx:
 
 ### 2) Sincronizar métodos del BO a DB: `sync`
 
-Lee `BO/<Object>/<Object>BO.js`, detecta los métodos y los registra/actualiza en `security.method`.
+Lee `BO/<Object>/<Object>BO.ts`, detecta los métodos y los registra/actualiza en `security.method`.
 
 - `npm run bo -- sync ObjectName`
 

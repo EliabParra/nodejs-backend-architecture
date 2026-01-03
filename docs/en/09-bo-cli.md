@@ -6,7 +6,7 @@ This repo includes a CLI that lets you:
 - Register `object_na`, `method_na`, and `tx_nu` in Postgres (transaction mapping).
 - Grant/revoke permissions to profiles (`security.permission_method`).
 
-The CLI lives in [scripts/bo.mjs](../../scripts/bo.mjs) and runs via `npm run bo`.
+The CLI lives in [scripts/bo.ts](../../scripts/bo.ts) and runs via `npm run bo`.
 
 ## Requirements
 
@@ -39,13 +39,13 @@ Example (default CRUD methods):
 
 Creates:
 
-- `BO/ObjectName/ObjectNameBO.js`
-- `BO/ObjectName/ObjectName.js` (entity + `ObjectNameRepository`)
-- `BO/ObjectName/ObjectNameValidate.js`
-- `BO/ObjectName/objectNameSuccessMsgs.json`
-- `BO/ObjectName/errors/ObjectNameErrorHandler.js`
-- `BO/ObjectName/errors/objectNameErrorMsgs.json`
-- `BO/ObjectName/errors/objectNameAlerts.json`
+- `BO/ObjectName/ObjectNameBO.ts`
+- `BO/ObjectName/ObjectName.ts` (entity + `ObjectNameRepository`)
+- `BO/ObjectName/ObjectNameValidate.ts`
+- `BO/ObjectName/messages/objectNameSuccessMsgs.json`
+- `BO/ObjectName/ObjectNameErrorHandler.ts`
+- `BO/ObjectName/messages/objectNameErrorMsgs.json`
+- `BO/ObjectName/messages/objectNameAlerts.json`
 
 Example (custom methods):
 
@@ -75,7 +75,7 @@ Tx control:
 
 ### 2) Sync BO methods to DB: `sync`
 
-Reads `BO/<Object>/<Object>BO.js`, extracts methods and upserts them into `security.method`.
+Reads `BO/<Object>/<Object>BO.ts`, extracts methods and upserts them into `security.method`.
 
 - `npm run bo -- sync ObjectName`
 

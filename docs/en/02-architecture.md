@@ -2,23 +2,23 @@
 
 ## Layered structure
 
-- **Client (static)**: `public/` (HTML/CSS/JS)
+- **Client (optional static assets)**: `public/` (HTML/CSS/JS)
 - **Pages router**: `src/router/` (serves HTML and protects routes)
-- **Dispatcher (API)**: `src/BSS/Dispatcher.js` (`/login`, `/logout`, `/toProccess`)
+- **Dispatcher (API)**: `src/BSS/Dispatcher.ts` (`/login`, `/logout`, `/toProccess`)
 - **HTTP/Express layer (plumbing)**: `src/express/` (middlewares, handlers, session wiring)
 - **BSS (cross-cutting services)**: `src/BSS/` (DB, session, security, validator, log)
 - **BO (business)**: `BO/` (e.g. `BO/ObjectName/`).
-    - Full demo BOs live under `examples/bo-demo/BO/`.
 - **Config**: `src/config/` (runtime config, messages, SQL queries)
 
 ## Bootstrap
 
-1. [src/index.js](../../src/index.js)
-    - Imports [src/globals.js](../../src/globals.js)
+1. [src/index.ts](../../src/index.ts)
+
+- Imports [src/globals.ts](../../src/globals.ts)
 
 - Creates `new Dispatcher()`, runs `await dispatcher.init()`, then calls `serverOn()`
 
-2. [src/globals.js](../../src/globals.js)
+2. [src/globals.ts](../../src/globals.ts)
     - Loads JSON via `require` (config, queries, messages)
     - Creates global singletons:
         - `globalThis.v` (Validator)
@@ -30,23 +30,38 @@
 
 Note: for consistency with the repository style, some `src/express/` modules also read globals (e.g. `log`, `msgs`, `config`).
 
+## TypeScript-first + DI seam (AppContext)
+
+Even though the runtime exposes services as globals, the codebase also supports a DI-friendly seam:
+
+- `createAppContext()` collects dependencies into an `AppContext` object.
+- Core services can accept/use `ctx` to avoid hard-coding global reads.
+
+This improves testability and makes it easier to evolve the architecture towards “pure DI” over time.
+
+See: [14-types-and-di.md](14-types-and-di.md)
+
 ## Request flow (transactional API)
 
 ### Endpoint
 
-- `POST /toProccess` in [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.js)
+- `POST /toProccess` in [src/BSS/Dispatcher.ts](../../src/BSS/Dispatcher.ts)
 
 ### Sequence (high level)
 
-1. **Session check**: `Session.sessionExists(req)` ([src/BSS/Session.js](../../src/BSS/Session.js))
+1. **Session check**: `Session.sessionExists(req)` ([src/BSS/Session.ts](../../src/BSS/Session.ts))
 2. **Wait for security initialization (race-free)**
 
 - `Security` preloads `txMap` and permissions from the DB.
 - `/toProccess` awaits `security.ready` before using `txMap`, avoiding requests hitting an empty cache during startup.
 
-2. **Resolve tx → (object_na, method_na)**: `security.getDataTx(body.tx)` ([src/BSS/Security.js](../../src/BSS/Security.js))
+2. **Resolve tx → (object_na, method_na)**: `security.getDataTx(body.tx)` ([src/BSS/Security.ts](../../src/BSS/Security.ts))
 3. **Permissions**: `security.getPermissions({ profile_id, method_na, object_na })`
 4. **Execute BO**: `security.executeMethod({ object_na, method_na, params })`
+
+- BO modules are loaded dynamically using `config.bo.path`.
+- At runtime the loader tries `...BO.js` first (dist) and falls back to `...BO.ts` for dev/test.
+
 5. **Response**: `res.status(response.code).send(response)`
 
 ### Diagram
@@ -68,20 +83,20 @@ Decoupling note: the backend can run in **API-only** mode (`APP_FRONTEND_MODE=no
 
 Adapter entrypoint:
 
-- [src/frontend-adapters/index.js](../../src/frontend-adapters/index.js)
+- [src/frontend-adapters/index.ts](../../src/frontend-adapters/index.ts)
 
 ## Express plumbing (where it lives now)
 
 - Middlewares (helmet, CORS, parsers, CSRF, rate limit, requestId/log): `src/express/middleware/`
 - Health/readiness handlers: `src/express/handlers/`
-- Session wiring (express-session + store): [src/express/session/apply-session-middleware.js](../../src/express/session/apply-session-middleware.js)
+- Session wiring (express-session + store): [src/express/session/apply-session-middleware.ts](../../src/express/session/apply-session-middleware.ts)
 
 `Dispatcher` is intentionally kept as the orchestrator: it registers routes, composes middlewares, and delegates Express configuration to small modules.
 
 ## Pages router
 
-- Route declarations: [src/router/routes.js](../../src/router/routes.js)
-- Router + `requireAuth` middleware: [src/router/pages.js](../../src/router/pages.js)
+- Route declarations: [src/router/routes.ts](../../src/router/routes.ts)
+- Router + `requireAuth` middleware: [src/router/pages.ts](../../src/router/pages.ts)
 - Routes can be protected per route config (e.g. `validateIsAuth=true`).
 - When auth is required and no session exists, the router redirects to `/?returnTo=...`.
 

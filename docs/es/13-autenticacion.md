@@ -1,6 +1,6 @@
 # 13 — Autenticación (módulo Auth)
 
-Este repo incluye un **módulo Auth opcional** implementado como BO (`BO/Auth/AuthBO.js`) más algunos endpoints HTTP (`/login`, `/login/verify`).
+Este repo incluye un **módulo Auth opcional** implementado como BO (`BO/Auth/AuthBO.ts`) más algunos endpoints HTTP (`/login`, `/login/verify`).
 
 Soporta:
 
@@ -68,7 +68,7 @@ Así `/toProccess` puede ejecutar esos métodos sin sesión autenticada.
 
 ## 2) Config (runtime)
 
-La config está en [src/config/config.json](../../src/config/config.json) y los overrides por env en [src/globals.js](../../src/globals.js).
+La config está en [src/config/config.json](../../src/config/config.json) y los overrides por env en [src/globals.ts](../../src/globals.ts).
 
 Opciones comunes:
 

@@ -10,7 +10,7 @@ All security SQL is under the `security` key in [src/config/queries.json](../../
 - `security.loadPermissions`: loads allowed `(object_na, method_na)` per profile
 - `security.loadDataTx`: loads `tx_nu` → `(object_na, method_na)` mapping
 
-These are loaded at process startup by [src/BSS/Security.js](../../src/BSS/Security.js).
+These are loaded at process startup by [src/BSS/Security.ts](../../src/BSS/Security.ts).
 
 ## Expected tables (inferred from current queries)
 
@@ -68,7 +68,8 @@ Minimum steps to make a new feature executable:
 
 - `object_na` must match exactly:
     - folder `BO/<object_na>/`
-    - file `BO/<object_na>/<object_na>BO.js`
+        - source file `BO/<object_na>/<object_na>BO.ts`
+          (build output is `...BO.js` under `dist/`)
     - exported class name `export class <object_na>BO { ... }`
       (see [docs/en/06-dynamic-dispatch-and-bo.md](06-dynamic-dispatch-and-bo.md))
 
@@ -80,7 +81,7 @@ Permissions and tx mappings are loaded **once at startup** (in-memory cache). If
 
 ## Login (detail)
 
-Implementation: [src/BSS/Session.js](../../src/BSS/Session.js)
+Implementation: [src/BSS/Session.ts](../../src/BSS/Session.ts)
 
 - The `security.getUser` query no longer checks the password in SQL.
 - The server compares `password` vs `user.user_pw` using bcrypt.

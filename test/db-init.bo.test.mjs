@@ -4,7 +4,7 @@ import os from 'node:os'
 import path from 'node:path'
 import fs from 'node:fs/promises'
 
-import { parseAsyncMethodsFromBO, discoverBOs } from '../scripts/db-init.mjs'
+import { parseAsyncMethodsFromBO, discoverBOs } from '../scripts/db-init.ts'
 
 test('parseAsyncMethodsFromBO extracts async methods and ignores _private', () => {
     const content = `
@@ -25,7 +25,7 @@ test('discoverBOs finds BOs under repoRoot/BO', async () => {
         const boDir = path.join(tmp, 'BO', 'Order')
         await fs.mkdir(boDir, { recursive: true })
         await fs.writeFile(
-            path.join(boDir, 'OrderBO.js'),
+            path.join(boDir, 'OrderBO.ts'),
             `export class OrderBO {\n  async getOrder() {}\n  async createOrder() {}\n  async _internal() {}\n}`,
             'utf8'
         )

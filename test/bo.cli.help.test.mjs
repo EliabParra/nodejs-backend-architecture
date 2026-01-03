@@ -9,7 +9,7 @@ const __dirname = path.dirname(__filename)
 const repoRoot = path.resolve(__dirname, '..')
 
 test('bo CLI help prints usage and does not touch DB', () => {
-    const r = spawnSync(process.execPath, ['scripts/bo.mjs', 'help'], {
+    const r = spawnSync(process.execPath, ['--import', 'tsx', 'scripts/bo.ts', 'help'], {
         cwd: repoRoot,
         encoding: 'utf8',
     })

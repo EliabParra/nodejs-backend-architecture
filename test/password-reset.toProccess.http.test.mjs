@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url'
 import fs from 'node:fs/promises'
 
 import Dispatcher from '../src/BSS/Dispatcher.js'
-import { csrfProtection } from '../src/express/middleware/csrf.js'
+import { createCsrfProtection } from '../src/express/middleware/csrf.js'
 
 import { withGlobals } from './_helpers/global-state.mjs'
 
@@ -79,7 +79,7 @@ test('password reset works via /toProccess without session (public profile)', as
 
         // Ensure BO/Auth exists so we can import and execute the real AuthBO.
         // Do not delete it during tests.
-        const authBoPath = path.join(repoRoot, 'BO', 'Auth', 'AuthBO.js')
+        const authBoPath = path.join(repoRoot, 'BO', 'Auth', 'AuthBO.ts')
         const hasAuthBo = await (async () => {
             try {
                 await fs.stat(authBoPath)
@@ -89,10 +89,14 @@ test('password reset works via /toProccess without session (public profile)', as
             }
         })()
         if (!hasAuthBo) {
-            const gen = spawnSync(process.execPath, ['scripts/bo.mjs', 'auth', '--force'], {
-                cwd: repoRoot,
-                encoding: 'utf8',
-            })
+            const gen = spawnSync(
+                process.execPath,
+                ['--import', 'tsx', 'scripts/bo.ts', 'auth', '--force'],
+                {
+                    cwd: repoRoot,
+                    encoding: 'utf8',
+                }
+            )
             assert.equal(gen.status, 0, gen.stderr || gen.stdout)
         }
 
@@ -141,7 +145,7 @@ test('password reset works via /toProccess without session (public profile)', as
             [3, { object_na: 'Auth', method_na: 'resetPassword' }],
         ])
 
-        const { AuthBO } = await import('../BO/Auth/AuthBO.js')
+        const { AuthBO } = await import('../BO/Auth/AuthBO.ts')
         const auth = new AuthBO()
 
         globalThis.security = {
@@ -159,6 +163,11 @@ test('password reset works via /toProccess without session (public profile)', as
                 return await auth[method_na](params)
             },
         }
+
+        const csrfProtection = createCsrfProtection({
+            config: globalThis.config,
+            msgs: globalThis.msgs,
+        })
 
         // DB stub for Auth BO + audit.
         const state = {

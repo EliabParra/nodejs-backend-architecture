@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 
-import { parseArgs } from '../scripts/db-init.mjs'
+import { parseArgs } from '../scripts/db-init.ts'
 
 test('parseArgs parses flags and values', () => {
     const { args, opts } = parseArgs(['--print', '--sessionSchema', 'security', 'extra', '--yes'])

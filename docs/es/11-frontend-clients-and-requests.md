@@ -15,7 +15,7 @@ Variables:
 - `APP_FRONTEND_MODE=none|pages|spa`
 - `SPA_DIST_PATH` (solo `spa`): carpeta que contiene `index.html` (output de build)
 
-Atajo opcional de desarrollo (no obligatorio): `npm run full` en el backend levanta backend + frontend leyendo `FRONTEND_PATH` desde `.env`.
+Atajo opcional de desarrollo (no obligatorio): levanta cada uno por separado (backend: `npm run dev`).
 
 ## 1) Lo que todo frontend debe respetar
 
@@ -54,13 +54,9 @@ Crea un módulo que:
 2. Envíe siempre `credentials/include`.
 3. Normalice errores (siempre intenta `res.json()` y devuelve `{ ok, data, error }`).
 
-Si quieres ver el cliente ejemplo incluido en este repo, ver la sección **Ejemplos incluidos** al final.
-
-Si quieres ver los ejemplos/demo incluidos en este repo, ver: [docs/es/12-examples.md](12-examples.md).
-
 ## 3) Vanilla JS (fetch)
 
-Archivo sugerido: `public/js/apiClient.js` (o en tu frontend).
+Archivo sugerido: `apiClient.js` (en tu frontend).
 
 ```js
 let csrfToken = null
@@ -119,7 +115,7 @@ if (!result.ok) {
 
 ### Opción A: usar `fetch` (sin librerías)
 
-Crea `src/api/client.js`:
+Crea `src/api/client.ts` (JS plano también funciona):
 
 ```js
 let csrfToken = null
@@ -276,7 +272,7 @@ Ver variables en [03-configuration.md](03-configuration.md).
 
 - Si recibes `413`: estás enviando un body demasiado grande.
 
-## 7) Cómo conectar “cualquier frontend” (recomendado)
+## 8) Cómo conectar “cualquier frontend” (recomendado)
 
 ### Desarrollo (sin acoplar repos)
 
@@ -291,14 +287,6 @@ Ver variables en [03-configuration.md](03-configuration.md).
 - Si el frontend se deploya separado (recomendado), configura CORS (`cors.origins`) y cookies (`sameSite/secure`) según tu dominio.
 - Si quieres que el backend sirva una SPA, usa `APP_FRONTEND_MODE=spa` y define `SPA_DIST_PATH` (carpeta con `index.html`).
 
-## 8) (Opcional) `npm run full` para DX
+## 8) (Opcional) Recomendaciones para desarrollo
 
-`npm run full` es solo un helper de dev. Requiere en `.env` del backend:
-
-- `FRONTEND_PATH=RUTA_AL_REPO_FRONT` (debe contener `package.json`)
-- `FRONTEND_SCRIPT=start` (opcional)
-- `FRONTEND_ARGS=...` (opcional)
-    - Ejemplo (Angular): `FRONTEND_ARGS=--port 4201`
-- `BACKEND_SCRIPT=dev` (opcional)
-- `BACKEND_ARGS=...` (opcional)
-- `FULL_KEEP_ALIVE=true` (opcional)
+En desarrollo, asegúrate de correr el backend y frontend por separado para evitar problemas de configuración.

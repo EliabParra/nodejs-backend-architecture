@@ -4,29 +4,27 @@
 
 Las páginas (modo `pages`) viven en `public/pages/`.
 
-Los archivos HTML concretos incluidos en este repo son **ejemplos** (no parte del core). Ver:
+Si usas `APP_FRONTEND_MODE=pages`, agrega tus propios HTML bajo `public/pages/`.
 
-- [docs/es/12-examples.md](12-examples.md)
-
-Express sirve `public/` como estático **solo si** `APP_FRONTEND_MODE=pages` (modo legacy) desde [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.js).
+Express sirve `public/` como estático **solo si** `APP_FRONTEND_MODE=pages` (modo legacy) desde [src/BSS/Dispatcher.ts](../../src/BSS/Dispatcher.ts).
 
 El registro del hosting de frontend se hace vía adapter (para mantener el backend desacoplado):
 
-- Entry: [src/frontend-adapters/index.js](../../src/frontend-adapters/index.js)
-- Pages adapter: [src/frontend-adapters/pages.adapter.js](../../src/frontend-adapters/pages.adapter.js)
+- Entry: [src/frontend-adapters/index.ts](../../src/frontend-adapters/index.ts)
+- Pages adapter: [src/frontend-adapters/pages.adapter.ts](../../src/frontend-adapters/pages.adapter.ts)
 
-`pagesPath` está definido en [src/router/routes.js](../../src/router/routes.js).
+`pagesPath` está definido en [src/router/routes.ts](../../src/router/routes.ts).
 
 ## Router de páginas
 
-Definición de rutas (declarativa): [src/router/routes.js](../../src/router/routes.js)
+Definición de rutas (declarativa): [src/router/routes.ts](../../src/router/routes.ts)
 
 Ejemplo actual:
 
 - `/` (home) `validateIsAuth: false`
 - `/content` `validateIsAuth: true`
 
-Router y middleware: [src/router/pages.js](../../src/router/pages.js)
+Router y middleware: [src/router/pages.ts](../../src/router/pages.ts)
 
 - Si una ruta tiene `validateIsAuth: true`, se aplica `requireAuth`.
 - Si no hay sesión, redirige a `/?returnTo=<ruta>`.
@@ -41,11 +39,11 @@ El modo `pages` existe solo como ejemplo/legacy para servir HTML desde este mism
 
 ## Sesión (express-session)
 
-Implementación: [src/BSS/Session.js](../../src/BSS/Session.js)
+Implementación: [src/BSS/Session.ts](../../src/BSS/Session.ts)
 
 - La clase `Session` orquesta login/logout y reglas de sesión.
 - El wiring de Express (express-session + store + schema/table) se aplica desde:
-    - [src/express/session/apply-session-middleware.js](../../src/express/session/apply-session-middleware.js)
+    - [src/express/session/apply-session-middleware.ts](../../src/express/session/apply-session-middleware.ts)
 - Criterio de sesión activa: `req.session && req.session.user_id`.
 
 Recomendación:

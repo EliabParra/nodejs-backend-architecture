@@ -2,22 +2,21 @@
 
 ## Estructura por capas
 
-- **Cliente (estático)**: `public/` (HTML/CSS/JS)
+- **Cliente (assets estáticos opcionales)**: `public/` (HTML/CSS/JS)
 - **Router de páginas**: `src/router/` (sirve HTML y protege rutas)
-- **Dispatcher (API)**: `src/BSS/Dispatcher.js` (endpoints `/login`, `/logout`, `/toProccess`)
+- **Dispatcher (API)**: `src/BSS/Dispatcher.ts` (endpoints `/login`, `/logout`, `/toProccess`)
 - **Capa HTTP/Express (plumbing)**: `src/express/` (middlewares, handlers, session wiring)
 - **BSS (servicios transversales)**: `src/BSS/` (DB, session, security, validator, log)
 - **BO (negocio)**: `BO/` (ej. `BO/ObjectName/`).
-    - BOs demo completos viven en `examples/bo-demo/BO/`.
 - **Config**: `src/config/` (config runtime, mensajes, queries SQL)
 
 ## Bootstrap (arranque)
 
-1. [src/index.js](../../src/index.js)
-    - Importa [src/globals.js](../../src/globals.js)
+1. [src/index.ts](../../src/index.ts)
+    - Importa [src/globals.ts](../../src/globals.ts)
     - Crea `new Dispatcher()`, ejecuta `await dispatcher.init()` y luego llama `serverOn()`
 
-2. [src/globals.js](../../src/globals.js)
+2. [src/globals.ts](../../src/globals.ts)
     - Carga JSON via `require` (config, queries, messages)
     - Crea singletons globales:
         - `globalThis.v` (Validator)
@@ -29,6 +28,17 @@
 
 Nota: por consistencia con el diseño del repo, algunos módulos de `src/express/` también consumen globals (ej. `log`, `msgs`, `config`).
 
+## TypeScript-first + seam de DI (AppContext)
+
+Aunque el runtime expone servicios como globals, el codebase también soporta un seam DI-friendly:
+
+- `createAppContext()` junta dependencias en un objeto `AppContext`.
+- Servicios core pueden aceptar/usar `ctx` para evitar lecturas directas de globals.
+
+Esto mejora testabilidad y hace más simple evolucionar la arquitectura hacia “DI puro” en el tiempo.
+
+Ver: [14-types-y-di.md](14-types-y-di.md)
+
 ## Flujo del request (API transaccional)
 
 ### Endpoint
@@ -36,17 +46,17 @@ Nota: por consistencia con el diseño del repo, algunos módulos de `src/express
 ### Secuencia (alto nivel)
 
 1. **Verificar sesión**
-    - `Session.sessionExists(req)` en [src/BSS/Session.js](../../src/BSS/Session.js)
+    - `Session.sessionExists(req)` en [src/BSS/Session.ts](../../src/BSS/Session.ts)
 2. **Esperar inicialización de seguridad (race-free)**
     - `Security` precarga `txMap` y permisos desde DB.
     - `/toProccess` espera `security.ready` antes de usar `txMap` para evitar que llegue un request mientras el cache aún está vacío.
 3. **Resolver tx → (object_na, method_na)**
-    - `security.getDataTx(body.tx)` usando `txMap` precargado en [src/BSS/Security.js](../../src/BSS/Security.js)
+    - `security.getDataTx(body.tx)` usando `txMap` precargado en [src/BSS/Security.ts](../../src/BSS/Security.ts)
 4. **Validar permisos**
     - `security.getPermissions({ profile_id, method_na, object_na })` contra `permission` precargado
 5. **Ejecutar BO**
     - `security.executeMethod({ object_na, method_na, params })`
-    - Import dinámico del BO: `../../BO/<object_na>/<object_na>BO.js` (ver `config.bo.path` en [src/config/config.json](../../src/config/config.json))
+    - Import dinámico del BO (según `config.bo.path`): intenta `...BO.js` primero (dist) y hace fallback a `...BO.ts` en dev/test.
 6. **Responder**
     - `res.status(response.code).send(response)`
 
@@ -69,20 +79,20 @@ Nota sobre desacople: el backend puede correr en modo **API-only** (`APP_FRONTEN
 
 Implementación del adapter:
 
-- [src/frontend-adapters/index.js](../../src/frontend-adapters/index.js)
+- [src/frontend-adapters/index.ts](../../src/frontend-adapters/index.ts)
 
 ## Express plumbing (dónde vive ahora)
 
 - Middlewares (helmet, CORS, parsers, CSRF, rate limit, requestId/log): `src/express/middleware/`
 - Health/readiness handlers: `src/express/handlers/`
-- Session wiring (express-session + store): [src/express/session/apply-session-middleware.js](../../src/express/session/apply-session-middleware.js)
+- Session wiring (express-session + store): [src/express/session/apply-session-middleware.ts](../../src/express/session/apply-session-middleware.ts)
 
 El `Dispatcher` queda principalmente como orquestador: registra rutas, conecta middlewares y delega la configuración de Express a módulos chicos.
 
 ## Router de páginas
 
-- Declaración de rutas en [src/router/routes.js](../../src/router/routes.js)
-- Router y middleware `requireAuth` en [src/router/pages.js](../../src/router/pages.js)
+- Declaración de rutas en [src/router/routes.ts](../../src/router/routes.ts)
+- Router y middleware `requireAuth` en [src/router/pages.ts](../../src/router/pages.ts)
 - Se pueden proteger rutas por configuración de ruta (ej. `validateIsAuth=true`).
 - Cuando se requiere auth y no hay sesión, redirige a `/?returnTo=...`.
 
