@@ -2,13 +2,14 @@ type ValidatorStatus = { result?: boolean; alerts?: string[]; [k: string]: unkno
 
 type ParamObject = {
     value?: unknown
-    label?: unknown
-    min?: unknown
-    max?: unknown
+    label?: string
+    min?: number
+    max?: number
     [k: string]: unknown
 }
 
 type ValidatorMessages = Record<string, string>
+type ValidationParam = unknown | ParamObject
 
 function isParamObject(value: unknown): value is ParamObject {
     return value !== null && typeof value === 'object' && !Array.isArray(value)
@@ -22,7 +23,15 @@ export default class Validator {
     constructor() {
         this.status = {}
         this.alerts = []
-        this.msgs = (msgs as any)[(config as any).app.lang].alerts
+        const cfg = config as { app?: { lang?: unknown } } | undefined
+        const lang = String(cfg?.app?.lang ?? 'en')
+        const allMsgs = msgs as Record<string, unknown>
+        const langMsgs = allMsgs?.[lang]
+        const alerts =
+            langMsgs && typeof langMsgs === 'object' && 'alerts' in langMsgs
+                ? (langMsgs as { alerts?: unknown }).alerts
+                : undefined
+        this.msgs = (alerts && typeof alerts === 'object' ? alerts : {}) as ValidatorMessages
     }
 
     getStatus() {
@@ -33,14 +42,14 @@ export default class Validator {
         return this.alerts
     }
 
-    private extractValue(param: unknown) {
-        if (isParamObject(param) && 'value' in param) return (param as any).value
+    private extractValue(param: ValidationParam): unknown {
+        if (isParamObject(param)) return param.value
         return param
     }
 
-    private formatValue(type: string, param: unknown) {
+    private formatValue(type: string, param: ValidationParam): unknown {
         if (isParamObject(param)) {
-            if (param.label != null) return param.label
+            if (typeof param.label === 'string') return param.label
             if (type === 'length') return param.value
             try {
                 return JSON.stringify(param)
@@ -55,87 +64,97 @@ export default class Validator {
                 return String(param)
             }
         }
-        return param as any
+        return param
     }
 
-    getMessage(type: string, param: any) {
+    getMessage(type: string, param: ValidationParam): string {
         const value = this.formatValue(type, param)
         switch (type) {
             case 'length': {
-                const min = param?.min
-                const max = param?.max
+                const min = isParamObject(param) ? param.min : undefined
+                const max = isParamObject(param) ? param.max : undefined
                 if (min != null && max != null) {
-                    return this.msgs.lengthRange
+                    return (this.msgs.lengthRange ?? '')
                         .replace('{value}', String(value))
                         .replace('{min}', String(min))
                         .replace('{max}', String(max))
                 }
                 if (min != null) {
-                    return this.msgs.lengthMin
+                    return (this.msgs.lengthMin ?? '')
                         .replace('{value}', String(value))
                         .replace('{min}', String(min))
                 }
                 if (max != null) {
-                    return this.msgs.lengthMax
+                    return (this.msgs.lengthMax ?? '')
                         .replace('{value}', String(value))
                         .replace('{max}', String(max))
                 }
-                return this.msgs.lengthRange
+                return (this.msgs.lengthRange ?? '')
                     .replace('{value}', String(value))
                     .replace('{min}', '0')
                     .replace('{max}', String(Number.MAX_SAFE_INTEGER))
             }
             default: {
-                let msg = this.msgs[type].replace('{value}', String(value))
-                if (param?.min != null) msg = msg.replace('{min}', String(param.min))
-                if (param?.max != null) msg = msg.replace('{max}', String(param.max))
+                let msg = (this.msgs[type] ?? '').replace('{value}', String(value))
+                if (isParamObject(param) && param.min != null)
+                    msg = msg.replace('{min}', String(param.min))
+                if (isParamObject(param) && param.max != null)
+                    msg = msg.replace('{max}', String(param.max))
                 return msg
             }
         }
     }
 
-    validateInt(param: any) {
+    validateInt(param: ValidationParam): boolean {
         const value = this.extractValue(param)
-        if (!isNaN(value as any) && parseInt(value as any) === value && (value as any) > 0)
-            return true
+        if (typeof value === 'number' && Number.isInteger(value) && value > 0) return true
         this.alerts = [this.getMessage('int', param)]
         return false
     }
 
-    validateReal(param: any) {
+    validateReal(param: ValidationParam): boolean {
         const value = this.extractValue(param)
-        if (!isNaN(value as any) && parseFloat(value as any) === value) return true
+        if (typeof value === 'number' && Number.isFinite(value)) return true
         this.alerts = [this.getMessage('real', param)]
         return false
     }
 
-    validateString(param: any) {
+    validateString(param: ValidationParam): boolean {
         const value = this.extractValue(param)
         if (typeof value === 'string') return true
         this.alerts = [this.getMessage('string', param)]
         return false
     }
 
-    validateLength(param: any, min: any, max: any) {
+    validateLength(param: ValidationParam, min?: ValidationParam, max?: ValidationParam): boolean {
         if (!this.validateString(param)) return false
 
-        if (min == null) min = 0
-        else if (!this.validateInt(min)) return false
+        const minValue = min == null ? 0 : this.extractValue(min)
+        const minNum = typeof minValue === 'number' ? minValue : NaN
+        if (!Number.isInteger(minNum) || minNum < 0) {
+            this.alerts = [this.getMessage('int', min ?? minValue)]
+            return false
+        }
 
-        if (max == null) max = Number.MAX_SAFE_INTEGER
-        else if (!this.validateInt(max)) return false
+        const maxValue = max == null ? Number.MAX_SAFE_INTEGER : this.extractValue(max)
+        const maxNum = typeof maxValue === 'number' ? maxValue : NaN
+        if (!Number.isInteger(maxNum) || maxNum < 0) {
+            this.alerts = [this.getMessage('int', max ?? maxValue)]
+            return false
+        }
 
-        const value = this.extractValue(param) as any
-        if (value.length >= min && value.length <= max) return true
+        const value = this.extractValue(param)
+        if (typeof value === 'string' && value.length >= minNum && value.length <= maxNum)
+            return true
         this.alerts = [
             this.getMessage('lengthRange', param)
-                .replace('{min}', String(min))
-                .replace('{max}', String(max)),
+                .replace('{min}', String(minNum))
+                .replace('{max}', String(maxNum)),
         ]
         return false
     }
 
-    validateEmail(param: any) {
+    validateEmail(param: ValidationParam): boolean {
         const value = this.extractValue(param)
         if (
             /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/.test(
@@ -147,57 +166,67 @@ export default class Validator {
         return false
     }
 
-    validateNotEmpty(param: any) {
+    validateNotEmpty(param: ValidationParam): boolean {
         const value = this.extractValue(param)
         if (value !== '') return true
         this.alerts = [this.getMessage('notEmpty', param)]
         return false
     }
 
-    validateBoolean(param: any) {
+    validateBoolean(param: ValidationParam): boolean {
         const value = this.extractValue(param)
         if (typeof value === 'boolean') return true
         this.alerts = [this.getMessage('boolean', param)]
         return false
     }
 
-    validateDate(param: any) {
+    validateDate(param: ValidationParam): boolean {
         const value = this.extractValue(param)
-        if (!isNaN(new Date(value as any).getTime())) return true
+        if (value instanceof Date && !Number.isNaN(value.getTime())) return true
+        if (
+            (typeof value === 'string' || typeof value === 'number') &&
+            !Number.isNaN(new Date(value).getTime())
+        )
+            return true
         this.alerts = [this.getMessage('date', param)]
         return false
     }
 
-    validateArray(param: any) {
+    validateArray(param: ValidationParam): boolean {
         const value = this.extractValue(param)
         if (Array.isArray(value)) return true
         this.alerts = [this.getMessage('array', param)]
         return false
     }
 
-    validateArrayNotEmpty(param: any) {
+    validateArrayNotEmpty(param: ValidationParam): boolean {
         const value = this.extractValue(param)
         if (Array.isArray(value) && value.length > 0) return true
         this.alerts = [this.getMessage('arrayNotEmpty', param)]
         return false
     }
 
-    validateObject(param: any) {
+    validateObject(param: ValidationParam): boolean {
         const value = this.extractValue(param)
-        if (typeof value === 'object') return true
+        if (value != null && typeof value === 'object') return true
         this.alerts = [this.getMessage('object', param)]
         return false
     }
 
-    validateObjectNotEmpty(param: any) {
+    validateObjectNotEmpty(param: ValidationParam): boolean {
         const value = this.extractValue(param)
-        if (typeof value === 'object' && value != null && Object.keys(value as any).length > 0)
+        if (
+            value != null &&
+            typeof value === 'object' &&
+            !Array.isArray(value) &&
+            Object.keys(value as Record<string, unknown>).length > 0
+        )
             return true
         this.alerts = [this.getMessage('objectNotEmpty', param)]
         return false
     }
 
-    validate(value: any, type: string) {
+    validate(value: ValidationParam, type: string): boolean {
         switch (type) {
             case 'int':
                 return this.validateInt(value)
@@ -206,7 +235,11 @@ export default class Validator {
             case 'string':
                 return this.validateString(value)
             case 'length':
-                return this.validateLength(value, value.min, value.max)
+                return this.validateLength(
+                    value,
+                    isParamObject(value) ? value.min : undefined,
+                    isParamObject(value) ? value.max : undefined
+                )
             case 'email':
                 return this.validateEmail(value)
             case 'notEmpty':
@@ -228,28 +261,30 @@ export default class Validator {
         }
     }
 
-    validateAll(params: any, types: any) {
+    validateAll(params: unknown, types: unknown): boolean {
         let flag = true
-        const sts = new Array((params as any).length)
+        const paramsArr = Array.isArray(params) ? params : []
+        const typesArr = Array.isArray(types) ? types : []
+        const sts = new Array(paramsArr.length)
 
-        if (!this.validateArrayNotEmpty(types) || !this.validateArrayNotEmpty(params)) {
+        if (!this.validateArrayNotEmpty(typesArr) || !this.validateArrayNotEmpty(paramsArr)) {
             this.status = { result: false, alerts: ['Parámetros o tipos inválidos'] }
             return false
         }
-        types = (types as any).map((type: any) => String(type).toLowerCase())
+        const normalizedTypes = typesArr.map((t) => String(t).toLowerCase())
 
-        for (let i = 0; i < (params as any).length; i++) {
-            if (!this.validateString(types[i])) {
+        for (let i = 0; i < paramsArr.length; i++) {
+            if (!this.validateString(normalizedTypes[i])) {
                 this.status = { result: false, alerts: ['Tipos inválidos'] }
                 return false
             }
-            sts[i] = this.validate(params[i], types[i])
+            sts[i] = this.validate(paramsArr[i], normalizedTypes[i])
             flag = flag && sts[i]
         }
 
         this.alerts = sts
             .map((s, i) => {
-                if (!s) return this.getMessage(types[i], params[i])
+                if (!s) return this.getMessage(normalizedTypes[i], paramsArr[i])
             })
             .filter((a) => a !== undefined)
 
