@@ -1,21 +1,27 @@
 /*
 Auth Repository
 
-- Isola acceso a DB para el BO.
+- DB access helpers used by AuthBO.
+- Must align with query names in src/config/queries.json.
 */
 
-type UserBaseRow = {
+export type UserRow = {
     user_id: number
+    user_na?: string | null
+    user_em?: string | null
+    email_verified_at?: string | Date | null
+    user_pw?: string | null
+    profile_id?: number | null
+}
+
+export type UserBaseRow = {
+    user_id: number
+    user_na?: string | null
     user_em?: string | null
     email_verified_at?: string | Date | null
 }
 
-type UserRow = {
-    user_id: number
-    user_em?: string | null
-}
-
-type PasswordResetRow = {
+export type PasswordResetRow = {
     reset_id: number
     user_id: number
     expires_at?: string | Date | null
@@ -23,40 +29,33 @@ type PasswordResetRow = {
     attempt_count?: number | null
 }
 
-type OneTimeCodeRow = {
+export type OneTimeCodeRow = {
     code_id: number
     user_id: number
+    purpose?: string | null
+    expires_at?: string | Date | null
+    consumed_at?: string | Date | null
     attempt_count?: number | null
-    meta?: string | Record<string, unknown> | null
+    meta?: any
 }
 
 export class AuthRepository {
-    static _isSafeIdent(value: string): boolean {
-        return /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(value)
-    }
-
-    static _quoteIdent(ident: string): string {
-        if (!AuthRepository._isSafeIdent(ident)) {
-            throw new Error(`Unsafe SQL identifier: ${ident}`)
-        }
-        return `"${ident}"`
-    }
-
+    // --- Users
     static async getUserByEmail(email: string): Promise<UserRow | null> {
         const r = (await db.exe('security', 'getUserByEmail', [email])) as { rows?: UserRow[] }
-        return r.rows?.[0] ?? null
-    }
-
-    static async getUserBaseByEmail(email: string): Promise<UserBaseRow | null> {
-        const r = (await db.exe('security', 'getUserBaseByEmail', [email])) as {
-            rows?: UserBaseRow[]
-        }
         return r.rows?.[0] ?? null
     }
 
     static async getUserByUsername(username: string): Promise<UserRow | null> {
         const r = (await db.exe('security', 'getUserByUsername', [username])) as {
             rows?: UserRow[]
+        }
+        return r.rows?.[0] ?? null
+    }
+
+    static async getUserBaseByEmail(email: string): Promise<UserBaseRow | null> {
+        const r = (await db.exe('security', 'getUserBaseByEmail', [email])) as {
+            rows?: UserBaseRow[]
         }
         return r.rows?.[0] ?? null
     }
@@ -73,14 +72,16 @@ export class AuthRepository {
         email,
         passwordHash,
     }: {
-        username: string
-        email: string
+        username: string | null
+        email: string | null
         passwordHash: string
-    }): Promise<{ user_id: number } | null> {
+    }): Promise<{ user_id: number }> {
         const r = (await db.exe('security', 'insertUser', [username, email, passwordHash])) as {
             rows?: Array<{ user_id: number }>
         }
-        return r.rows?.[0] ?? null
+        const row = r.rows?.[0]
+        if (!row?.user_id) throw new Error('insertUser did not return user_id')
+        return row
     }
 
     static async upsertUserProfile({ userId, profileId }: { userId: number; profileId: number }) {
@@ -93,6 +94,12 @@ export class AuthRepository {
         return true
     }
 
+    static async updateUserLastLogin(userId: number) {
+        await db.exe('security', 'updateUserLastLogin', [userId])
+        return true
+    }
+
+    // --- Password reset
     static async insertPasswordReset({
         userId,
         tokenHash,
@@ -118,7 +125,7 @@ export class AuthRepository {
         ])
     }
 
-    static async invalidateActivePasswordResetsForUser(userId: number) {
+    static async invalidateActivePasswordResetsForUser(userId: number): Promise<boolean> {
         await db.exe('security', 'invalidateActivePasswordResetsForUser', [userId])
         return true
     }
@@ -130,16 +137,17 @@ export class AuthRepository {
         return r.rows?.[0] ?? null
     }
 
-    static async incrementPasswordResetAttempt(resetId: number) {
+    static async incrementPasswordResetAttempt(resetId: number): Promise<boolean> {
         await db.exe('security', 'incrementPasswordResetAttempt', [resetId])
         return true
     }
 
-    static async markPasswordResetUsed(resetId: number) {
+    static async markPasswordResetUsed(resetId: number): Promise<boolean> {
         await db.exe('security', 'markPasswordResetUsed', [resetId])
         return true
     }
 
+    // --- One-time codes (email verification, password reset, etc)
     static async insertOneTimeCode({
         userId,
         purpose,
@@ -152,7 +160,7 @@ export class AuthRepository {
         codeHash: string
         expiresSeconds: number
         meta?: Record<string, unknown>
-    }) {
+    }): Promise<boolean> {
         await db.exe('security', 'insertOneTimeCode', [
             userId,
             purpose,
@@ -163,13 +171,7 @@ export class AuthRepository {
         return true
     }
 
-    static async consumeOneTimeCodesForUserPurpose({
-        userId,
-        purpose,
-    }: {
-        userId: number
-        purpose: string
-    }) {
+    static async consumeOneTimeCodesForUserPurpose({ userId, purpose }: { userId: number; purpose: string }) {
         await db.exe('security', 'consumeOneTimeCodesForUserPurpose', [userId, purpose])
         return true
     }
@@ -191,7 +193,7 @@ export class AuthRepository {
         return r.rows?.[0] ?? null
     }
 
-    static async getValidOneTimeCodeByTokenHash({
+    static async getValidOneTimeCodeForPurposeAndTokenHash({
         purpose,
         tokenHash,
         codeHash,
@@ -208,7 +210,7 @@ export class AuthRepository {
         return r.rows?.[0] ?? null
     }
 
-    static async getActiveOneTimeCodeByTokenHash({
+    static async getActiveOneTimeCodeForPurposeAndTokenHash({
         purpose,
         tokenHash,
     }: {
@@ -222,47 +224,19 @@ export class AuthRepository {
         return r.rows?.[0] ?? null
     }
 
-    static async incrementOneTimeCodeAttempt(codeId: number) {
+    static async incrementOneTimeCodeAttempt(codeId: number): Promise<boolean> {
         await db.exe('security', 'incrementOneTimeCodeAttempt', [codeId])
         return true
     }
 
-    static async consumeOneTimeCode(codeId: number) {
+    static async consumeOneTimeCode(codeId: number): Promise<boolean> {
         await db.exe('security', 'consumeOneTimeCode', [codeId])
         return true
     }
 
-    static async updateUserPassword({
-        userId,
-        passwordHash,
-    }: {
-        userId: number
-        passwordHash: string
-    }) {
+    // --- Password
+    static async updateUserPassword({ userId, passwordHash }: { userId: number; passwordHash: string }): Promise<boolean> {
         await db.exe('security', 'updateUserPassword', [userId, passwordHash])
-        return true
-    }
-
-    // Best-effort: invalidate all sessions after password reset.
-    // Supports only pg-backed sessions (connect-pg-simple).
-    static async deleteSessionsByUserId(userId: number) {
-        const store = config?.session?.store as
-            | { type?: string; schemaName?: string; tableName?: string }
-            | undefined
-        if (!store || store.type !== 'pg') return false
-
-        const schemaName = store.schemaName || 'public'
-        const tableName = store.tableName || 'session'
-
-        const qSchema = AuthRepository._quoteIdent(String(schemaName))
-        const qTable = AuthRepository._quoteIdent(String(tableName))
-
-        const sql = `delete from ${qSchema}.${qTable} where (sess->>'user_id') = $1`
-
-        const maybeDb = db as { exeRaw?: (sql: string, params: string[]) => Promise<unknown> }
-        if (typeof maybeDb.exeRaw !== 'function') throw new Error('db.exeRaw is not available')
-
-        await maybeDb.exeRaw(sql, [String(userId)])
         return true
     }
 }

@@ -1,62 +1,70 @@
 {
-    "es": {
-        "invalidParameters": {
-            "msg": "Parámetros inválidos",
-            "code": 400
-        },
-        "invalidToken": {
-            "msg": "Token inválido",
-            "code": 401
-        },
-        "expiredToken": {
-            "msg": "Token expirado",
-            "code": 401
-        },
-        "tooManyRequests": {
-            "msg": "Demasiados intentos, inténtalo más tarde",
-            "code": 429
-        },
-        "alreadyRegistered": {
-            "msg": "Ya está registrado",
-            "code": 409
-        },
-        "emailNotVerified": {
-            "msg": "Debes verificar tu email antes de iniciar sesión",
-            "code": 403
-        },
-        "unknownError": {
-            "msg": "Error desconocido",
-            "code": 500
-        }
+  "es": {
+    "invalidParameters": {
+      "msg": "Parámetros inválidos",
+      "code": 400
     },
-    "en": {
-        "invalidParameters": {
-            "msg": "Invalid parameters",
-            "code": 400
-        },
-        "invalidToken": {
-            "msg": "Invalid token",
-            "code": 401
-        },
-        "expiredToken": {
-            "msg": "Expired token",
-            "code": 401
-        },
-        "tooManyRequests": {
-            "msg": "Too many attempts, try later",
-            "code": 429
-        },
-        "alreadyRegistered": {
-            "msg": "Already registered",
-            "code": 409
-        },
-        "emailNotVerified": {
-            "msg": "You must verify your email before logging in",
-            "code": 403
-        },
-        "unknownError": {
-            "msg": "Unknown error",
-            "code": 500
-        }
+    "alreadyRegistered": {
+      "msg": "Ya existe una cuenta",
+      "code": 409
+    },
+    "emailRequired": {
+      "msg": "Email requerido",
+      "code": 409
+    },
+    "emailNotVerified": {
+      "msg": "Email no verificado",
+      "code": 403
+    },
+    "invalidToken": {
+      "msg": "Token inválido",
+      "code": 401
+    },
+    "expiredToken": {
+      "msg": "Token expirado",
+      "code": 401
+    },
+    "tooManyRequests": {
+      "msg": "Demasiados intentos, inténtalo más tarde",
+      "code": 429
+    },
+    "unknownError": {
+      "msg": "Error desconocido",
+      "code": 500
     }
+  },
+  "en": {
+    "invalidParameters": {
+      "msg": "Invalid parameters",
+      "code": 400
+    },
+    "alreadyRegistered": {
+      "msg": "Account already exists",
+      "code": 409
+    },
+    "emailRequired": {
+      "msg": "Email required",
+      "code": 409
+    },
+    "emailNotVerified": {
+      "msg": "Email not verified",
+      "code": 403
+    },
+    "invalidToken": {
+      "msg": "Invalid token",
+      "code": 401
+    },
+    "expiredToken": {
+      "msg": "Expired token",
+      "code": 401
+    },
+    "tooManyRequests": {
+      "msg": "Too many attempts, try later",
+      "code": 429
+    },
+    "unknownError": {
+      "msg": "Unknown error",
+      "code": 500
+    }
+  }
 }

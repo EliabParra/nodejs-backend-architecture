@@ -8,10 +8,60 @@ import { pathToFileURL } from 'node:url'
 
 import * as ts from 'typescript'
 
+import {
+    authMethods as presetAuthMethods,
+    templateAuthSuccessMsgs as presetTemplateAuthSuccessMsgs,
+    templateAuthErrorMsgs as presetTemplateAuthErrorMsgs,
+    templateAuthAlertsLabels as presetTemplateAuthAlertsLabels,
+    templateAuthErrorHandler as presetTemplateAuthErrorHandler,
+    templateAuthValidate as presetTemplateAuthValidate,
+    templateAuthRepo as presetTemplateAuthRepo,
+    templateAuthBO as presetTemplateAuthBO,
+} from './bo-auth-preset.js'
+
 const repoRoot = process.cwd()
 
 type BoOptValue = string | boolean
 type BoOpts = Record<string, BoOptValue>
+
+async function promptYesNo(rl: any, question: string, defaultYes = false) {
+    const suffix = defaultYes ? ' [Y/n] ' : ' [y/N] '
+    const ans = String(await rl.question(question + suffix))
+        .trim()
+        .toLowerCase()
+    if (!ans) return defaultYes
+    return ['y', 'yes'].includes(ans)
+}
+
+async function promptChoice(rl: any, question: string, choices: string[], defaultValue: string) {
+    const normalized = choices.map((c) => String(c).trim().toLowerCase())
+    const def = defaultValue != null ? String(defaultValue).trim().toLowerCase() : undefined
+    const suffix = def != null ? ` (${def}) ` : ' '
+
+    while (true) {
+        const ans = String(await rl.question(`${question} (${normalized.join('|')})${suffix}`))
+            .trim()
+            .toLowerCase()
+        const value = ans.length > 0 ? ans : def
+        if (value && normalized.includes(value)) return value
+        console.log(`Please choose one of: ${normalized.join(', ')}`)
+    }
+}
+
+async function promptText(rl: any, question: string, defaultValue: string) {
+    const suffix = defaultValue != null ? ` (${defaultValue}) ` : ' '
+    const ans = String(await rl.question(question + suffix)).trim()
+    return ans.length > 0 ? ans : defaultValue
+}
+
+async function fileExists(filePath: string): Promise<boolean> {
+    try {
+        await fs.access(filePath)
+        return true
+    } catch {
+        return false
+    }
+}
 
 function formatError(err: unknown): string {
     if (err && typeof err === 'object' && 'message' in err) {
@@ -35,14 +85,16 @@ Usage:
 
 Commands:
   new  <ObjectName>            Create BO folder + files
-    auth                         Create Auth BO preset (password reset 2-step)
-  sync <ObjectName>            Read BO methods and upsert to DB (tx mapping)
+        auth                         Create Auth BO preset (register/email verification/password reset)
+    sync [ObjectName]            Read BO methods and upsert to DB (tx mapping)
+                                                            Use --all to sync all BOs under /BO
   list                         List objects/methods/tx from DB
   perms                        Grant/revoke permissions (interactive)
   perms --profile <id> --allow Object.method[,Object.method]
   perms --profile <id> --deny  Object.method[,Object.method]
 
 Options:
+    --yes                        Non-interactive (disable prompts)
   --methods <m1,m2,...>         Methods to scaffold (new)
   --crud                        Scaffold CRUD-style methods (default)
   --force                       Overwrite existing files (new)
@@ -50,15 +102,24 @@ Options:
   --tx <n1,n2,...>              Explicit tx per method (new/sync)
   --txStart <n>                 Starting tx if auto-assigning
   --dry                         Print what would change, do nothing
+    --all                         Sync all BOs (sync)
+    --prune                       Delete stale DB methods (in DB but not in code) (sync)
 
 Notes:
 - After changing tx/perms in DB, restart the server (Security cache loads on startup).
 - Requires DATABASE_URL / PG* env vars or config.json DB settings.
+
+Interactive mode:
+- Run without args in a TTY to choose commands/options.
 `)
 }
 
 function isTty() {
     return Boolean(process.stdin.isTTY && process.stdout.isTTY)
+}
+
+function isInteractive(opts: any): boolean {
+    return isTty() && opts?.yes !== true
 }
 
 function parseArgs(argv: string[]): { args: string[]; opts: BoOpts } {
@@ -127,7 +188,14 @@ async function resolveBoSourceFile(objectName: string): Promise<string> {
         await fs.access(tsPath)
         return tsPath
     } catch {
-        return jsPath
+        try {
+            await fs.access(jsPath)
+            return jsPath
+        } catch {
+            throw new Error(
+                `BO source file not found for ${objectName} (expected ${tsPath} or ${jsPath})`
+            )
+        }
     }
 }
 
@@ -190,9 +258,9 @@ export class ${objectName}ErrorHandler {
     static notFound(): ApiError { return errorMsgs.notFound }
 
     static invalidParameters(alerts?: string[]): ApiError {
-    const { code, msg } = errorMsgs.invalidParameters
-    return { code, msg, alerts: alerts ?? [] }
-  }
+        const { code, msg } = errorMsgs.invalidParameters
+        return { code, msg, alerts: alerts ?? [] }
+    }
 
     static unauthorized(): ApiError { return errorMsgs.unauthorized }
 
@@ -210,31 +278,31 @@ const labels = require('./messages/${objectName.toLowerCase()}Alerts.json')[conf
 
 export class ${objectName}Validate {
     static normalizeId(value: unknown): unknown {
-    return typeof value === 'string' ? Number(value) : value
-  }
+                return typeof value === 'string' ? Number(value) : value
+        }
 
     static normalizeText(value: unknown): unknown {
-    return typeof value === 'string' ? value.trim() : value
-  }
+                return typeof value === 'string' ? value.trim() : value
+        }
 
     static validateId(value: unknown): boolean {
-    const num = this.normalizeId(value)
-    return v.validateInt({ value: num, label: labels.id })
-  }
+                const num = this.normalizeId(value)
+                return v.validateInt({ value: num, label: labels.id })
+        }
 
     static validateName(value: unknown, { min = 1, max = 200 }: { min?: number; max?: number } = {}): boolean {
-    const name = this.normalizeText(value)
-    if (typeof name !== 'string') return v.validateString({ value: name, label: labels.name })
-    return v.validateLength({ value: name, label: labels.name }, min, max)
-  }
+                const name = this.normalizeText(value)
+                if (typeof name !== 'string') return v.validateString({ value: name, label: labels.name })
+                return v.validateLength({ value: name, label: labels.name }, min, max)
+        }
 
-  // Ejemplo de patrón genérico: un lookup puede ser por id o por nombre.
-  // Ajusta esto según tu entidad.
+        // Ejemplo de patrón genérico: un lookup puede ser por id o por nombre.
+        // Ajusta esto según tu entidad.
     static getLookupMode(value: unknown): 'id' | 'name' | null {
         if (this.validateId(value)) return 'id'
         if (this.validateName(value)) return 'name'
-    return null
-  }
+                return null
+        }
 }
 `
 }
@@ -249,39 +317,39 @@ ${objectName}Repository
 
 export class ${objectName} {
     constructor(params: Record<string, unknown>) {
-    Object.assign(this, params)
-  }
+                Object.assign(this, params)
+        }
 }
 
 export class ${objectName}Repository {
-  // Reemplaza 'domain' y 'TODO_*' con tu schema/queries reales.
+        // Reemplaza 'domain' y 'TODO_*' con tu schema/queries reales.
 
     static async getById(id: number): Promise<${objectName} | null> {
-    const r = await db.exe('domain', 'TODO_getById', [id])
-    if (!r?.rows || r.rows.length === 0) return null
-    return new ${objectName}(r.rows[0])
-  }
+                const r = await db.exe('domain', 'TODO_getById', [id])
+                if (!r?.rows || r.rows.length === 0) return null
+                return new ${objectName}(r.rows[0])
+        }
 
     static async getByName(name: string): Promise<${objectName} | null> {
-    const r = await db.exe('domain', 'TODO_getByName', [name])
-    if (!r?.rows || r.rows.length === 0) return null
-    return new ${objectName}(r.rows[0])
-  }
+                const r = await db.exe('domain', 'TODO_getByName', [name])
+                if (!r?.rows || r.rows.length === 0) return null
+                return new ${objectName}(r.rows[0])
+        }
 
     static async create(params: Record<string, unknown>): Promise<boolean> {
-    await db.exe('domain', 'TODO_create', [params])
-    return true
-  }
+                await db.exe('domain', 'TODO_create', [params])
+                return true
+        }
 
     static async update(params: Record<string, unknown>): Promise<boolean> {
-    await db.exe('domain', 'TODO_update', [params])
-    return true
-  }
+                await db.exe('domain', 'TODO_update', [params])
+                return true
+        }
 
     static async delete(params: Record<string, unknown>): Promise<boolean> {
-    await db.exe('domain', 'TODO_delete', [params])
-    return true
-  }
+                await db.exe('domain', 'TODO_delete', [params])
+                return true
+        }
 }
 `
 }
@@ -291,18 +359,22 @@ function templateBO(objectName: string, methods: string[]) {
         .map((m, idx) => {
             const patternComment =
                 idx === 0
-                    ? `      // Patrón recomendado (aplica a todos los métodos):\n      // 1) validar/normalizar (Validate)\n      // 2) ejecutar operación (Repository/servicios)\n      // 3) retornar { code, msg, data?, alerts? }\n\n`
+                    ? `            // Recommended pattern (applies to all methods):\n            // 1) validate/normalize (Validate)\n            // 2) execute operation (Repository/services)\n            // 3) return { code, msg, data?, alerts? }\n\n`
                     : ''
 
-            return `  async ${m}(params: Record<string, unknown> | null | undefined): Promise<ApiResponse> {
-    try {
-${patternComment}      // TODO: valida/normaliza según tu caso
-      // if (!${objectName}Validate.validateX(params)) return ${objectName}ErrorHandler.invalidParameters(v.getAlerts())
+            return `    async ${m}(params: Record<string, unknown> | null | undefined): Promise<ApiResponse> {
+        try {
+${patternComment}            // TODO: validate/normalize
+            // if (!${objectName}Validate.validateX(params)) return ${objectName}ErrorHandler.invalidParameters(v.getAlerts())
 
-      // TODO: implementa tu operación real
-      // const result = await ${objectName}Repository.someOperation(params)
+            // TODO: implement your real operation
+            // const result = await ${objectName}Repository.someOperation(params)
 
-                        return { code: 200, msg: successMsgs.${m} ?? '${escapeTemplateBraces(`${objectName} ${m} OK`)}', data: params ?? null }
+            return {
+                code: 200,
+                msg: successMsgs.${m} ?? '${escapeTemplateBraces(`${objectName} ${m} OK`)}',
+                data: params ?? null,
+            }
         } catch (err: unknown) {
             log.show({
                 type: log.TYPE_ERROR,
@@ -311,20 +383,20 @@ ${patternComment}      // TODO: valida/normaliza según tu caso
                     ', ${objectName}BO.${m}: ' +
                     (err instanceof Error ? err.message : String(err)),
             })
-      return ${objectName}ErrorHandler.unknownError()
-    }
-  }`
+            return ${objectName}ErrorHandler.unknownError()
+        }
+    }`
         })
         .join('\n\n')
 
     return `import { createRequire } from 'node:module'
 const require = createRequire(import.meta.url)
 
-type ApiResponse = { code: number; msg: string; data?: Record<string, unknown> | null; alerts?: string[] }
-
 import { ${objectName}ErrorHandler } from './${objectName}ErrorHandler.js'
 import { ${objectName}Validate } from './${objectName}Validate.js'
 import { ${objectName}Repository } from './${objectName}.js'
+
+type ApiResponse = { code: number; msg: string; data?: Record<string, unknown> | null; alerts?: string[] }
 
 const successMsgs = require('./messages/${objectName.toLowerCase()}SuccessMsgs.json')[config.app.lang] as Record<string, string>
 
@@ -338,448 +410,35 @@ ${methodBodies}
 }
 
 function authMethods() {
-    return ['requestPasswordReset', 'verifyPasswordReset', 'resetPassword']
+    return presetAuthMethods()
 }
 
 function templateAuthSuccessMsgs() {
-    // Keep keys aligned with method names.
-    return (
-        JSON.stringify(
-            {
-                es: {
-                    requestPasswordReset: 'Si existe una cuenta, enviaremos instrucciones al email',
-                    verifyPasswordReset: 'Verificación correcta',
-                    resetPassword: 'Contraseña actualizada',
-                },
-                en: {
-                    requestPasswordReset: 'If an account exists, we will email instructions',
-                    verifyPasswordReset: 'Verification ok',
-                    resetPassword: 'Password updated',
-                },
-            },
-            null,
-            2
-        ) + '\n'
-    )
+    return presetTemplateAuthSuccessMsgs()
 }
 
 function templateAuthErrorMsgs() {
-    return (
-        JSON.stringify(
-            {
-                es: {
-                    invalidParameters: { msg: 'Parámetros inválidos', code: 400 },
-                    invalidToken: { msg: 'Token inválido', code: 401 },
-                    expiredToken: { msg: 'Token expirado', code: 401 },
-                    tooManyRequests: { msg: 'Demasiados intentos, inténtalo más tarde', code: 429 },
-                    unknownError: { msg: 'Error desconocido', code: 500 },
-                },
-                en: {
-                    invalidParameters: { msg: 'Invalid parameters', code: 400 },
-                    invalidToken: { msg: 'Invalid token', code: 401 },
-                    expiredToken: { msg: 'Expired token', code: 401 },
-                    tooManyRequests: { msg: 'Too many attempts, try later', code: 429 },
-                    unknownError: { msg: 'Unknown error', code: 500 },
-                },
-            },
-            null,
-            2
-        ) + '\n'
-    )
+    return presetTemplateAuthErrorMsgs()
 }
 
 function templateAuthAlertsLabels() {
-    return (
-        JSON.stringify(
-            {
-                es: {
-                    labels: {
-                        identifier: 'El email o usuario',
-                        email: 'El email',
-                        token: 'El token',
-                        code: 'El código',
-                        newPassword: 'La nueva contraseña',
-                    },
-                },
-                en: {
-                    labels: {
-                        identifier: 'Email or username',
-                        email: 'Email',
-                        token: 'Token',
-                        code: 'Code',
-                        newPassword: 'New password',
-                    },
-                },
-            },
-            null,
-            2
-        ) + '\n'
-    )
+    return presetTemplateAuthAlertsLabels()
 }
 
 function templateAuthErrorHandler() {
-    return `import { createRequire } from 'node:module'
-const require = createRequire(import.meta.url)
-
-type ApiError = { code: number; msg: string; alerts?: string[] }
-type AuthErrorKey =
-    | 'invalidParameters'
-    | 'invalidToken'
-    | 'expiredToken'
-    | 'tooManyRequests'
-    | 'alreadyRegistered'
-    | 'emailNotVerified'
-    | 'unknownError'
-
-const errorMsgs = require('./messages/authErrorMsgs.json')[config.app.lang] as Record<AuthErrorKey, ApiError>
-
-export class AuthErrorHandler {
-    static invalidParameters(alerts?: string[]): ApiError {
-        const { code, msg } = errorMsgs.invalidParameters
-        return { code, msg, alerts: alerts ?? [] }
-    }
-
-    static invalidToken(): ApiError { return errorMsgs.invalidToken }
-    static expiredToken(): ApiError { return errorMsgs.expiredToken }
-    static tooManyRequests(): ApiError { return errorMsgs.tooManyRequests }
-    static unknownError(): ApiError { return errorMsgs.unknownError }
-}
-`
+    return presetTemplateAuthErrorHandler()
 }
 
 function templateAuthValidate() {
-    return `import { createRequire } from 'node:module'
-const require = createRequire(import.meta.url)
-type AuthLabels = {
-    identifier: string
-    email: string
-    token: string
-    code: string
-    newPassword: string
-}
-
-const labels = require('./messages/authAlerts.json')[config.app.lang].labels as AuthLabels
-
-export class AuthValidate {
-    static normalizeText(value: string | null | undefined): string | undefined {
-        if (typeof value !== 'string') return undefined
-        const trimmed = value.trim()
-        return trimmed.length > 0 ? trimmed : undefined
-    }
-
-    static validateIdentifier(value: string | null | undefined): boolean {
-        const id = this.normalizeText(value)
-        if (!id) return v.validateString({ value: id, label: labels.identifier })
-        return v.validateLength({ value: id, label: labels.identifier }, 3, 320)
-    }
-
-    static validateEmail(value: string | null | undefined): boolean {
-        const email = this.normalizeText(value)
-        if (!email) return v.validateString({ value: email, label: labels.email })
-        return v.validateEmail({ value: email, label: labels.email })
-    }
-
-    static validateToken(value: string | null | undefined): boolean {
-        const token = this.normalizeText(value)
-        if (!token) return v.validateString({ value: token, label: labels.token })
-        return v.validateLength({ value: token, label: labels.token }, 16, 256)
-    }
-
-    static validateCode(value: string | null | undefined): boolean {
-        const code = this.normalizeText(value)
-        if (!code) return v.validateString({ value: code, label: labels.code })
-        return v.validateLength({ value: code, label: labels.code }, 4, 12)
-    }
-
-    static validateNewPassword(value: string | null | undefined, { min = 8, max = 200 }: { min?: number; max?: number } = {}): boolean {
-        const pw = this.normalizeText(value)
-        if (!pw) return v.validateString({ value: pw, label: labels.newPassword })
-        return v.validateLength({ value: pw, label: labels.newPassword }, min, max)
-    }
-}
-`
+    return presetTemplateAuthValidate()
 }
 
 function templateAuthRepo() {
-    return `/*
-Auth Repository
-
-- Isola acceso a DB para el BO.
-*/
-
-type UserRow = { user_id: number; user_em?: string | null }
-type PasswordResetRow = { reset_id: number; user_id: number; expires_at?: string | Date | null; used_at?: string | Date | null; attempt_count?: number | null }
-type OneTimeCodeRow = { code_id: number; user_id: number; attempt_count?: number | null }
-
-export class AuthRepository {
-    static async getUserByEmail(email: string): Promise<UserRow | null> {
-        const r = (await db.exe('security', 'getUserByEmail', [email])) as { rows?: UserRow[] }
-        return r.rows?.[0] ?? null
-    }
-
-    static async getUserByUsername(username: string): Promise<UserRow | null> {
-        const r = (await db.exe('security', 'getUserByUsername', [username])) as { rows?: UserRow[] }
-        return r.rows?.[0] ?? null
-    }
-
-    static async insertPasswordReset({ userId, tokenHash, sentTo, expiresSeconds, ip, userAgent }: { userId: number; tokenHash: string; sentTo: string; expiresSeconds: number; ip?: string | null; userAgent?: string | null }): Promise<void> {
-        await db.exe('security', 'insertPasswordReset', [
-            userId,
-            tokenHash,
-            sentTo,
-            String(expiresSeconds),
-            ip ?? null,
-            userAgent ?? null,
-        ])
-    }
-
-    static async getPasswordResetByTokenHash(tokenHash: string): Promise<PasswordResetRow | null> {
-        const r = (await db.exe('security', 'getPasswordResetByTokenHash', [tokenHash])) as { rows?: PasswordResetRow[] }
-        return r.rows?.[0] ?? null
-    }
-
-    static async incrementPasswordResetAttempt(resetId: number): Promise<boolean> {
-        await db.exe('security', 'incrementPasswordResetAttempt', [resetId])
-        return true
-    }
-
-    static async markPasswordResetUsed(resetId: number): Promise<boolean> {
-        await db.exe('security', 'markPasswordResetUsed', [resetId])
-        return true
-    }
-
-    static async insertOneTimeCode({ userId, purpose, codeHash, expiresSeconds, meta }: { userId: number; purpose: string; codeHash: string; expiresSeconds: number; meta?: Record<string, unknown> }): Promise<boolean> {
-        await db.exe('security', 'insertOneTimeCode', [
-            userId,
-            purpose,
-            codeHash,
-            String(expiresSeconds),
-            JSON.stringify(meta ?? {}),
-        ])
-        return true
-    }
-
-    static async getValidOneTimeCode({ userId, purpose, codeHash }: { userId: number; purpose: string; codeHash: string }): Promise<OneTimeCodeRow | null> {
-        const r = (await db.exe('security', 'getValidOneTimeCodeForPurpose', [userId, purpose, codeHash])) as { rows?: OneTimeCodeRow[] }
-        return r.rows?.[0] ?? null
-    }
-
-    static async incrementOneTimeCodeAttempt(codeId: number): Promise<boolean> {
-        await db.exe('security', 'incrementOneTimeCodeAttempt', [codeId])
-        return true
-    }
-
-    static async consumeOneTimeCode(codeId: number): Promise<boolean> {
-        await db.exe('security', 'consumeOneTimeCode', [codeId])
-        return true
-    }
-
-    static async updateUserPassword({ userId, passwordHash }: { userId: number; passwordHash: string }): Promise<boolean> {
-        await db.exe('security', 'updateUserPassword', [userId, passwordHash])
-        return true
-    }
-}
-`
+    return presetTemplateAuthRepo()
 }
 
 function templateAuthBO() {
-    // Note: BO lives under /BO and is dynamically imported by Security.
-    // It can still import src/* via relative path.
-    return `import { createRequire } from 'node:module'
-const require = createRequire(import.meta.url)
-
-type ApiResponse = { code: number; msg: string; data?: Record<string, unknown> | null; alerts?: string[] }
-
-import bcrypt from 'bcryptjs'
-import { createHash, randomBytes } from 'node:crypto'
-
-import { AuthErrorHandler } from './AuthErrorHandler.js'
-import { AuthValidate } from './AuthValidate.js'
-import { AuthRepository } from './Auth.js'
-import EmailService from '../../src/BSS/EmailService.js'
-
-const successMsgs = require('./messages/authSuccessMsgs.json')[config.app.lang] as Record<string, string>
-const email = new EmailService()
-
-function sha256Hex(value: string): string {
-    return createHash('sha256').update(value, 'utf8').digest('hex')
-}
-
-function isEmail(value: string): boolean {
-    return value.includes('@')
-}
-
-function getString(obj: Record<string, unknown> | null | undefined, key: string): string | undefined {
-    const v = obj?.[key]
-    return typeof v === 'string' ? v : undefined
-}
-
-export class AuthBO {
-    async requestPasswordReset(params: Record<string, unknown> | null | undefined): Promise<ApiResponse> {
-        try {
-            const identifier = getString(params, 'identifier')
-            if (!AuthValidate.validateIdentifier(identifier)) {
-                return AuthErrorHandler.invalidParameters(v.getAlerts())
-            }
-
-            // Avoid account enumeration: always return success.
-            let user = null
-            if (identifier && isEmail(identifier)) user = await AuthRepository.getUserByEmail(identifier)
-            else if (identifier) user = await AuthRepository.getUserByUsername(identifier)
-
-            if (!user || !user.user_em) {
-                return { code: 200, msg: successMsgs.requestPasswordReset ?? 'OK' }
-            }
-
-            const expiresSeconds = Number(config?.auth?.passwordResetExpiresSeconds ?? 900)
-            const maxAttempts = Number(config?.auth?.passwordResetMaxAttempts ?? 5)
-            const purpose = String(config?.auth?.passwordResetPurpose ?? 'password_reset')
-
-            const token = randomBytes(32).toString('hex')
-            const code = String(Math.floor(100000 + Math.random() * 900000))
-            const tokenHash = sha256Hex(token)
-            const codeHash = sha256Hex(code)
-
-            await AuthRepository.insertPasswordReset({
-                userId: user.user_id,
-                tokenHash,
-                sentTo: user.user_em,
-                expiresSeconds,
-                ip: null,
-                userAgent: null,
-            })
-            await AuthRepository.insertOneTimeCode({
-                userId: user.user_id,
-                purpose,
-                codeHash,
-                expiresSeconds,
-                meta: { tokenHash, maxAttempts },
-            })
-
-            await email.sendPasswordReset({
-                to: user.user_em,
-                token,
-                code,
-                appName: config?.app?.name,
-            })
-
-            return { code: 200, msg: successMsgs.requestPasswordReset ?? 'OK' }
-        } catch (err) {
-            log.show({
-                type: log.TYPE_ERROR,
-                msg:
-                    msgs[config.app.lang].errors.server.serverError.msg +
-                    ', AuthBO.requestPasswordReset: ' +
-                    String(err?.message || err),
-            })
-            return AuthErrorHandler.unknownError()
-        }
-    }
-
-    async verifyPasswordReset(params: Record<string, unknown> | null | undefined): Promise<ApiResponse> {
-        try {
-            const token = getString(params, 'token')
-            const code = getString(params, 'code')
-            if (!AuthValidate.validateToken(token) || !AuthValidate.validateCode(code)) {
-                return AuthErrorHandler.invalidParameters(v.getAlerts())
-            }
-            if (!token || !code) {
-                return AuthErrorHandler.invalidParameters(v.getAlerts())
-            }
-
-            const purpose = String(config?.auth?.passwordResetPurpose ?? 'password_reset')
-            const tokenHash = sha256Hex(token)
-            const reset = await AuthRepository.getPasswordResetByTokenHash(tokenHash)
-            if (!reset || reset.used_at) return AuthErrorHandler.invalidToken()
-
-            const expiresAt = reset.expires_at ? new Date(reset.expires_at) : null
-            if (!expiresAt || Number.isNaN(expiresAt.getTime()) || expiresAt.getTime() <= Date.now()) {
-                return AuthErrorHandler.expiredToken()
-            }
-
-            const codeHash = sha256Hex(code)
-            const otp = await AuthRepository.getValidOneTimeCode({ userId: reset.user_id, purpose, codeHash })
-            if (!otp) {
-                try { await AuthRepository.incrementPasswordResetAttempt(reset.reset_id) } catch {}
-                return AuthErrorHandler.invalidToken()
-            }
-
-            const attempts = Number(otp.attempt_count ?? 0)
-            const maxAttempts = Number(config?.auth?.passwordResetMaxAttempts ?? 5)
-            if (Number.isFinite(maxAttempts) && attempts >= maxAttempts) {
-                return AuthErrorHandler.tooManyRequests()
-            }
-
-            return { code: 200, msg: successMsgs.verifyPasswordReset ?? 'OK' }
-        } catch (err) {
-            log.show({
-                type: log.TYPE_ERROR,
-                msg:
-                    msgs[config.app.lang].errors.server.serverError.msg +
-                    ', AuthBO.verifyPasswordReset: ' +
-                    String(err?.message || err),
-            })
-            return AuthErrorHandler.unknownError()
-        }
-    }
-
-    async resetPassword(params: Record<string, unknown> | null | undefined): Promise<ApiResponse> {
-        try {
-            const token = getString(params, 'token')
-            const code = getString(params, 'code')
-            const newPassword = getString(params, 'newPassword')
-
-            if (!AuthValidate.validateToken(token) || !AuthValidate.validateCode(code) || !AuthValidate.validateNewPassword(newPassword, { min: 8, max: 200 })) {
-                return AuthErrorHandler.invalidParameters(v.getAlerts())
-            }
-            if (!token || !code) {
-                return AuthErrorHandler.invalidParameters(v.getAlerts())
-            }
-
-            const purpose = String(config?.auth?.passwordResetPurpose ?? 'password_reset')
-            const tokenHash = sha256Hex(token)
-            const reset = await AuthRepository.getPasswordResetByTokenHash(tokenHash)
-            if (!reset || reset.used_at) return AuthErrorHandler.invalidToken()
-
-            const expiresAt = reset.expires_at ? new Date(reset.expires_at) : null
-            if (!expiresAt || Number.isNaN(expiresAt.getTime()) || expiresAt.getTime() <= Date.now()) {
-                return AuthErrorHandler.expiredToken()
-            }
-
-            const codeHash = sha256Hex(code)
-            const otp = await AuthRepository.getValidOneTimeCode({ userId: reset.user_id, purpose, codeHash })
-            if (!otp) {
-                try { await AuthRepository.incrementPasswordResetAttempt(reset.reset_id) } catch {}
-                return AuthErrorHandler.invalidToken()
-            }
-
-            const attempts = Number(otp.attempt_count ?? 0)
-            const maxAttempts = Number(config?.auth?.passwordResetMaxAttempts ?? 5)
-            if (Number.isFinite(maxAttempts) && attempts >= maxAttempts) {
-                return AuthErrorHandler.tooManyRequests()
-            }
-
-            const hash = await bcrypt.hash(String(newPassword), 10)
-            await AuthRepository.updateUserPassword({ userId: reset.user_id, passwordHash: hash })
-
-            // Best effort: consume code + mark reset used.
-            try { await AuthRepository.consumeOneTimeCode(otp.code_id) } catch {}
-            try { await AuthRepository.markPasswordResetUsed(reset.reset_id) } catch {}
-
-            return { code: 200, msg: successMsgs.resetPassword ?? 'OK' }
-        } catch (err) {
-            log.show({
-                type: log.TYPE_ERROR,
-                msg:
-                    msgs[config.app.lang].errors.server.serverError.msg +
-                    ', AuthBO.resetPassword: ' +
-                    String(err?.message || err),
-            })
-            return AuthErrorHandler.unknownError()
-        }
-    }
-}
-`
+    return presetTemplateAuthBO()
 }
 
 function parseMethodsFromBO(fileContent: string): string[] {
@@ -811,6 +470,8 @@ async function ensureDbQueries() {
         'grantPermission',
         'revokePermission',
         'listPermissionsByProfile',
+        'deleteMethodByName',
+        'deleteObjectIfNoMethods',
     ]
     const missing = required.filter((k) => !queries?.security?.[k])
     if (missing.length > 0) {
@@ -824,23 +485,30 @@ async function getNextTx() {
 }
 
 async function upsertMethodsToDb(objectName: string, methods: string[], opts: any) {
-    await ensureDbQueries()
+    // In dry mode we should not require DB connectivity.
+    if (!opts.dry) await ensureDbQueries()
 
     // Ask developer for tx numbers when doing real DB writes and none were specified.
-    if (!opts.dry && opts.db && !opts.tx && opts.txStart == null && isTty()) {
+    if (!opts.dry && !opts.tx && opts.txStart == null && isInteractive(opts)) {
         const nextTx = await getNextTx()
         const rl = readline.createInterface({ input: process.stdin, output: process.stdout })
         try {
             console.log('Methods:', methods.join(', '))
-            const ans = String(
-                await rl.question(
-                    `TX mapping: enter comma-separated tx (same count) OR press enter to auto-assign from txStart=${nextTx}: `
-                )
-            ).trim()
-            if (ans.length > 0) {
+            const mode = await promptChoice(rl, 'TX mapping mode', ['auto', 'explicit'], 'auto')
+
+            if (mode === 'explicit') {
+                const ans = String(
+                    await rl.question(
+                        `Enter comma-separated tx numbers (same count=${methods.length}): `
+                    )
+                ).trim()
+                if (ans.length === 0) {
+                    throw new Error('Explicit tx mapping selected but no tx list was provided')
+                }
                 opts.tx = ans
             } else {
-                opts.txStart = String(nextTx)
+                const start = await promptText(rl, 'txStart', String(nextTx))
+                opts.txStart = String(start)
             }
         } finally {
             rl.close()
@@ -855,7 +523,7 @@ async function upsertMethodsToDb(objectName: string, methods: string[], opts: an
     let txStart = opts.txStart != null ? Number(opts.txStart) : undefined
     if (!Number.isFinite(txStart)) txStart = undefined
 
-    let next = txStart ?? (await getNextTx())
+    let next = txStart ?? (opts.dry ? 1 : await getNextTx())
     const mapping = []
 
     for (let i = 0; i < methods.length; i++) {
@@ -876,6 +544,178 @@ async function upsertMethodsToDb(objectName: string, methods: string[], opts: an
     }
 
     return mapping
+}
+
+type SyncObject = { objectName: string; boFile: string; methods: string[] }
+
+async function discoverRepoBOs(): Promise<SyncObject[]> {
+    const boRoot = path.join(repoRoot, 'BO')
+    const entries = await fs.readdir(boRoot, { withFileTypes: true })
+    const objects: SyncObject[] = []
+
+    for (const e of entries) {
+        if (!e.isDirectory()) continue
+        const objectName = e.name
+        // Best-effort filter: only PascalCase folders.
+        if (!/^[A-Z][A-Za-z0-9]*$/.test(objectName)) continue
+
+        try {
+            const boFile = await resolveBoSourceFile(objectName)
+            const content = await fs.readFile(boFile, 'utf8')
+            const methods = parseMethodsFromBO(content).filter((m) => !m.startsWith('_'))
+            if (methods.length === 0) continue
+            objects.push({ objectName, boFile, methods })
+        } catch {
+            // Ignore folders without a BO file.
+        }
+    }
+
+    objects.sort((a, b) => a.objectName.localeCompare(b.objectName))
+    return objects
+}
+
+function computeStaleMethods(dbRows: any[], codeObjects: SyncObject[]) {
+    const codeMap = new Map<string, Set<string>>()
+    for (const o of codeObjects) {
+        codeMap.set(o.objectName, new Set(o.methods))
+    }
+
+    const stale: Array<{ objectName: string; methodName: string; tx?: number }> = []
+    for (const r of dbRows ?? []) {
+        const objectName = String(r.object_na)
+        const methodName = String(r.method_na)
+        const tx = Number(r.tx_nu)
+        const codeMethods = codeMap.get(objectName)
+        if (!codeMethods || !codeMethods.has(methodName)) {
+            stale.push({ objectName, methodName, tx: Number.isFinite(tx) ? tx : undefined })
+        }
+    }
+
+    stale.sort((a, b) =>
+        a.objectName === b.objectName
+            ? String(a.methodName).localeCompare(String(b.methodName))
+            : String(a.objectName).localeCompare(String(b.objectName))
+    )
+
+    return stale
+}
+
+function buildDbMethodsIndex(dbRows: any[]) {
+    const index = new Map<string, Set<string>>()
+    for (const r of dbRows ?? []) {
+        const objectName = String(r.object_na)
+        const methodName = String(r.method_na)
+        if (!index.has(objectName)) index.set(objectName, new Set())
+        index.get(objectName)!.add(methodName)
+    }
+    return index
+}
+
+function diffObjectMethods(objectName: string, codeMethods: string[], dbMethodSet?: Set<string>) {
+    const codeSet = new Set<string>(codeMethods)
+    const dbSet = dbMethodSet ?? new Set<string>()
+
+    const inBoth = Array.from(codeSet)
+        .filter((m) => dbSet.has(m))
+        .sort()
+    const missingInDb = Array.from(codeSet)
+        .filter((m) => !dbSet.has(m))
+        .sort()
+    const staleInDb = Array.from(dbSet)
+        .filter((m) => !codeSet.has(m))
+        .sort()
+
+    return { inBoth, missingInDb, staleInDb }
+}
+
+function printSyncSummary(summary: {
+    scopeLabel: string
+    objects: Array<{
+        objectName: string
+        inBoth: string[]
+        missingInDb: string[]
+        staleInDb: string[]
+    }>
+}) {
+    const totalExisting = summary.objects.reduce((n, o) => n + o.inBoth.length, 0)
+    const totalMissing = summary.objects.reduce((n, o) => n + o.missingInDb.length, 0)
+    const totalStale = summary.objects.reduce((n, o) => n + o.staleInDb.length, 0)
+
+    console.log(`Sync summary (${summary.scopeLabel}):`)
+    console.log(`  existing (code ∩ db): ${totalExisting}`)
+    console.log(`  to add   (code − db): ${totalMissing}`)
+    console.log(`  to prune (db − code): ${totalStale}`)
+
+    const changed = summary.objects.filter(
+        (o) => o.missingInDb.length > 0 || o.staleInDb.length > 0
+    )
+    if (changed.length === 0) return
+
+    console.log('Changes by object:')
+    for (const o of changed) {
+        const parts = []
+        if (o.missingInDb.length > 0) parts.push(`add=${o.missingInDb.length}`)
+        if (o.staleInDb.length > 0) parts.push(`prune=${o.staleInDb.length}`)
+        console.log(`  - ${o.objectName}: ${parts.join('  ')}`)
+    }
+}
+
+async function pruneStaleMethods(
+    stale: Array<{ objectName: string; methodName: string }>,
+    opts: any
+) {
+    if (stale.length === 0) return { deleted: 0 }
+    await ensureDbQueries()
+
+    const affectedObjects = Array.from(new Set(stale.map((s) => s.objectName)))
+
+    if (opts.dry) {
+        console.log('DRY RUN: would delete stale DB methods:')
+        stale.forEach((s) => console.log(`  - ${s.objectName}.${s.methodName}`))
+        console.log('DRY RUN: would also delete empty objects (no remaining methods):')
+        affectedObjects.forEach((o) => console.log(`  - ${o}`))
+        return { deleted: stale.length }
+    }
+
+    // Non-interactive safety: only prune when explicitly requested AND confirmed via --yes.
+    if (!isInteractive(opts) && opts.prune !== true) {
+        console.log(
+            `Detected ${stale.length} stale DB methods (in DB but not in code). Use --prune to delete them.`
+        )
+        return { deleted: 0 }
+    }
+
+    let okToDelete = Boolean(opts.yes)
+    if (!okToDelete && isInteractive(opts)) {
+        console.log('Detected methods present in DB but not in code:')
+        stale.slice(0, 50).forEach((s) => console.log(`  - ${s.objectName}.${s.methodName}`))
+        if (stale.length > 50) console.log(`  ...and ${stale.length - 50} more`)
+        console.log('Deleting a method will also delete its permissions (cascade).')
+
+        const rl = readline.createInterface({ input: process.stdin, output: process.stdout })
+        try {
+            okToDelete = await promptYesNo(
+                rl,
+                'Delete these stale DB methods now? (in DB but not in code)',
+                false
+            )
+        } finally {
+            rl.close()
+        }
+    }
+
+    if (!okToDelete) return { deleted: 0 }
+
+    for (const s of stale) {
+        await db.exe('security', 'deleteMethodByName', [s.objectName, s.methodName])
+    }
+
+    // Clean up empty objects (only if they have no methods left).
+    for (const o of affectedObjects) {
+        await db.exe('security', 'deleteObjectIfNoMethods', [o])
+    }
+
+    return { deleted: stale.length }
 }
 
 async function cmdAuth(opts: any) {
@@ -980,6 +820,69 @@ async function cmdNew(objectName: string, opts: any) {
 }
 
 async function cmdSync(objectName: string, opts: any) {
+    // Sync all BOs mode.
+    if (opts.all === true) {
+        const codeObjects = await discoverRepoBOs()
+        if (codeObjects.length === 0) throw new Error('No BOs found under /BO')
+
+        console.log(`Discovered ${codeObjects.length} BOs in repo.`)
+
+        if (opts.dry) {
+            console.log(
+                'DRY RUN: cannot diff against DB without connecting. Showing code-only list:'
+            )
+            codeObjects.forEach((o) =>
+                console.log(`  - ${o.objectName}: ${o.methods.length} methods`)
+            )
+            return
+        }
+
+        await ensureDbQueries()
+
+        const dbMethods = await db.exe('security', 'listMethods', null)
+        const dbIndex = buildDbMethodsIndex(dbMethods.rows ?? [])
+
+        const perObject = codeObjects.map((o) => {
+            const diff = diffObjectMethods(o.objectName, o.methods, dbIndex.get(o.objectName))
+            return { objectName: o.objectName, ...diff }
+        })
+
+        printSyncSummary({ scopeLabel: 'all BOs', objects: perObject })
+
+        let proceed = true
+        if (isInteractive(opts)) {
+            const rl = readline.createInterface({ input: process.stdin, output: process.stdout })
+            try {
+                proceed = await promptYesNo(rl, 'Apply these changes to DB now?', true)
+            } finally {
+                rl.close()
+            }
+        }
+        if (!proceed) return
+
+        // Apply inserts for missing methods only (do not touch existing).
+        for (const o of codeObjects) {
+            const diff = diffObjectMethods(o.objectName, o.methods, dbIndex.get(o.objectName))
+            if (diff.missingInDb.length === 0) continue
+            const mapping = await upsertMethodsToDb(o.objectName, diff.missingInDb, opts)
+            console.log(`Synced ${o.objectName} new methods:`, mapping)
+        }
+
+        // Optionally prune stale DB methods.
+        const stale = computeStaleMethods(dbMethods.rows ?? [], codeObjects)
+        if (stale.length > 0) {
+            const result = await pruneStaleMethods(
+                stale.map((s) => ({ objectName: s.objectName, methodName: s.methodName })),
+                opts
+            )
+            if (result.deleted > 0) console.log(`Pruned ${result.deleted} stale DB methods.`)
+        }
+
+        console.log('Sync-all complete. Restart the server to reload Security cache.')
+        return
+    }
+
+    // Single-object sync.
     validateObjectName(objectName)
     const boFile = await resolveBoSourceFile(objectName)
     const content = await fs.readFile(boFile, 'utf8')
@@ -987,8 +890,57 @@ async function cmdSync(objectName: string, opts: any) {
 
     if (methods.length === 0) throw new Error(`No methods found in ${boFile}`)
 
-    const mapping = await upsertMethodsToDb(objectName, methods, opts)
-    console.log(`Synced ${objectName} methods:`, mapping)
+    if (opts.dry) {
+        console.log(`DRY RUN: methods discovered in ${boFile}:`)
+        console.log(methods.join(', '))
+        // Keep historical behavior: show the would-upsert mapping without touching DB.
+        const mapping = await upsertMethodsToDb(objectName, methods, opts)
+        console.log(`DRY RUN: sync would upsert ${objectName} methods:`, mapping)
+        console.log('DRY RUN: cannot diff against DB without connecting.')
+        return
+    }
+
+    await ensureDbQueries()
+    const existing = await db.exe('security', 'listMethodsByObject', [objectName])
+    const existingSet = new Set<string>((existing.rows ?? []).map((r: any) => String(r.method_na)))
+    const diff = diffObjectMethods(objectName, methods, existingSet)
+
+    printSyncSummary({
+        scopeLabel: objectName,
+        objects: [
+            {
+                objectName,
+                inBoth: diff.inBoth,
+                missingInDb: diff.missingInDb,
+                staleInDb: diff.staleInDb,
+            },
+        ],
+    })
+
+    let proceed = true
+    if (isInteractive(opts)) {
+        const rl = readline.createInterface({ input: process.stdin, output: process.stdout })
+        try {
+            proceed = await promptYesNo(rl, 'Apply these changes to DB now?', true)
+        } finally {
+            rl.close()
+        }
+    }
+    if (!proceed) return
+
+    if (diff.missingInDb.length > 0) {
+        const mapping = await upsertMethodsToDb(objectName, diff.missingInDb, opts)
+        console.log(`Synced ${objectName} new methods:`, mapping)
+    } else {
+        console.log(`No new methods to add for ${objectName}.`)
+    }
+
+    if (diff.staleInDb.length > 0) {
+        const stale = diff.staleInDb.map((m) => ({ objectName, methodName: m }))
+        const result = await pruneStaleMethods(stale, opts)
+        if (result.deleted > 0) console.log(`Pruned ${result.deleted} stale DB methods.`)
+    }
+
     console.log('Restart the server to reload Security cache.')
 }
 
@@ -1101,7 +1053,206 @@ async function cmdPerms(opts: any) {
 
 async function main() {
     const { args, opts } = parseArgs(process.argv.slice(2))
-    const cmd = args[0]
+    let cmd = args[0]
+
+    // If no command is provided and we're in a real terminal, offer an interactive menu.
+    if (!cmd && isInteractive(opts)) {
+        const rl = readline.createInterface({ input: process.stdin, output: process.stdout })
+        try {
+            cmd = await promptChoice(
+                rl,
+                'Command',
+                ['new', 'auth', 'sync', 'list', 'perms', 'help'],
+                'new'
+            )
+
+            if (cmd === 'new') {
+                if (!args[1]) {
+                    args[1] = await promptText(rl, 'ObjectName (PascalCase)', 'MyObject')
+                }
+
+                if (!opts.methods && !opts.crud) {
+                    const mode = await promptChoice(
+                        rl,
+                        'Scaffold methods',
+                        ['crud', 'custom'],
+                        'crud'
+                    )
+                    if (mode === 'custom') {
+                        const m = await promptText(rl, 'Methods (comma-separated)', '')
+                        if (m.trim().length > 0) opts.methods = m
+                    } else {
+                        opts.crud = true
+                    }
+                }
+
+                if (opts.force == null) {
+                    const baseDir = path.join(repoRoot, 'BO', String(args[1]))
+                    const boPath = path.join(baseDir, `${String(args[1])}BO.ts`)
+                    const anyExists = await fileExists(boPath)
+                    if (anyExists) {
+                        opts.force = await promptYesNo(
+                            rl,
+                            'Files exist. Overwrite (--force)?',
+                            false
+                        )
+                    }
+                }
+
+                if (opts.db == null) {
+                    opts.db = await promptYesNo(rl, 'Also upsert methods to DB now (--db)?', false)
+                }
+
+                // If we will write to DB, ask TX mapping preferences up-front.
+                if (opts.db === true && !opts.tx && opts.txStart == null) {
+                    const methodsForCount =
+                        typeof opts.methods === 'string' && String(opts.methods).trim().length > 0
+                            ? parseCsv(opts.methods)
+                            : crudMethods(String(args[1]))
+
+                    const mode = await promptChoice(
+                        rl,
+                        'TX mapping mode',
+                        ['auto', 'explicit'],
+                        'auto'
+                    )
+                    if (mode === 'explicit') {
+                        console.log('Methods (order matters):')
+                        methodsForCount.forEach((m, i) => console.log(`  [${i + 1}] ${m}`))
+                        const ans = await promptText(
+                            rl,
+                            `Enter comma-separated tx numbers (same count=${methodsForCount.length})`,
+                            ''
+                        )
+                        if (ans.trim().length > 0) opts.tx = ans
+                    } else {
+                        try {
+                            await ensureDbQueries()
+                            const nextTx = await getNextTx()
+                            const start = await promptText(rl, 'txStart', String(nextTx))
+                            if (String(start).trim().length > 0) opts.txStart = String(start)
+                        } catch {
+                            // If DB isn't available yet, upsertMethodsToDb will prompt later.
+                        }
+                    }
+                }
+            }
+
+            if (cmd === 'auth') {
+                const authBoPath = path.join(repoRoot, 'BO', 'Auth', 'AuthBO.ts')
+                const exists = await fileExists(authBoPath)
+                if (exists && opts.force == null) {
+                    opts.force = await promptYesNo(
+                        rl,
+                        'Auth BO exists. Overwrite preset files (--force)?',
+                        false
+                    )
+                }
+                if (opts.db == null) {
+                    opts.db = await promptYesNo(
+                        rl,
+                        'Also upsert Auth methods to DB now (--db)?',
+                        false
+                    )
+                }
+
+                if (opts.db === true && !opts.tx && opts.txStart == null) {
+                    const methodsForCount = authMethods()
+                    const mode = await promptChoice(
+                        rl,
+                        'TX mapping mode',
+                        ['auto', 'explicit'],
+                        'auto'
+                    )
+                    if (mode === 'explicit') {
+                        console.log('Auth methods (order matters):')
+                        methodsForCount.forEach((m, i) => console.log(`  [${i + 1}] ${m}`))
+                        const ans = await promptText(
+                            rl,
+                            `Enter comma-separated tx numbers (same count=${methodsForCount.length})`,
+                            ''
+                        )
+                        if (ans.trim().length > 0) opts.tx = ans
+                    } else {
+                        try {
+                            await ensureDbQueries()
+                            const nextTx = await getNextTx()
+                            const start = await promptText(rl, 'txStart', String(nextTx))
+                            if (String(start).trim().length > 0) opts.txStart = String(start)
+                        } catch {
+                            // If DB isn't available yet, upsertMethodsToDb will prompt later.
+                        }
+                    }
+                }
+            }
+
+            if (cmd === 'sync') {
+                if (opts.all == null) {
+                    opts.all = await promptYesNo(rl, 'Sync all BOs (--all)?', false)
+                }
+
+                if (opts.all !== true && !args[1]) {
+                    args[1] = await promptText(rl, 'ObjectName to sync', 'Auth')
+                }
+                if (opts.dry == null) {
+                    opts.dry = await promptYesNo(rl, 'Dry run (--dry)?', false)
+                }
+
+                if (opts.prune == null && !opts.dry) {
+                    opts.prune = await promptYesNo(
+                        rl,
+                        'Delete stale DB methods (in DB but not in code)? (--prune)',
+                        false
+                    )
+                }
+
+                // If we will write to DB, ask TX mapping preferences up-front.
+                if (!opts.dry && !opts.tx && opts.txStart == null) {
+                    const mode = await promptChoice(
+                        rl,
+                        'TX mapping mode',
+                        ['auto', 'explicit'],
+                        'auto'
+                    )
+                    if (mode === 'explicit') {
+                        // Best-effort: show methods in this BO to make tx entry easier.
+                        try {
+                            validateObjectName(args[1])
+                            const boFile = await resolveBoSourceFile(String(args[1]))
+                            const content = await fs.readFile(boFile, 'utf8')
+                            const methods = parseMethodsFromBO(content).filter(
+                                (m) => !m.startsWith('_')
+                            )
+                            if (methods.length > 0) {
+                                console.log('Methods (order matters):')
+                                methods.forEach((m, i) => console.log(`  [${i + 1}] ${m}`))
+                            }
+                        } catch {
+                            // If we can't read/parse here, cmdSync/upsertMethodsToDb will still guide later.
+                        }
+                        const ans = await promptText(
+                            rl,
+                            `Enter comma-separated tx numbers (same count as methods)`,
+                            ''
+                        )
+                        if (ans.trim().length > 0) opts.tx = ans
+                    } else {
+                        // Best-effort: fetch nextTx to offer a good default.
+                        try {
+                            await ensureDbQueries()
+                            const nextTx = await getNextTx()
+                            const start = await promptText(rl, 'txStart', String(nextTx))
+                            if (String(start).trim().length > 0) opts.txStart = String(start)
+                        } catch {
+                            // If DB isn't available yet, upsertMethodsToDb will prompt later.
+                        }
+                    }
+                }
+            }
+        } finally {
+            rl.close()
+        }
+    }
 
     if (!cmd || cmd === 'help' || cmd === '--help' || cmd === '-h') {
         printHelp()
@@ -1110,6 +1261,18 @@ async function main() {
 
     try {
         if (cmd === 'new') {
+            // In TTY, allow prompting for missing object name.
+            if (!args[1] && isInteractive(opts)) {
+                const rl = readline.createInterface({
+                    input: process.stdin,
+                    output: process.stdout,
+                })
+                try {
+                    args[1] = await promptText(rl, 'ObjectName (PascalCase)', 'MyObject')
+                } finally {
+                    rl.close()
+                }
+            }
             await cmdNew(args[1], opts)
             return
         }
@@ -1118,6 +1281,17 @@ async function main() {
             return
         }
         if (cmd === 'sync') {
+            if (opts.all !== true && !args[1] && isInteractive(opts)) {
+                const rl = readline.createInterface({
+                    input: process.stdin,
+                    output: process.stdout,
+                })
+                try {
+                    args[1] = await promptText(rl, 'ObjectName to sync', 'Auth')
+                } finally {
+                    rl.close()
+                }
+            }
             await cmdSync(args[1], opts)
             return
         }

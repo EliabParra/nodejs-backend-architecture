@@ -1,6 +1,5 @@
 import { createRequire } from 'node:module'
 const require = createRequire(import.meta.url)
-
 type AuthLabels = {
     identifier: string
     email: string
@@ -32,19 +31,13 @@ export class AuthValidate {
         return v.validateEmail({ value: email, label: labels.email })
     }
 
-    static validateUsername(
-        value: string | null | undefined,
-        { min = 3, max = 64 }: { min?: number; max?: number } = {}
-    ): boolean {
+    static validateUsername(value: string | null | undefined): boolean {
         const username = this.normalizeText(value)
         if (!username) return v.validateString({ value: username, label: labels.username })
-        return v.validateLength({ value: username, label: labels.username }, min, max)
+        return v.validateLength({ value: username, label: labels.username }, 3, 80)
     }
 
-    static validatePassword(
-        value: string | null | undefined,
-        { min = 8, max = 200 }: { min?: number; max?: number } = {}
-    ): boolean {
+    static validatePassword(value: string | null | undefined, { min = 8, max = 200 }: { min?: number; max?: number } = {}): boolean {
         const pw = this.normalizeText(value)
         if (!pw) return v.validateString({ value: pw, label: labels.password })
         return v.validateLength({ value: pw, label: labels.password }, min, max)
@@ -62,10 +55,7 @@ export class AuthValidate {
         return v.validateLength({ value: code, label: labels.code }, 4, 12)
     }
 
-    static validateNewPassword(
-        value: string | null | undefined,
-        { min = 8, max = 200 }: { min?: number; max?: number } = {}
-    ): boolean {
+    static validateNewPassword(value: string | null | undefined, { min = 8, max = 200 }: { min?: number; max?: number } = {}): boolean {
         const pw = this.normalizeText(value)
         if (!pw) return v.validateString({ value: pw, label: labels.newPassword })
         return v.validateLength({ value: pw, label: labels.newPassword }, min, max)

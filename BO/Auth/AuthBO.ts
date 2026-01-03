@@ -1,26 +1,26 @@
 import { createRequire } from 'node:module'
-const require = createRequire(import.meta.url)
-
-import bcrypt from 'bcryptjs'
 import { createHash, randomBytes } from 'node:crypto'
+import bcrypt from 'bcryptjs'
 
+import EmailService from '../../src/BSS/EmailService.js'
 import { AuthErrorHandler } from './AuthErrorHandler.js'
 import { AuthValidate } from './AuthValidate.js'
 import { AuthRepository } from './Auth.js'
-import EmailService from '../../src/BSS/EmailService.js'
-import { errorMessage } from '../../src/helpers/error.js'
+
+const require = createRequire(import.meta.url)
 
 type ApiResponse = {
     code: number
     msg: string
-    alerts?: string[]
     data?: Record<string, unknown> | null
+    alerts?: string[]
 }
 
 const successMsgs = require('./messages/authSuccessMsgs.json')[config.app.lang] as Record<
     string,
     string
 >
+
 const email = new EmailService()
 
 function sha256Hex(value: string): string {
@@ -31,142 +31,156 @@ function isEmail(value: string): boolean {
     return value.includes('@')
 }
 
-function asRecord(value: unknown): Record<string, unknown> | null {
-    if (value == null) return null
-    if (typeof value !== 'object') return null
-    return value as Record<string, unknown>
-}
-
 function getString(
     obj: Record<string, unknown> | null | undefined,
     key: string
 ): string | undefined {
-    const value = obj?.[key]
-    return typeof value === 'string' ? value : undefined
+    const v = obj?.[key]
+    return typeof v === 'string' ? v : undefined
 }
 
-function getNumber(
-    obj: Record<string, unknown> | null | undefined,
-    key: string
-): number | undefined {
-    const value = obj?.[key]
-    if (typeof value === 'number') return value
-    if (typeof value === 'string') {
-        const num = Number(value)
-        return Number.isFinite(num) ? num : undefined
-    }
-    return undefined
+type RequestCtx = { ip: string | null; userAgent: string | null }
+
+function getRequestCtx(params: Record<string, unknown> | null | undefined): RequestCtx {
+    const req = (params && typeof params === 'object' ? (params as any)._request : null) as any
+    const ip = typeof req?.ip === 'string' && req.ip.trim().length > 0 ? req.ip.trim() : null
+    const userAgent =
+        typeof req?.userAgent === 'string' && req.userAgent.trim().length > 0
+            ? req.userAgent.trim()
+            : null
+    return { ip, userAgent }
 }
 
-function parseJsonMeta(
-    value: string | Record<string, unknown> | null | undefined
-): Record<string, unknown> | null {
-    if (value == null) return null
-    if (typeof value === 'object') return value
-    if (typeof value !== 'string') return null
+function safeIpForDb(ip: string | null): string {
+    // Some DB schemas use inet; ensure we always pass a non-empty value.
+    return ip && ip.trim().length > 0 ? ip.trim() : '0.0.0.0'
+}
+
+function errorText(err: unknown): string {
+    if (err instanceof Error) return err.message
+    return String(err)
+}
+
+async function invalidateUserSessionsBestEffort(userId: number) {
     try {
-        const parsed = JSON.parse(value) as unknown
-        return asRecord(parsed)
-    } catch {
-        return null
-    }
-}
+        const schema = String((config as any)?.session?.store?.schemaName ?? 'public')
+        const table = String((config as any)?.session?.store?.tableName ?? 'session')
+        const qualified = schema === 'public' ? 'public.' + table : schema + '.' + table
 
-function getRequestContext(params: Record<string, unknown> | null | undefined): {
-    ip: string | null
-    userAgent: string | null
-} {
-    const req = asRecord(params?.['_request'])
-    return {
-        ip: getString(req, 'ip') ?? null,
-        userAgent: getString(req, 'userAgent') ?? null,
+        // connect-pg-simple session table uses sess as JSON.
+        await (db as any).exeRaw?.('delete from ' + qualified + " where (sess->>'user_id') = $1", [
+            String(userId),
+        ])
+    } catch {
+        // best effort
     }
 }
 
 export class AuthBO {
     async register(params: Record<string, unknown> | null | undefined): Promise<ApiResponse> {
         try {
-            const emailAddr = getString(params, 'email')
             const username = getString(params, 'username')
+            const emailValue = getString(params, 'email')
             const password = getString(params, 'password')
 
+            const loginId = String((config as any)?.auth?.loginId ?? 'email')
+                .trim()
+                .toLowerCase()
+            const requireEmailVerification = Boolean(
+                (config as any)?.auth?.requireEmailVerification
+            )
+
+            // Minimal requirements: if loginId=email OR email verification is enabled -> require email.
+            if ((loginId === 'email' || requireEmailVerification) && !emailValue) {
+                return AuthErrorHandler.emailRequired()
+            }
+
             if (
-                !AuthValidate.validateEmail(emailAddr) ||
                 !AuthValidate.validateUsername(username) ||
+                (emailValue != null && !AuthValidate.validateEmail(emailValue)) ||
                 !AuthValidate.validatePassword(password, { min: 8, max: 200 })
             ) {
                 return AuthErrorHandler.invalidParameters(v.getAlerts())
             }
 
-            const emailNorm = String(emailAddr).trim().toLowerCase()
-            const usernameNorm = String(username).trim()
-
-            // Uniqueness checks (avoid leaking whether it was email or username)
-            const existingByEmail = await AuthRepository.getUserBaseByEmail(emailNorm)
-            const existingByUsername = await AuthRepository.getUserBaseByUsername(usernameNorm)
-            if (existingByEmail || existingByUsername) {
-                return AuthErrorHandler.alreadyRegistered()
+            // Duplicate checks
+            if (emailValue) {
+                const existingByEmail = await AuthRepository.getUserBaseByEmail(emailValue)
+                if (existingByEmail) return AuthErrorHandler.alreadyRegistered()
             }
-
-            const profileId = Number(config?.auth?.sessionProfileId ?? 1)
-            if (!Number.isInteger(profileId) || profileId <= 0) {
-                throw new Error('Invalid auth.sessionProfileId')
+            if (username) {
+                const existingByUsername = await AuthRepository.getUserBaseByUsername(username)
+                if (existingByUsername) return AuthErrorHandler.alreadyRegistered()
             }
 
             const hash = await bcrypt.hash(String(password), 10)
-            const ins = await AuthRepository.insertUser({
-                username: usernameNorm,
-                email: emailNorm,
+            const inserted = await AuthRepository.insertUser({
+                username: username ?? null,
+                email: emailValue ?? null,
                 passwordHash: hash,
             })
-            const userId = ins?.user_id
-            if (!userId) throw new Error('Failed to create user')
 
-            await AuthRepository.upsertUserProfile({ userId, profileId })
-
-            // Send email verification
-            const expiresSeconds = Number(config?.auth?.emailVerificationExpiresSeconds ?? 900)
-            const maxAttempts = Number(config?.auth?.emailVerificationMaxAttempts ?? 5)
-            const purpose = String(config?.auth?.emailVerificationPurpose ?? 'email_verification')
-
-            try {
-                await AuthRepository.consumeOneTimeCodesForUserPurpose({ userId, purpose })
-            } catch {}
-
-            const token = randomBytes(32).toString('hex')
-            const code = String(Math.floor(100000 + Math.random() * 900000))
-            const tokenHash = sha256Hex(token)
-            const codeHash = sha256Hex(code)
-
-            const { ip: requestIp, userAgent: requestUserAgent } = getRequestContext(params)
-
-            await AuthRepository.insertOneTimeCode({
-                userId,
-                purpose,
-                codeHash,
-                expiresSeconds,
-                meta: {
-                    tokenHash,
-                    maxAttempts,
-                    request: { ip: requestIp, userAgent: requestUserAgent },
-                },
+            const sessionProfileIdRaw = Number((config as any)?.auth?.sessionProfileId ?? 1)
+            const sessionProfileId =
+                Number.isFinite(sessionProfileIdRaw) && sessionProfileIdRaw > 0
+                    ? sessionProfileIdRaw
+                    : 1
+            await AuthRepository.upsertUserProfile({
+                userId: inserted.user_id,
+                profileId: sessionProfileId,
             })
 
-            await email.sendEmailVerification({
-                to: emailNorm,
-                token,
-                code,
-                appName: config?.app?.name,
-            })
+            // Optional email verification: send link+code.
+            if (requireEmailVerification && emailValue) {
+                try {
+                    // Invalidate any active codes for that user/purpose.
+                    const purpose = String(
+                        (config as any)?.auth?.emailVerificationPurpose ?? 'email_verification'
+                    )
+                    await AuthRepository.consumeOneTimeCodesForUserPurpose({
+                        userId: inserted.user_id,
+                        purpose,
+                    })
+
+                    const expiresSeconds = Number(
+                        (config as any)?.auth?.emailVerificationExpiresSeconds ?? 900
+                    )
+                    const maxAttempts = Number(
+                        (config as any)?.auth?.emailVerificationMaxAttempts ?? 5
+                    )
+
+                    const token = randomBytes(32).toString('hex')
+                    const code = String(Math.floor(100000 + Math.random() * 900000))
+                    const tokenHash = sha256Hex(token)
+                    const codeHash = sha256Hex(code)
+
+                    await AuthRepository.insertOneTimeCode({
+                        userId: inserted.user_id,
+                        purpose,
+                        codeHash,
+                        expiresSeconds,
+                        meta: { tokenHash, maxAttempts },
+                    })
+
+                    await email.sendEmailVerification({
+                        to: emailValue,
+                        token,
+                        code,
+                        appName: (config as any)?.app?.name,
+                    })
+                } catch {
+                    // best effort
+                }
+            }
 
             return { code: 201, msg: successMsgs.register ?? 'OK' }
-        } catch (err: unknown) {
+        } catch (err) {
             log.show({
                 type: log.TYPE_ERROR,
                 msg:
                     msgs[config.app.lang].errors.server.serverError.msg +
                     ', AuthBO.register: ' +
-                    errorMessage(err),
+                    errorText(err),
             })
             return AuthErrorHandler.unknownError()
         }
@@ -176,64 +190,63 @@ export class AuthBO {
         params: Record<string, unknown> | null | undefined
     ): Promise<ApiResponse> {
         try {
-            const emailAddr = getString(params, 'email')
-            if (!AuthValidate.validateEmail(emailAddr)) {
+            const identifier = getString(params, 'identifier')
+            if (!AuthValidate.validateIdentifier(identifier)) {
                 return AuthErrorHandler.invalidParameters(v.getAlerts())
             }
 
-            const emailNorm = String(emailAddr).trim().toLowerCase()
-            const purpose = String(config?.auth?.emailVerificationPurpose ?? 'email_verification')
-
             // Avoid account enumeration: always return success.
-            const user = await AuthRepository.getUserBaseByEmail(emailNorm)
-            if (!user || user.email_verified_at) {
+            let user = null
+            if (identifier && isEmail(identifier))
+                user = await AuthRepository.getUserByEmail(identifier)
+            else if (identifier) user = await AuthRepository.getUserByUsername(identifier)
+
+            if (!user || !user.user_em) {
                 return { code: 200, msg: successMsgs.requestEmailVerification ?? 'OK' }
             }
 
-            const expiresSeconds = Number(config?.auth?.emailVerificationExpiresSeconds ?? 900)
-            const maxAttempts = Number(config?.auth?.emailVerificationMaxAttempts ?? 5)
+            const purpose = String(
+                (config as any)?.auth?.emailVerificationPurpose ?? 'email_verification'
+            )
+            const expiresSeconds = Number(
+                (config as any)?.auth?.emailVerificationExpiresSeconds ?? 900
+            )
+            const maxAttempts = Number((config as any)?.auth?.emailVerificationMaxAttempts ?? 5)
 
-            try {
-                await AuthRepository.consumeOneTimeCodesForUserPurpose({
-                    userId: user.user_id,
-                    purpose,
-                })
-            } catch {}
+            // Invalidate any active codes for this user/purpose.
+            await AuthRepository.consumeOneTimeCodesForUserPurpose({
+                userId: user.user_id,
+                purpose,
+            })
 
             const token = randomBytes(32).toString('hex')
             const code = String(Math.floor(100000 + Math.random() * 900000))
             const tokenHash = sha256Hex(token)
             const codeHash = sha256Hex(code)
 
-            const { ip: requestIp, userAgent: requestUserAgent } = getRequestContext(params)
-
             await AuthRepository.insertOneTimeCode({
                 userId: user.user_id,
                 purpose,
                 codeHash,
                 expiresSeconds,
-                meta: {
-                    tokenHash,
-                    maxAttempts,
-                    request: { ip: requestIp, userAgent: requestUserAgent },
-                },
+                meta: { tokenHash, maxAttempts },
             })
 
             await email.sendEmailVerification({
-                to: emailNorm,
+                to: user.user_em,
                 token,
                 code,
-                appName: config?.app?.name,
+                appName: (config as any)?.app?.name,
             })
 
             return { code: 200, msg: successMsgs.requestEmailVerification ?? 'OK' }
-        } catch (err: unknown) {
+        } catch (err) {
             log.show({
                 type: log.TYPE_ERROR,
                 msg:
                     msgs[config.app.lang].errors.server.serverError.msg +
                     ', AuthBO.requestEmailVerification: ' +
-                    errorMessage(err),
+                    errorText(err),
             })
             return AuthErrorHandler.unknownError()
         }
@@ -250,61 +263,39 @@ export class AuthBO {
                 return AuthErrorHandler.invalidParameters(v.getAlerts())
             }
 
-            const purpose = String(config?.auth?.emailVerificationPurpose ?? 'email_verification')
+            const purpose = String(
+                (config as any)?.auth?.emailVerificationPurpose ?? 'email_verification'
+            )
             const tokenHash = sha256Hex(token)
             const codeHash = sha256Hex(code)
 
-            const otp = await AuthRepository.getValidOneTimeCodeByTokenHash({
+            const otp = await AuthRepository.getValidOneTimeCodeForPurposeAndTokenHash({
                 purpose,
                 tokenHash,
                 codeHash,
             })
+            if (!otp) return AuthErrorHandler.invalidToken()
 
-            if (!otp) {
-                // Best-effort: increment attempts on the active otp for this token.
-                try {
-                    const active = await AuthRepository.getActiveOneTimeCodeByTokenHash({
-                        purpose,
-                        tokenHash,
-                    })
-                    if (active) {
-                        const meta = parseJsonMeta(active.meta) ?? {}
-                        const maxAttempts = Number(
-                            meta?.maxAttempts ?? config?.auth?.emailVerificationMaxAttempts ?? 5
-                        )
-                        const attempts = Number(active.attempt_count ?? 0)
-                        if (Number.isFinite(maxAttempts) && attempts >= maxAttempts) {
-                            return AuthErrorHandler.tooManyRequests()
-                        }
-                        await AuthRepository.incrementOneTimeCodeAttempt(active.code_id)
-                    }
-                } catch {}
-
-                return AuthErrorHandler.invalidToken()
-            }
-
-            const meta = parseJsonMeta(otp.meta) ?? {}
-            const maxAttempts =
-                getNumber(meta, 'maxAttempts') ??
-                Number(config?.auth?.emailVerificationMaxAttempts ?? 5)
             const attempts = Number(otp.attempt_count ?? 0)
+            const maxAttempts = Number((config as any)?.auth?.emailVerificationMaxAttempts ?? 5)
             if (Number.isFinite(maxAttempts) && attempts >= maxAttempts) {
                 return AuthErrorHandler.tooManyRequests()
             }
 
+            // Mark verified, consume the code.
             await AuthRepository.setUserEmailVerified(otp.user_id)
             try {
                 await AuthRepository.consumeOneTimeCode(otp.code_id)
             } catch {}
 
             return { code: 200, msg: successMsgs.verifyEmail ?? 'OK' }
-        } catch (err: unknown) {
+        } catch (err) {
             log.show({
                 type: log.TYPE_ERROR,
                 msg:
                     msgs[config.app.lang].errors.server.serverError.msg +
                     ', AuthBO.verifyEmail: ' +
-                    errorMessage(err),
+                    errorText(err),
             })
             return AuthErrorHandler.unknownError()
         }
@@ -319,8 +310,6 @@ export class AuthBO {
                 return AuthErrorHandler.invalidParameters(v.getAlerts())
             }
 
-            const { ip: requestIp, userAgent: requestUserAgent } = getRequestContext(params)
-
             // Avoid account enumeration: always return success.
             let user = null
             if (identifier && isEmail(identifier))
@@ -331,11 +320,13 @@ export class AuthBO {
                 return { code: 200, msg: successMsgs.requestPasswordReset ?? 'OK' }
             }
 
-            const expiresSeconds = Number(config?.auth?.passwordResetExpiresSeconds ?? 900)
-            const maxAttempts = Number(config?.auth?.passwordResetMaxAttempts ?? 5)
-            const purpose = String(config?.auth?.passwordResetPurpose ?? 'password_reset')
+            const ctx = getRequestCtx(params)
 
-            // Ensure only one active reset per user: invalidate older resets/codes.
+            const expiresSeconds = Number((config as any)?.auth?.passwordResetExpiresSeconds ?? 900)
+            const maxAttempts = Number((config as any)?.auth?.passwordResetMaxAttempts ?? 5)
+            const purpose = String((config as any)?.auth?.passwordResetPurpose ?? 'password_reset')
+
+            // Single active reset per user: invalidate previous.
             try {
                 await AuthRepository.invalidateActivePasswordResetsForUser(user.user_id)
             } catch {}
@@ -356,8 +347,8 @@ export class AuthBO {
                 tokenHash,
                 sentTo: user.user_em,
                 expiresSeconds,
-                ip: requestIp,
-                userAgent: requestUserAgent,
+                ip: safeIpForDb(ctx.ip),
+                userAgent: ctx.userAgent,
             })
             await AuthRepository.insertOneTimeCode({
                 userId: user.user_id,
@@ -367,7 +358,7 @@ export class AuthBO {
                 meta: {
                     tokenHash,
                     maxAttempts,
-                    request: { ip: requestIp, userAgent: requestUserAgent },
+                    request: { ip: safeIpForDb(ctx.ip), userAgent: ctx.userAgent },
                 },
             })
 
@@ -375,17 +366,17 @@ export class AuthBO {
                 to: user.user_em,
                 token,
                 code,
-                appName: config?.app?.name,
+                appName: (config as any)?.app?.name,
             })
 
             return { code: 200, msg: successMsgs.requestPasswordReset ?? 'OK' }
-        } catch (err: unknown) {
+        } catch (err) {
             log.show({
                 type: log.TYPE_ERROR,
                 msg:
                     msgs[config.app.lang].errors.server.serverError.msg +
                     ', AuthBO.requestPasswordReset: ' +
-                    errorMessage(err),
+                    errorText(err),
             })
             return AuthErrorHandler.unknownError()
         }
@@ -404,16 +395,10 @@ export class AuthBO {
                 return AuthErrorHandler.invalidParameters(v.getAlerts())
             }
 
-            const purpose = String(config?.auth?.passwordResetPurpose ?? 'password_reset')
+            const purpose = String((config as any)?.auth?.passwordResetPurpose ?? 'password_reset')
             const tokenHash = sha256Hex(token)
             const reset = await AuthRepository.getPasswordResetByTokenHash(tokenHash)
             if (!reset || reset.used_at) return AuthErrorHandler.invalidToken()
-
-            const maxAttempts = Number(config?.auth?.passwordResetMaxAttempts ?? 5)
-            const resetAttempts = Number(reset.attempt_count ?? 0)
-            if (Number.isFinite(maxAttempts) && resetAttempts >= maxAttempts) {
-                return AuthErrorHandler.tooManyRequests()
-            }
 
             const expiresAt = reset.expires_at ? new Date(reset.expires_at) : null
             if (
@@ -437,14 +422,20 @@ export class AuthBO {
                 return AuthErrorHandler.invalidToken()
             }
 
+            const attempts = Number(otp.attempt_count ?? 0)
+            const maxAttempts = Number((config as any)?.auth?.passwordResetMaxAttempts ?? 5)
+            if (Number.isFinite(maxAttempts) && attempts >= maxAttempts) {
+                return AuthErrorHandler.tooManyRequests()
+            }
+
             return { code: 200, msg: successMsgs.verifyPasswordReset ?? 'OK' }
-        } catch (err: unknown) {
+        } catch (err) {
             log.show({
                 type: log.TYPE_ERROR,
                 msg:
                     msgs[config.app.lang].errors.server.serverError.msg +
                     ', AuthBO.verifyPasswordReset: ' +
-                    errorMessage(err),
+                    errorText(err),
             })
             return AuthErrorHandler.unknownError()
         }
@@ -467,16 +458,10 @@ export class AuthBO {
                 return AuthErrorHandler.invalidParameters(v.getAlerts())
             }
 
-            const purpose = String(config?.auth?.passwordResetPurpose ?? 'password_reset')
+            const purpose = String((config as any)?.auth?.passwordResetPurpose ?? 'password_reset')
             const tokenHash = sha256Hex(token)
             const reset = await AuthRepository.getPasswordResetByTokenHash(tokenHash)
             if (!reset || reset.used_at) return AuthErrorHandler.invalidToken()
-
-            const maxAttempts = Number(config?.auth?.passwordResetMaxAttempts ?? 5)
-            const resetAttempts = Number(reset.attempt_count ?? 0)
-            if (Number.isFinite(maxAttempts) && resetAttempts >= maxAttempts) {
-                return AuthErrorHandler.tooManyRequests()
-            }
 
             const expiresAt = reset.expires_at ? new Date(reset.expires_at) : null
             if (
@@ -500,6 +485,12 @@ export class AuthBO {
                 return AuthErrorHandler.invalidToken()
             }
 
+            const attempts = Number(otp.attempt_count ?? 0)
+            const maxAttempts = Number((config as any)?.auth?.passwordResetMaxAttempts ?? 5)
+            if (Number.isFinite(maxAttempts) && attempts >= maxAttempts) {
+                return AuthErrorHandler.tooManyRequests()
+            }
+
             const hash = await bcrypt.hash(String(newPassword), 10)
             await AuthRepository.updateUserPassword({ userId: reset.user_id, passwordHash: hash })
 
@@ -511,19 +502,17 @@ export class AuthBO {
                 await AuthRepository.markPasswordResetUsed(reset.reset_id)
             } catch {}
 
-            // Best effort: invalidate all existing sessions for the user.
-            try {
-                await AuthRepository.deleteSessionsByUserId(reset.user_id)
-            } catch {}
+            // Best effort: invalidate existing sessions after password reset.
+            await invalidateUserSessionsBestEffort(reset.user_id)
 
             return { code: 200, msg: successMsgs.resetPassword ?? 'OK' }
-        } catch (err: unknown) {
+        } catch (err) {
             log.show({
                 type: log.TYPE_ERROR,
                 msg:
                     msgs[config.app.lang].errors.server.serverError.msg +
                     ', AuthBO.resetPassword: ' +
-                    errorMessage(err),
+                    errorText(err),
             })
             return AuthErrorHandler.unknownError()
         }

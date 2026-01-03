@@ -18,7 +18,7 @@ test('db-init --print generates expected SQL without touching DB', () => {
             '--sessionSchema',
             'security',
             '--sessionTable',
-            'session',
+            'sessions',
         ],
         { encoding: 'utf8' }
     )
@@ -27,11 +27,11 @@ test('db-init --print generates expected SQL without touching DB', () => {
     const out = (r.stdout || '') + (r.stderr || '')
 
     assert.match(out, /create schema if not exists security;/)
-    assert.match(out, /create table if not exists security\."user"/)
-    assert.match(out, /alter table security\."user" add column if not exists user_em/)
+    assert.match(out, /create table if not exists security\.users/)
+    assert.match(out, /alter table security\.users add column if not exists email/)
 
     // Session table under security schema
-    assert.match(out, /create table if not exists security\.session/)
+    assert.match(out, /create table if not exists security\.sessions/)
 
     // Note: db-init does not create project/domain schemas (only security + sessions)
 })
@@ -55,13 +55,13 @@ test('db-init --print --auth includes auth tables (and optional 2-step login tab
     const out = (r.stdout || '') + (r.stderr || '')
 
     // auth implies email column (identifier default is email)
-    assert.match(out, /alter table security\."user" add column if not exists user_em/)
+    assert.match(out, /alter table security\.users add column if not exists email/)
 
     // auth tables
-    assert.match(out, /create table if not exists security\.password_reset/)
-    assert.match(out, /create table if not exists security\.one_time_code/)
+    assert.match(out, /create table if not exists security\.password_resets/)
+    assert.match(out, /create table if not exists security\.one_time_codes/)
 
     // new-device 2-step login tables
-    assert.match(out, /create table if not exists security\.user_device/)
-    assert.match(out, /create table if not exists security\.login_challenge/)
+    assert.match(out, /create table if not exists security\.user_devices/)
+    assert.match(out, /create table if not exists security\.login_challenges/)
 })
