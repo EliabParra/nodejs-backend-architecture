@@ -4,7 +4,7 @@
 
 - **Cliente (estático)**: `public/` (HTML/CSS/JS)
 - **Router de páginas**: `src/router/` (sirve HTML y protege rutas)
-- **Dispatcher (API)**: `src/BSS/Dispatcher.js` (endpoints `/login`, `/logout`, `/toProccess`)
+- **Dispatcher (API)**: `src/BSS/Dispatcher.ts` (endpoints `/login`, `/logout`, `/toProccess`)
 - **Capa HTTP/Express (plumbing)**: `src/express/` (middlewares, handlers, session wiring)
 - **BSS (servicios transversales)**: `src/BSS/` (DB, session, security, validator, log)
 - **BO (negocio)**: `BO/` (ej. `BO/ObjectName/`).
@@ -13,11 +13,11 @@
 
 ## Bootstrap (arranque)
 
-1. [src/index.js](../../src/index.js)
-    - Importa [src/globals.js](../../src/globals.js)
+1. [src/index.ts](../../src/index.ts)
+    - Importa [src/globals.ts](../../src/globals.ts)
     - Crea `new Dispatcher()`, ejecuta `await dispatcher.init()` y luego llama `serverOn()`
 
-2. [src/globals.js](../../src/globals.js)
+2. [src/globals.ts](../../src/globals.ts)
     - Carga JSON via `require` (config, queries, messages)
     - Crea singletons globales:
         - `globalThis.v` (Validator)
@@ -36,12 +36,12 @@ Nota: por consistencia con el diseño del repo, algunos módulos de `src/express
 ### Secuencia (alto nivel)
 
 1. **Verificar sesión**
-    - `Session.sessionExists(req)` en [src/BSS/Session.js](../../src/BSS/Session.js)
+    - `Session.sessionExists(req)` en [src/BSS/Session.ts](../../src/BSS/Session.ts)
 2. **Esperar inicialización de seguridad (race-free)**
     - `Security` precarga `txMap` y permisos desde DB.
     - `/toProccess` espera `security.ready` antes de usar `txMap` para evitar que llegue un request mientras el cache aún está vacío.
 3. **Resolver tx → (object_na, method_na)**
-    - `security.getDataTx(body.tx)` usando `txMap` precargado en [src/BSS/Security.js](../../src/BSS/Security.js)
+    - `security.getDataTx(body.tx)` usando `txMap` precargado en [src/BSS/Security.ts](../../src/BSS/Security.ts)
 4. **Validar permisos**
     - `security.getPermissions({ profile_id, method_na, object_na })` contra `permission` precargado
 5. **Ejecutar BO**

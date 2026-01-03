@@ -4,7 +4,7 @@
 
 - **Client (static)**: `public/` (HTML/CSS/JS)
 - **Pages router**: `src/router/` (serves HTML and protects routes)
-- **Dispatcher (API)**: `src/BSS/Dispatcher.js` (`/login`, `/logout`, `/toProccess`)
+- **Dispatcher (API)**: `src/BSS/Dispatcher.ts` (`/login`, `/logout`, `/toProccess`)
 - **HTTP/Express layer (plumbing)**: `src/express/` (middlewares, handlers, session wiring)
 - **BSS (cross-cutting services)**: `src/BSS/` (DB, session, security, validator, log)
 - **BO (business)**: `BO/` (e.g. `BO/ObjectName/`).
@@ -13,12 +13,12 @@
 
 ## Bootstrap
 
-1. [src/index.js](../../src/index.js)
-    - Imports [src/globals.js](../../src/globals.js)
+1. [src/index.ts](../../src/index.ts)
+  - Imports [src/globals.ts](../../src/globals.ts)
 
 - Creates `new Dispatcher()`, runs `await dispatcher.init()`, then calls `serverOn()`
 
-2. [src/globals.js](../../src/globals.js)
+2. [src/globals.ts](../../src/globals.ts)
     - Loads JSON via `require` (config, queries, messages)
     - Creates global singletons:
         - `globalThis.v` (Validator)
@@ -34,17 +34,17 @@ Note: for consistency with the repository style, some `src/express/` modules als
 
 ### Endpoint
 
-- `POST /toProccess` in [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.js)
+- `POST /toProccess` in [src/BSS/Dispatcher.ts](../../src/BSS/Dispatcher.ts)
 
 ### Sequence (high level)
 
-1. **Session check**: `Session.sessionExists(req)` ([src/BSS/Session.js](../../src/BSS/Session.js))
+1. **Session check**: `Session.sessionExists(req)` ([src/BSS/Session.ts](../../src/BSS/Session.ts))
 2. **Wait for security initialization (race-free)**
 
 - `Security` preloads `txMap` and permissions from the DB.
 - `/toProccess` awaits `security.ready` before using `txMap`, avoiding requests hitting an empty cache during startup.
 
-2. **Resolve tx → (object_na, method_na)**: `security.getDataTx(body.tx)` ([src/BSS/Security.js](../../src/BSS/Security.js))
+2. **Resolve tx → (object_na, method_na)**: `security.getDataTx(body.tx)` ([src/BSS/Security.ts](../../src/BSS/Security.ts))
 3. **Permissions**: `security.getPermissions({ profile_id, method_na, object_na })`
 4. **Execute BO**: `security.executeMethod({ object_na, method_na, params })`
 5. **Response**: `res.status(response.code).send(response)`

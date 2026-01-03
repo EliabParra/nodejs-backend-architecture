@@ -25,7 +25,7 @@ Luego guarda ese hash como `user_pw` en tu tabla `security.user`.
 
 ## Ejecutar
 
-- Modo normal: `npm start` (corre [src/index.js](../../src/index.js))
+- Modo normal: `npm start` (corre [src/index.ts](../../src/index.ts))
 - Modo dev: `npm run dev` (nodemon)
 
 ## Desarrollo (watch) con backend + SPA separados

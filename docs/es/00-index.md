@@ -25,19 +25,19 @@ Un backend de referencia que muestra un patrón de arquitectura (dispatcher tran
 
 ## Mapa rápido
 
-- **Entrada del servidor**: [src/index.js](../../src/index.js)
-- **Globals (service locator)**: [src/globals.js](../../src/globals.js)
-- **Dispatcher (Express + endpoints)**: [src/BSS/Dispatcher.js](../../src/BSS/Dispatcher.js)
+- **Entrada del servidor**: [src/index.ts](../../src/index.ts)
+- **Globals (service locator)**: [src/globals.ts](../../src/globals.ts)
+- **Dispatcher (Express + endpoints)**: [src/BSS/Dispatcher.ts](../../src/BSS/Dispatcher.ts)
 - **Express plumbing (middlewares/handlers/session wiring)**: `src/express/`
     - Middlewares: [src/express/middleware/](../../src/express/middleware/)
     - Handlers: [src/express/handlers/](../../src/express/handlers/)
-    - Session wiring: [src/express/session/apply-session-middleware.js](../../src/express/session/apply-session-middleware.js)
-- **Seguridad (tx + permisos + BO dinámico)**: [src/BSS/Security.js](../../src/BSS/Security.js)
-- **Sesión (express-session)**: [src/BSS/Session.js](../../src/BSS/Session.js)
-- **DB**: [src/BSS/DBComponent.js](../../src/BSS/DBComponent.js)
-- **Validación (alerts)**: [src/BSS/Validator.js](../../src/BSS/Validator.js)
+    - Session wiring: [src/express/session/apply-session-middleware.ts](../../src/express/session/apply-session-middleware.ts)
+- **Seguridad (tx + permisos + BO dinámico)**: [src/BSS/Security.ts](../../src/BSS/Security.ts)
+- **Sesión (express-session)**: [src/BSS/Session.ts](../../src/BSS/Session.ts)
+- **DB**: [src/BSS/DBComponent.ts](../../src/BSS/DBComponent.ts)
+- **Validación (alerts)**: [src/BSS/Validator.ts](../../src/BSS/Validator.ts)
 - **Helpers compartidos (BSS)**: [src/BSS/helpers/](../../src/BSS/helpers/)
-- **Router de páginas**: [src/router/pages.js](../../src/router/pages.js)
+- **Router de páginas**: [src/router/pages.ts](../../src/router/pages.ts)
 - **Ejemplos incluidos (cliente/pages/demo BO)**: ver [docs/es/12-examples.md](12-examples.md)
 
 ## Índice

@@ -3,7 +3,7 @@
     "version": "0.0.1",
     "description": "Una arquitectura de backend desacoplada para Node.js",
     "license": "MIT",
-    "main": "src/index.js",
+    "main": "dist/src/index.js",
     "scripts": {
         "format": "prettier --write .",
         "format:check": "prettier --check .",
@@ -58,7 +58,6 @@
             "src/**/*.js"
         ],
         "exclude": [
-            "src/index.js",
             "src/jsdoc/**",
             "test/**",
             "scripts/**",

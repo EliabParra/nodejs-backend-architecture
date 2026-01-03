@@ -25,7 +25,7 @@ Then store that hash as `user_pw` in the `security.user` table.
 
 ## Run
 
-- Normal: `npm start` (runs [src/index.js](../../src/index.js))
+- Normal: `npm start` (runs [src/index.ts](../../src/index.ts))
 - Dev: `npm run dev` (nodemon)
 
 ## Development (watch) with backend + SPA separated
