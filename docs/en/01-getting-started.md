@@ -90,20 +90,7 @@ The backend will serve static build assets and fall back to `index.html` for SPA
 
 ### (Optional) start backend + frontend together
 
-If your team wants a single command to start both (without coupling the backend to any specific framework), use:
-
-- `npm run full`
-
-> Note: `npm run full` is a development helper only, not a production pattern.
-
-In backend `.env` set:
-
-- `FRONTEND_PATH=...` (path to the frontend repo containing `package.json`)
-- (optional) `FRONTEND_SCRIPT=start`
-- (optional) `FRONTEND_ARGS=...` (e.g. `--port 4201` to avoid `4200` conflicts)
-- (optional) `BACKEND_SCRIPT=dev`
-- (optional) `BACKEND_ARGS=...`
-- (optional) `FULL_KEEP_ALIVE=true`
+Run backend and frontend separately in development (backend: `npm run dev`).
 
 To connect any frontend, see [11-frontend-clients-and-requests.md](11-frontend-clients-and-requests.md).
 

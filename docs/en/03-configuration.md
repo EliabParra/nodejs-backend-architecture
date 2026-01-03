@@ -130,20 +130,8 @@ Main scripts in `package.json`:
 
 - `npm start`: production (uses `.env`/env vars)
 - `npm run dev`: development (nodemon)
-- `npm run full`: optional dev helper (starts backend + frontend via `FRONTEND_PATH`)
 
 For `spa`, the backend deliberately has NO default dist folder (to stay decoupled). You must set `SPA_DIST_PATH` or `config.app.spaDistPath`. If missing, the backend prompts on startup (interactive terminals only).
-
-### Extra variables for `npm run full` (optional)
-
-- `FRONTEND_PATH`: path to the frontend repo (must contain `package.json`).
-- `FRONTEND_SCRIPT` (default `start`): which npm script to run in the frontend.
-- `FRONTEND_ARGS` (optional): extra args passed to the frontend script.
-    - Passed as: `npm run <FRONTEND_SCRIPT> -- <FRONTEND_ARGS>`
-    - Example (Angular, avoid port 4200 conflicts): `FRONTEND_ARGS=--port 4201`
-- `BACKEND_SCRIPT` (default `dev`): which npm script to run in the backend.
-- `BACKEND_ARGS` (optional): extra args passed to the backend script (same `--` pattern).
-- `FULL_KEEP_ALIVE=true|false` (optional): when `true`, don't auto-shutdown the other process when one exits.
 
 ## messages.json
 

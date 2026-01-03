@@ -15,7 +15,7 @@ Variables:
 - `APP_FRONTEND_MODE=none|pages|spa`
 - `SPA_DIST_PATH` (spa mode): folder containing `index.html` (build output)
 
-Optional dev helper: `npm run full` starts backend + frontend based on `FRONTEND_PATH` in `.env`.
+In development, run backend and frontend separately (backend: `npm run dev`).
 
 ## 1) What every frontend must respect
 
@@ -233,15 +233,3 @@ See variables in [03-configuration.md](03-configuration.md).
 
 - If frontend is deployed separately (recommended), configure CORS (`cors.origins`) and cookie flags (`sameSite/secure`) for your domain.
 - If you want the backend to serve a SPA build, use `APP_FRONTEND_MODE=spa` and set `SPA_DIST_PATH` (folder containing `index.html`).
-
-## 8) (Optional) `npm run full` for DX
-
-`npm run full` is an optional dev helper. In backend `.env` set:
-
-- `FRONTEND_PATH=PATH_TO_FRONTEND_REPO` (must contain `package.json`)
-- `FRONTEND_SCRIPT=start` (optional)
-- `FRONTEND_ARGS=...` (optional)
-    - Example (Angular): `FRONTEND_ARGS=--port 4201`
-- `BACKEND_SCRIPT=dev` (optional)
-- `BACKEND_ARGS=...` (optional)
-- `FULL_KEEP_ALIVE=true` (optional)

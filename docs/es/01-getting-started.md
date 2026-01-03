@@ -90,20 +90,7 @@ El backend servirá assets estáticos del build y hará fallback a `index.html` 
 
 ### (Opcional) levantar backend + frontend a la vez
 
-Si en tu equipo quieres un comando para levantar ambos (sin acoplar el backend a un framework), usa:
-
-- `npm run full`
-
-> Nota: `npm run full` es solo un helper de desarrollo, no un patrón de producción.
-
-Requiere configurar en el `.env` del backend:
-
-- `FRONTEND_PATH=...` (ruta al repo del frontend con `package.json`)
-- (opcional) `FRONTEND_SCRIPT=start`
-- (opcional) `FRONTEND_ARGS=...` (ej. `--port 4201` para evitar conflicto con `4200`)
-- (opcional) `BACKEND_SCRIPT=dev`
-- (opcional) `BACKEND_ARGS=...`
-- (opcional) `FULL_KEEP_ALIVE=true`
+En desarrollo, levanta backend y frontend por separado (backend: `npm run dev`).
 
 Para conectar cualquier frontend, ver [11-frontend-clients-and-requests.md](11-frontend-clients-and-requests.md).
 

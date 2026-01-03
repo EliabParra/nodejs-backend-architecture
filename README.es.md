@@ -102,22 +102,20 @@ Empieza aquí:
 
 ## Scripts
 
-| Script                                             | Descripción                                              |
-| -------------------------------------------------- | -------------------------------------------------------- |
-| `npm start`                                        | Levanta el API server                                    |
-| `npm run dev`                                      | Levanta con `nodemon`                                    |
-| `npm run format`                                   | Formatea el repo (Prettier)                              |
-| `npm run format:check`                             | Verifica formato (ideal para CI)                         |
-| `npm test`                                         | Tests DB-safe (Node test runner)                         |
-| `npm run test:watch`                               | Corre tests en modo watch                                |
-| `npm run test:http`                                | Corre solo tests HTTP                                    |
-| `npm run test:cli`                                 | Corre solo tests de CLI                                  |
-| `npm run test:coverage`                            | Genera cobertura (c8)                                    |
-| `npm run db:init`                                  | Inicializa schema `security` (idempotente)               |
-| `npm run bo -- <command>`                          | CLI BO (scaffold, sync tx, permisos)                     |
-| `npm run hashpw -- "<plainPassword>" [saltRounds]` | Genera hashes bcrypt                                     |
-| `npm run full`                                     | Helper opcional (backend + frontend) vía `FRONTEND_PATH` |
-| `npm run export:starter`                           | Export limpio                                            |
+| Script                                             | Descripción                                |
+| -------------------------------------------------- | ------------------------------------------ |
+| `npm start`                                        | Levanta el API server                      |
+| `npm test`                                         | Tests DB-safe (Node test runner)           |
+| `npm run dev`                                      | Levanta con `nodemon`                      |
+| `npm run format`                                   | Formatea el repo (Prettier)                |
+| `npm run format:check`                             | Verifica formato (ideal para CI)           |
+| `npm run test:watch`                               | Corre tests en modo watch                  |
+| `npm run test:coverage`                            | Genera cobertura (c8)                      |
+| `npm run verify`                                   | Verifica DB-safe (Node test runner)        |
+| `npm run db:init`                                  | Inicializa schema `security` (idempotente) |
+| `npm run bo -- <command>`                          | CLI BO (scaffold, sync tx, permisos)       |
+| `npm run hashpw -- "<plainPassword>" [saltRounds]` | Genera hashes bcrypt                       |
+| `npm run export:starter`                           | Export limpio                              |
 
 Nota de cobertura: `c8` está configurado para enfocarse en lógica de runtime (`src/**/*.js`) y excluye wiring/entrypoints (p. ej. `src/index.ts`) y definiciones solo JSDoc (`src/jsdoc/**`).
 

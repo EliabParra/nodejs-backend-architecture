@@ -20,6 +20,7 @@ npm test
 Optional (recommended):
 
 ```bash
+npm run verify
 npm run test:watch
 npm run test:coverage
 ```

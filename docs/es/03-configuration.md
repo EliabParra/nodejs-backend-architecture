@@ -130,20 +130,8 @@ Scripts principales en `package.json`:
 
 - `npm start`: producción (usa `.env`/env vars)
 - `npm run dev`: desarrollo (nodemon)
-- `npm run full`: dev helper opcional (levanta backend + frontend desde `FRONTEND_PATH`)
 
 Para `spa`, el backend NO asume ninguna carpeta por defecto (para mantenerse desacoplado). Debes configurar `SPA_DIST_PATH` o `config.app.spaDistPath`. Si falta, el backend lo pide al iniciar (en modo interactivo).
-
-### Variables extra para `npm run full` (opcional)
-
-- `FRONTEND_PATH`: ruta al repo del frontend (debe tener `package.json`).
-- `FRONTEND_SCRIPT` (default `start`): qué script ejecutar en el frontend.
-- `FRONTEND_ARGS` (opcional): args extra para el script del frontend.
-    - Se pasan como: `npm run <FRONTEND_SCRIPT> -- <FRONTEND_ARGS>`
-    - Ejemplo (Angular, evitar conflicto de puerto 4200): `FRONTEND_ARGS=--port 4201`
-- `BACKEND_SCRIPT` (default `dev`): qué script ejecutar en el backend.
-- `BACKEND_ARGS` (opcional): args extra para el script del backend (mismo patrón con `--`).
-- `FULL_KEEP_ALIVE=true|false` (opcional): si `true`, no apaga el otro proceso cuando uno termina (útil en algunos flujos de dev).
 
 ## messages.json
 
