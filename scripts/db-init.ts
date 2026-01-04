@@ -615,7 +615,7 @@ async function grantPublicAuthRegisterPerms(
     client: any,
     { publicProfileId }: { publicProfileId: number }
 ) {
-    const methods = ['register', 'requestEmailVerification', 'verifyEmail']
+    const methods = ['register', 'requestEmailVerification', 'verifyEmail', 'verifyLoginChallenge']
     const objectName = 'Auth'
 
     // Ensure profile exists (does not overwrite name if already set).
@@ -638,6 +638,33 @@ async function grantPublicAuthRegisterPerms(
         `Granted ${granted}/${methods.length} public permission(s) to profile_id=${publicProfileId} for Auth registration/email verification methods.`
     )
     return { granted }
+}
+
+async function ensureAuthVerifyLoginChallengeTx(client: any) {
+    // This method is implemented by Session (needs req/res to set cookies), but we still want
+    // a tx mapping so it can be invoked consistently via /toProccess.
+    const rObj = await client.query(
+        'insert into security.objects (object_name) values ($1) on conflict (object_name) do update set object_name = excluded.object_name returning object_id',
+        ['Auth']
+    )
+    const objectId = Number(rObj.rows?.[0]?.object_id)
+    if (!Number.isFinite(objectId) || objectId <= 0)
+        throw new Error('Failed to ensure Auth object_id')
+
+    const existing = await client.query(
+        'select tx from security.methods where object_id = $1 and method_name = $2',
+        [objectId, 'verifyLoginChallenge']
+    )
+    if (existing.rows?.[0]?.tx) return Number(existing.rows[0].tx)
+
+    const nextTx = await getNextTxFromDb(client)
+    if (!Number.isInteger(nextTx) || nextTx <= 0) throw new Error('Failed to compute next tx')
+
+    await client.query(
+        'insert into security.methods (object_id, method_name, tx) values ($1, $2, $3) on conflict (object_id, method_name) do nothing',
+        [objectId, 'verifyLoginChallenge', nextTx]
+    )
+    return nextTx
 }
 
 function printProfileEnvTips({
@@ -1184,6 +1211,9 @@ async function main() {
                 txStart: txStart ?? null,
             })
 
+            // Ensure tx exists for login challenge verification routed via /toProccess.
+            await ensureAuthVerifyLoginChallengeTx(client)
+
             // Optional: grant public profile permissions for Auth public methods.
             // This keeps unauthenticated /toProccess scoped to these methods only.
             let doGrantPublicAuth = seedPublicAuthPerms
@@ -1192,7 +1222,7 @@ async function main() {
                 try {
                     doGrantPublicAuth = await promptYesNo(
                         rl,
-                        `Grant public profile_id=${publicProfileId} permissions for Auth public methods (register/email verification/password reset)?`,
+                        `Grant public profile_id=${publicProfileId} permissions for Auth public methods (register/email verification/password reset/login verify)?`,
                         false
                     )
                 } finally {

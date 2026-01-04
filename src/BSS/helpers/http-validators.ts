@@ -50,8 +50,14 @@ export function validateLoginSchema(
         return alerts
     }
 
-    if (typeof body.username !== 'string') {
-        alerts.push(v.getMessage('string', { value: body.username, label: 'username' }))
+    const hasIdentifier =
+        typeof (body as any).identifier === 'string' ||
+        typeof (body as any).email === 'string' ||
+        typeof (body as any).username === 'string'
+
+    if (!hasIdentifier) {
+        const value = (body as any).identifier ?? (body as any).email ?? (body as any).username
+        alerts.push(v.getMessage('string', { value, label: 'identifier' }))
     }
 
     if (typeof body.password !== 'string') {
@@ -113,7 +119,7 @@ export type ToProccessBody = {
 }
 
 export type LoginBody = {
-    username: string
+    identifier: string
     password: string
 }
 
@@ -141,8 +147,15 @@ export function parseLoginBody(
 ): { ok: true; body: LoginBody } | { ok: false; alerts: string[] } {
     const alerts = validateLoginSchema(body, ctx, opts)
     if (alerts.length > 0) return { ok: false, alerts }
-    const b = body as { username: string; password: string }
-    return { ok: true, body: { username: b.username, password: b.password } }
+    const b = body as { identifier?: string; email?: string; username?: string; password: string }
+    const identifier =
+        typeof b.identifier === 'string'
+            ? b.identifier
+            : typeof b.email === 'string'
+              ? b.email
+              : (b.username as string)
+
+    return { ok: true, body: { identifier, password: b.password } }
 }
 
 export function parseLoginVerifyBody(

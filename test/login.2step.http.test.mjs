@@ -72,6 +72,7 @@ test('2-step login is required on new device and can be verified', async () => {
             auth: {
                 loginId: 'username',
                 login2StepNewDevice: true,
+                publicProfileId: 2,
                 deviceCookieName: 'device_token',
                 deviceCookieMaxAgeMs: 1000 * 60 * 60 * 24,
                 loginChallengeExpiresSeconds: 600,
@@ -85,7 +86,14 @@ test('2-step login is required on new device and can be verified', async () => {
             TYPE_ERROR: 'error',
             show: () => {},
         }
-        globalThis.security = { isReady: true }
+        globalThis.security = {
+            isReady: true,
+            getDataTx: (tx) => {
+                if (tx === 999) return { object_na: 'Auth', method_na: 'verifyLoginChallenge' }
+                return false
+            },
+            getPermissions: () => true,
+        }
 
         const userRow = {
             user_id: 10,
@@ -159,11 +167,7 @@ test('2-step login is required on new device and can be verified', async () => {
         // Custom routes for test (avoid calling init())
         dispatcher.app.get('/csrf', csrfTokenHandler)
         dispatcher.app.post('/login', csrfProtection, dispatcher.login.bind(dispatcher))
-        dispatcher.app.post(
-            '/login/verify',
-            csrfProtection,
-            dispatcher.verifyLogin.bind(dispatcher)
-        )
+        dispatcher.app.post('/toProccess', csrfProtection, dispatcher.toProccess.bind(dispatcher))
 
         const agent = request.agent(dispatcher.app)
 
@@ -239,10 +243,10 @@ test('2-step login is required on new device and can be verified', async () => {
         const chosenCode = '123456'
         runtimeCodeHash = sha256Hex(chosenCode)
 
-        const verifyRes = await agent
-            .post('/login/verify')
-            .set('X-CSRF-Token', csrfToken)
-            .send({ token: startRes.body.challengeToken, code: chosenCode })
+        const verifyRes = await agent.post('/toProccess').send({
+            tx: 999,
+            params: { token: startRes.body.challengeToken, code: chosenCode },
+        })
 
         assert.equal(verifyRes.status, 200)
         assert.equal(verifyRes.body.code, 200)

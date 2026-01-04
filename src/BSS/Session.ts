@@ -12,6 +12,11 @@ function sha256Hex(value: unknown) {
     return createHash('sha256').update(String(value), 'utf8').digest('hex')
 }
 
+function looksLikeEmail(value: string) {
+    // Keep it intentionally simple: aligns with Auth BO behavior.
+    return value.includes('@')
+}
+
 function getCookie(req: AppRequest, name: string) {
     const header = req.headers?.cookie
     if (typeof header !== 'string' || header.length === 0) return null
@@ -98,8 +103,8 @@ export default class Session {
             }
 
             const body = parsed.body
-            const identifier = body.username
-            const queryName = this.loginId === 'username' ? 'getUserByUsername' : 'getUserByEmail'
+            const identifier = body.identifier
+            const queryName = looksLikeEmail(identifier) ? 'getUserByEmail' : 'getUserByUsername'
             const result = await db.exe('security', queryName, [identifier])
             if (!result?.rows || result.rows.length === 0) {
                 return res

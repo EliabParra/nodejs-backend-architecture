@@ -22,7 +22,6 @@ import { createFinalErrorHandler } from '../express/middleware/final-error-handl
 import {
     isPlainObject,
     parseLoginBody,
-    parseLoginVerifyBody,
     parseLogoutBody,
     parseToProccessBody,
 } from './helpers/http-validators.js'
@@ -112,12 +111,6 @@ export default class Dispatcher {
             this.toProccess.bind(this)
         )
         this.app.post('/login', this.loginRateLimiter, this.csrfProtection, this.login.bind(this))
-        this.app.post(
-            '/login/verify',
-            this.loginRateLimiter,
-            this.csrfProtection,
-            this.verifyLogin.bind(this)
-        )
         this.app.post('/logout', this.csrfProtection, this.logout.bind(this))
 
         // Optional SPA hosting is registered after API routes to avoid shadowing them.
@@ -232,6 +225,24 @@ export default class Dispatcher {
                     .send(this.clientErrors.permissionDenied)
             }
 
+            // Keep login challenge verification consistent with the tx-based architecture.
+            // When tx maps to Auth.verifyLoginChallenge, delegate to Session (needs req/res to set cookies/session).
+            if (txData?.object_na === 'Auth' && txData?.method_na === 'verifyLoginChallenge') {
+                const paramsObj =
+                    effectiveParams &&
+                    typeof effectiveParams === 'object' &&
+                    !Array.isArray(effectiveParams)
+                        ? effectiveParams
+                        : null
+                if (!paramsObj) {
+                    return res
+                        .status(this.clientErrors.invalidParameters.code)
+                        .send(this.clientErrors.invalidParameters)
+                }
+                ;(req as any).body = paramsObj
+                return await this.session.verifyLoginChallenge(req, res)
+            }
+
             const response = await effectiveSecurity.executeMethod(data)
 
             await auditBestEffort(
@@ -316,45 +327,6 @@ export default class Dispatcher {
             effectiveLog.show({
                 type: effectiveLog.TYPE_ERROR,
                 msg: `${this.serverErrors.serverError.msg}, /login: ${redactSecretsInString(
-                    err?.message || err
-                )}`,
-                ctx: {
-                    requestId: req.requestId,
-                    method: req.method,
-                    path: req.originalUrl,
-                    status,
-                    durationMs:
-                        typeof req.requestStartMs === 'number'
-                            ? Date.now() - req.requestStartMs
-                            : undefined,
-                    user_id: req.session?.user_id,
-                    profile_id: req.session?.profile_id,
-                },
-            })
-            res.status(status).send(this.clientErrors.unknown)
-        }
-    }
-
-    async verifyLogin(req: AppRequest, res: AppResponse) {
-        try {
-            const parsed = parseLoginVerifyBody(req.body, this.ctx)
-            if (parsed.ok === false) {
-                return sendInvalidParameters(
-                    res,
-                    this.clientErrors.invalidParameters,
-                    parsed.alerts
-                )
-            }
-            await this.session.verifyLoginChallenge(req, res)
-        } catch (err: any) {
-            const status = this.clientErrors.unknown.code
-            try {
-                res.locals.__errorLogged = true
-            } catch {}
-            const effectiveLog = this.ctx?.log ?? log
-            effectiveLog.show({
-                type: effectiveLog.TYPE_ERROR,
-                msg: `${this.serverErrors.serverError.msg}, /login/verify: ${redactSecretsInString(
                     err?.message || err
                 )}`,
                 ctx: {
