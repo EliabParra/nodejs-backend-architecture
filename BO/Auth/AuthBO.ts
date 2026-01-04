@@ -274,7 +274,21 @@ export class AuthBO {
                 tokenHash,
                 codeHash,
             })
-            if (!otp) return AuthErrorHandler.invalidToken()
+            if (!otp) {
+                // If there's an active (non-consumed) token but it's expired, return a clearer message.
+                // Note: code mismatch and "not found" still map to invalidToken.
+                const active = await AuthRepository.getActiveOneTimeCodeForPurposeAndTokenHash({
+                    purpose,
+                    tokenHash,
+                })
+                if (active?.expires_at) {
+                    const expiresAt = new Date(active.expires_at)
+                    if (!Number.isNaN(expiresAt.getTime()) && expiresAt.getTime() <= Date.now()) {
+                        return AuthErrorHandler.expiredToken()
+                    }
+                }
+                return AuthErrorHandler.invalidToken()
+            }
 
             const attempts = Number(otp.attempt_count ?? 0)
             const maxAttempts = Number((config as any)?.auth?.emailVerificationMaxAttempts ?? 5)
