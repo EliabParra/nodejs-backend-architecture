@@ -138,7 +138,7 @@ export function createApiClient(baseUrl) {
     }
 
     return {
-        login: (username, password) => post('/login', { username, password }),
+        login: (identifier, password) => post('/login', { identifier, password }),
         logout: () => post('/logout', {}),
         toProccess: (tx, params) => post('/toProccess', { tx, params }),
     }

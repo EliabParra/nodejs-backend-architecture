@@ -1,13 +1,13 @@
 # 13 — Authentication (Auth module)
 
-This repo includes an **optional Auth module** implemented as a BO (`BO/Auth/AuthBO.ts`) plus a couple of HTTP endpoints (`/login`, `/login/verify`).
+This repo includes an **optional Auth module** implemented as a BO (`BO/Auth/AuthBO.ts`) plus HTTP endpoints (`/login`) and tx-based flows (`/toProccess`).
 
 It supports:
 
 - Registration + email verification (public, via `POST /toProccess`)
 - Password reset (public, via `POST /toProccess`)
 - Login via `POST /login`
-- Optional **2-step login only for new devices** via `POST /login/verify`
+- Optional **2-step login only for new devices** (complete via `/toProccess` → `Auth.verifyLoginChallenge`)
 - Optional **"email must be verified before login"**
 
 > Important: public Auth flows are still protected by the `tx` + permissions model.
@@ -59,6 +59,7 @@ This will:
     - `Auth.requestPasswordReset`
     - `Auth.verifyPasswordReset`
     - `Auth.resetPassword`
+    - `Auth.verifyLoginChallenge` (optional, only if you enable 2-step login for new devices)
 
 Finally, set at runtime:
 
@@ -118,7 +119,17 @@ Notes:
 Request:
 
 ```json
-{ "username": "<email_or_username>", "password": "..." }
+{ "identifier": "<email_or_username>", "password": "..." }
+```
+
+Aliases (same behavior):
+
+```json
+{ "email": "john@example.com", "password": "..." }
+```
+
+```json
+{ "username": "john_doe", "password": "..." }
 ```
 
 Response:
@@ -128,15 +139,15 @@ Response:
     - Includes `challengeToken` and a masked `sentTo` value
 - `403 emailNotVerified`: when `AUTH_REQUIRE_EMAIL_VERIFICATION=1` and user is not verified
 
-### C) New device 2-step (`POST /login/verify`)
+### C) New device 2-step (via `/toProccess` → `Auth.verifyLoginChallenge`)
 
 If `/login` returns `202`, complete login with:
 
 ```http
-POST /login/verify
+POST /toProccess
 Content-Type: application/json
 
-{ "token": "<challengeToken>", "code": "<6-digit-code>" }
+{ "tx": <tx_for_Auth.verifyLoginChallenge>, "params": { "token": "<challengeToken>", "code": "<6-digit-code>" } }
 ```
 
 On success:

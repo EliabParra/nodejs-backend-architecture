@@ -1,13 +1,13 @@
 # 13 — Autenticación (módulo Auth)
 
-Este repo incluye un **módulo Auth opcional** implementado como BO (`BO/Auth/AuthBO.ts`) más algunos endpoints HTTP (`/login`, `/login/verify`).
+Este repo incluye un **módulo Auth opcional** implementado como BO (`BO/Auth/AuthBO.ts`) más endpoints HTTP (`/login`) y flujos transaccionales (`/toProccess`).
 
 Soporta:
 
 - Registro + verificación de email (público, vía `POST /toProccess`)
 - Restablecer contraseña (público, vía `POST /toProccess`)
 - Login vía `POST /login`
-- Opcional: **login en 2 pasos solo en dispositivo nuevo** vía `POST /login/verify`
+- Opcional: **login en 2 pasos solo en dispositivo nuevo** (se completa vía `/toProccess` → `Auth.verifyLoginChallenge`)
 - Opcional: **"debe verificar email antes de iniciar sesión"**
 
 > Importante: los flujos públicos de Auth siguen protegidos por el modelo `tx` + permisos.
@@ -59,6 +59,7 @@ Esto:
     - `Auth.requestPasswordReset`
     - `Auth.verifyPasswordReset`
     - `Auth.resetPassword`
+    - `Auth.verifyLoginChallenge` (opcional, solo si habilitas 2-step para dispositivo nuevo)
 
 Finalmente en runtime define:
 
@@ -118,7 +119,17 @@ Notas:
 Request:
 
 ```json
-{ "username": "<email_o_usuario>", "password": "..." }
+{ "identifier": "<email_o_usuario>", "password": "..." }
+```
+
+Aliases (mismo comportamiento):
+
+```json
+{ "email": "john@example.com", "password": "..." }
+```
+
+```json
+{ "username": "john_doe", "password": "..." }
 ```
 
 Response:
@@ -128,15 +139,15 @@ Response:
     - Incluye `challengeToken` y `sentTo` (enmascarado)
 - `403 emailNotVerified`: cuando `AUTH_REQUIRE_EMAIL_VERIFICATION=1` y el usuario no está verificado
 
-### C) Dispositivo nuevo: 2 pasos (`POST /login/verify`)
+### C) Dispositivo nuevo: 2 pasos (vía `/toProccess` → `Auth.verifyLoginChallenge`)
 
 Si `/login` devolvió `202`, completa el login con:
 
 ```http
-POST /login/verify
+POST /toProccess
 Content-Type: application/json
 
-{ "token": "<challengeToken>", "code": "<código-6-dígitos>" }
+{ "tx": <tx_de_Auth.verifyLoginChallenge>, "params": { "token": "<challengeToken>", "code": "<código-6-dígitos>" } }
 ```
 
 En éxito:

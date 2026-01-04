@@ -115,7 +115,7 @@ fetch('http://localhost:3000/login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
-    body: JSON.stringify({ username, password }),
+    body: JSON.stringify({ identifier, password }),
 })
 ```
 
@@ -150,18 +150,19 @@ Implementation: [src/BSS/Session.ts](../../src/BSS/Session.ts)
 ### Request
 
 ```json
-{ "username": "...", "password": "..." }
+{ "identifier": "...", "password": "..." }
 ```
 
 Validation:
 
-- `username`: `string`
+- `identifier` (or `email` / `username`): `string`
 - `password`: min length 8
 
 Schema validation (shape):
 
 - `body` must be a JSON object.
-- `username` and `password` must be `string`.
+- One of `identifier` / `email` / `username` must be `string`.
+- `password` must be `string`.
 - On failure: `400 invalidParameters` + `alerts`.
 
 Reusable HTTP schema validation lives in:
@@ -189,19 +190,22 @@ CSRF:
 
 Notes:
 
-- The server can be configured to accept `username` as either an email or a username via `AUTH_LOGIN_ID`.
+- The server accepts both email and username. Use `identifier` as the canonical key (or `email` / `username` as aliases).
 - The `202` flow happens only when `AUTH_LOGIN_2STEP_NEW_DEVICE=1` and the device is not yet trusted.
 
-## POST /login/verify
+## Verify login challenge (2-step) via /toProccess
 
-Implementation: [src/BSS/Session.ts](../../src/BSS/Session.ts)
+Implementation:
+
+- Verification logic: [src/BSS/Session.ts](../../src/BSS/Session.ts)
+- `/toProccess` routing: [src/BSS/Dispatcher.ts](../../src/BSS/Dispatcher.ts)
 
 Completes the optional 2-step login challenge started by `POST /login`.
 
 ### Request
 
 ```json
-{ "token": "<challengeToken>", "code": "<6-digit-code>" }
+{ "tx": <tx_for_Auth.verifyLoginChallenge>, "params": { "token": "<challengeToken>", "code": "<6-digit-code>" } }
 ```
 
 CSRF:

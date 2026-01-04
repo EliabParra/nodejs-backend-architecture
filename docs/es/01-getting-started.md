@@ -94,7 +94,7 @@ Este backend usa sesión por cookie, así que necesitas:
 # 1) Login (guarda cookies en cookies.txt)
 curl -sS -c cookies.txt -b cookies.txt \
     -H "Content-Type: application/json" \
-    -d '{"username":"admin","password":"CHANGE_ME"}' \
+    -d '{"identifier":"admin","password":"CHANGE_ME"}' \
     http://localhost:3000/login
 
 # 2) Obtener CSRF token (requiere la cookie de sesión)
