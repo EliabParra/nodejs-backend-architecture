@@ -171,7 +171,13 @@ export class AuthRepository {
         return true
     }
 
-    static async consumeOneTimeCodesForUserPurpose({ userId, purpose }: { userId: number; purpose: string }) {
+    static async consumeOneTimeCodesForUserPurpose({
+        userId,
+        purpose,
+    }: {
+        userId: number
+        purpose: string
+    }) {
         await db.exe('security', 'consumeOneTimeCodesForUserPurpose', [userId, purpose])
         return true
     }
@@ -235,7 +241,13 @@ export class AuthRepository {
     }
 
     // --- Password
-    static async updateUserPassword({ userId, passwordHash }: { userId: number; passwordHash: string }): Promise<boolean> {
+    static async updateUserPassword({
+        userId,
+        passwordHash,
+    }: {
+        userId: number
+        passwordHash: string
+    }): Promise<boolean> {
         await db.exe('security', 'updateUserPassword', [userId, passwordHash])
         return true
     }

@@ -37,9 +37,7 @@ test('bo CLI new --dry does not write files', async () => {
     assert.match(r.stdout, /DRY RUN: would create/i)
     assert.match(
         r.stdout,
-        new RegExp(
-            `BO(?:\\\\|/)${objectName.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')}`
-        )
+        new RegExp(`BO(?:\\\\|/)${objectName.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')}`)
     )
     assert.equal(await pathExists(targetDir), false)
 })

@@ -1,18 +1,18 @@
 {
-  "es": {
-    "register": "Registrado",
-    "requestEmailVerification": "Si existe una cuenta, enviaremos un email de verificación",
-    "verifyEmail": "Email verificado",
-    "requestPasswordReset": "Si existe una cuenta, enviaremos instrucciones al email",
-    "verifyPasswordReset": "Verificación correcta",
-    "resetPassword": "Contraseña actualizada"
-  },
-  "en": {
-    "register": "Registered",
-    "requestEmailVerification": "If an account exists, we will email a verification link",
-    "verifyEmail": "Email verified",
-    "requestPasswordReset": "If an account exists, we will email instructions",
-    "verifyPasswordReset": "Verification ok",
-    "resetPassword": "Password updated"
-  }
+    "es": {
+        "register": "Registrado",
+        "requestEmailVerification": "Si existe una cuenta, enviaremos un email de verificación",
+        "verifyEmail": "Email verificado",
+        "requestPasswordReset": "Si existe una cuenta, enviaremos instrucciones al email",
+        "verifyPasswordReset": "Verificación correcta",
+        "resetPassword": "Contraseña actualizada"
+    },
+    "en": {
+        "register": "Registered",
+        "requestEmailVerification": "If an account exists, we will email a verification link",
+        "verifyEmail": "Email verified",
+        "requestPasswordReset": "If an account exists, we will email instructions",
+        "verifyPasswordReset": "Verification ok",
+        "resetPassword": "Password updated"
+    }
 }

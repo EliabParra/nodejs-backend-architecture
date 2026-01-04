@@ -12,7 +12,10 @@ type AuthErrorKey =
     | 'emailNotVerified'
     | 'unknownError'
 
-const errorMsgs = require('./messages/authErrorMsgs.json')[config.app.lang] as Record<AuthErrorKey, ApiError>
+const errorMsgs = require('./messages/authErrorMsgs.json')[config.app.lang] as Record<
+    AuthErrorKey,
+    ApiError
+>
 
 export class AuthErrorHandler {
     static invalidParameters(alerts?: string[]): ApiError {
@@ -20,12 +23,26 @@ export class AuthErrorHandler {
         return { code, msg, alerts: alerts ?? [] }
     }
 
-    static invalidToken(): ApiError { return errorMsgs.invalidToken }
-    static expiredToken(): ApiError { return errorMsgs.expiredToken }
-    static tooManyRequests(): ApiError { return errorMsgs.tooManyRequests }
+    static invalidToken(): ApiError {
+        return errorMsgs.invalidToken
+    }
+    static expiredToken(): ApiError {
+        return errorMsgs.expiredToken
+    }
+    static tooManyRequests(): ApiError {
+        return errorMsgs.tooManyRequests
+    }
 
-    static alreadyRegistered(): ApiError { return errorMsgs.alreadyRegistered }
-    static emailRequired(): ApiError { return errorMsgs.emailRequired }
-    static emailNotVerified(): ApiError { return errorMsgs.emailNotVerified }
-    static unknownError(): ApiError { return errorMsgs.unknownError }
+    static alreadyRegistered(): ApiError {
+        return errorMsgs.alreadyRegistered
+    }
+    static emailRequired(): ApiError {
+        return errorMsgs.emailRequired
+    }
+    static emailNotVerified(): ApiError {
+        return errorMsgs.emailNotVerified
+    }
+    static unknownError(): ApiError {
+        return errorMsgs.unknownError
+    }
 }

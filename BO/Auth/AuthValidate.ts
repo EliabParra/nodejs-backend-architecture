@@ -37,7 +37,10 @@ export class AuthValidate {
         return v.validateLength({ value: username, label: labels.username }, 3, 80)
     }
 
-    static validatePassword(value: string | null | undefined, { min = 8, max = 200 }: { min?: number; max?: number } = {}): boolean {
+    static validatePassword(
+        value: string | null | undefined,
+        { min = 8, max = 200 }: { min?: number; max?: number } = {}
+    ): boolean {
         const pw = this.normalizeText(value)
         if (!pw) return v.validateString({ value: pw, label: labels.password })
         return v.validateLength({ value: pw, label: labels.password }, min, max)
@@ -55,7 +58,10 @@ export class AuthValidate {
         return v.validateLength({ value: code, label: labels.code }, 4, 12)
     }
 
-    static validateNewPassword(value: string | null | undefined, { min = 8, max = 200 }: { min?: number; max?: number } = {}): boolean {
+    static validateNewPassword(
+        value: string | null | undefined,
+        { min = 8, max = 200 }: { min?: number; max?: number } = {}
+    ): boolean {
         const pw = this.normalizeText(value)
         if (!pw) return v.validateString({ value: pw, label: labels.newPassword })
         return v.validateLength({ value: pw, label: labels.newPassword }, min, max)
