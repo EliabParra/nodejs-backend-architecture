@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="Toproc mark">
+  <rect width="512" height="512" rx="96" fill="#0B0F19"/>
+  <!-- Minimal TP monogram (dev-tool vibe) -->
+  <g fill="#FFFFFF">
+    <!-- T -->
+    <rect x="118" y="140" width="276" height="44" rx="18"/>
+    <rect x="234" y="184" width="44" height="228" rx="18"/>
+    <!-- P (stem + bowl) -->
+    <rect x="298" y="184" width="44" height="228" rx="18"/>
+    <path d="M342 184h34c55 0 100 45 100 100s-45 100-100 100h-34v-44h34c31 0 56-25 56-56s-25-56-56-56h-34v-44z"/>
+  </g>
+</svg>
