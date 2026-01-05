@@ -1,5 +1,10 @@
 <div align="center">
 
+<picture>
+	<source media="(prefers-color-scheme: dark)" srcset="assets/branding/toproc-logo.light.svg" />
+	<img alt="Toproc" src="assets/branding/toproc-logo.dark.svg" width="240" />
+</picture>
+
 # Toproc
 
 **ToProccess core**: tx-driven secure dispatch backend.
