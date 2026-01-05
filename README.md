@@ -2,7 +2,7 @@
 
 <picture>
 	<source media="(prefers-color-scheme: dark)" srcset="assets/branding/toproc-logo.light.svg" />
-	<img alt="Toproc" src="assets/branding/toproc-logo.dark.svg" width="100" />
+	<img alt="Toproc" src="assets/branding/toproc-logo.dark.svg" width="150" />
 </picture>
 
 _**ToProccess core**: tx-driven secure dispatch backend._
