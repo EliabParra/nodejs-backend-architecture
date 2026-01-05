@@ -1,7 +1,5 @@
 <div align="center">
 
-<img src="assets/toproc-mark.svg" alt="Toproc" width="120" height="120" />
-
 # Toproc
 
 **ToProccess core**: tx-driven secure dispatch backend.
