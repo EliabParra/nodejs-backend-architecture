@@ -2,14 +2,10 @@
 
 <picture>
 	<source media="(prefers-color-scheme: dark)" srcset="assets/branding/toproc-logo.light.svg" />
-	<img alt="Toproc" src="assets/branding/toproc-logo.dark.svg" width="240" />
+	<img alt="Toproc" src="assets/branding/toproc-logo.dark.svg" width="100" />
 </picture>
 
-# Toproc
-
-**ToProccess core**: tx-driven secure dispatch backend.
-
-_Tx-driven secure dispatch._
+_**ToProccess core**: tx-driven secure dispatch backend._
 
 [![Node.js (ESM)](https://img.shields.io/badge/Node.js-ESM-3c873a?style=for-the-badge)](#)
 [![Express](https://img.shields.io/badge/Express-5.x-000000?style=for-the-badge)](#)
