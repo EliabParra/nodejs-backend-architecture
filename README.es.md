@@ -1,21 +1,23 @@
 <div align="center">
 
-# Node.js Backend Architecture (Starter/Blueprint)
+# Toproc
 
-**Starter/blueprint** orientado a producción para Node.js (ESM) + Express 5 + Postgres.
+**ToProccess core**: tx-driven secure dispatch backend.
+
+_Tx-driven secure dispatch._
 
 [![Node.js (ESM)](https://img.shields.io/badge/Node.js-ESM-3c873a?style=for-the-badge)](#)
 [![Express](https://img.shields.io/badge/Express-5.x-000000?style=for-the-badge)](#)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-required-336791?style=for-the-badge)](#)
 [![Tests](https://img.shields.io/badge/Tests-node%20--test-2f6feb?style=for-the-badge)](#)
-[![CI](https://img.shields.io/github/actions/workflow/status/EliabParra/nodejs-backend-architecture/ci.yml?branch=main&style=for-the-badge)](https://github.com/EliabParra/nodejs-backend-architecture/actions/workflows/ci.yml)
+[![CI](https://img.shields.io/github/actions/workflow/status/EliabParra/toproc/ci.yml?branch=master&style=for-the-badge)](https://github.com/EliabParra/toproc/actions/workflows/ci.yml)
 [![Licencia: MIT](https://img.shields.io/badge/License-MIT-2f6feb?style=for-the-badge)](LICENSE)
 
 </div>
 
 **English:** see [README.md](README.md)
 
-Este repo es un **starter/blueprint** que te da una base sólida (modelo de seguridad + tooling) sin forzarte a un framework completo.
+Toproc es una arquitectura backend developer-first construida alrededor del core **ToProccess**. Te da una base sólida (modelo de seguridad + tooling) sin forzarte a un framework completo.
 
 ## Highlights
 

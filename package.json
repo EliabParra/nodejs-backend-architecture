@@ -1,7 +1,7 @@
 {
-    "name": "nodejs-backend-architecture",
+    "name": "toproc",
     "version": "0.0.1",
-    "description": "Una arquitectura de backend desacoplada para Node.js",
+    "description": "Toproc — ToProccess core: tx-driven secure dispatch backend.",
     "license": "MIT",
     "main": "dist/src/index.js",
     "scripts": {
